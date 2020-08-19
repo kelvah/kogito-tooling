@@ -48,6 +48,7 @@ interface Props {
   onEmbed: () => void;
   onClose: () => void;
   onCopyContentToClipboard: () => void;
+  onTestDeploy: () => void;
   isPageFullscreen: boolean;
   isEdited: boolean;
 }
@@ -199,6 +200,22 @@ export function EditorToolbar(props: Props) {
                 className={"kogito--editor__toolbar button"}
               >
                 {i18n.editorToolbar.saveAndDownload}
+              </Button>
+            </PageHeaderToolsItem>
+          </PageHeaderToolsGroup>
+          <PageHeaderToolsGroup>
+            <PageHeaderToolsItem
+              visibility={{
+                default: "hidden",
+                "2xl": "visible",
+                xl: "visible",
+                lg: "hidden",
+                md: "hidden",
+                sm: "hidden"
+              }}
+            >
+              <Button data-testid="test-deploy" variant={"tertiary"} onClick={props.onTestDeploy} aria-label={"Test&Deploy button"}>
+                Test & Deploy
               </Button>
             </PageHeaderToolsItem>
           </PageHeaderToolsGroup>

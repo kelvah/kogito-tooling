@@ -133,9 +133,9 @@ export function HomePage(props: Props) {
     [context, history]
   );
 
-  const createEmptyBpmnFile = useCallback(() => {
-    createEmptyFile("bpmn");
-  }, [createEmptyFile]);
+  // const createEmptyBpmnFile = useCallback(() => {
+  //   createEmptyFile("bpmn");
+  // }, [createEmptyFile]);
 
   const createEmptyDmnFile = useCallback(() => {
     createEmptyFile("dmn");
@@ -156,9 +156,9 @@ export function HomePage(props: Props) {
     [context, history]
   );
 
-  const tryBpmnSample = useCallback(() => {
-    trySample("bpmn");
-  }, [trySample]);
+  // const tryBpmnSample = useCallback(() => {
+  //   trySample("bpmn");
+  // }, [trySample]);
 
   const tryDmnSample = useCallback(() => {
     trySample("dmn");
@@ -440,24 +440,6 @@ export function HomePage(props: Props) {
       </PageSection>
       <PageSection className="pf-u-px-2xl-on-lg">
         <Gallery hasGutter={true} className="kogito--editor-landing__gallery">
-          <Card>
-            <CardHeader>
-              <Title headingLevel="h2" size="2xl">
-                {i18n.homePage.bpmnCard.title}
-              </Title>
-            </CardHeader>
-            <CardBody isFilled={false}>{i18n.homePage.bpmnCard.explanation}</CardBody>
-            <CardBody isFilled={true}>
-              <Button variant="link" isInline={true} onClick={tryBpmnSample} ouiaId="try-bpmn-sample-button">
-                {i18n.homePage.trySample}
-              </Button>
-            </CardBody>
-            <CardFooter>
-              <Button variant="secondary" onClick={createEmptyBpmnFile}>
-                {i18n.homePage.bpmnCard.createNew}
-              </Button>
-            </CardFooter>
-          </Card>
           <Card>
             <CardHeader>
               <Title headingLevel="h2" size="2xl">

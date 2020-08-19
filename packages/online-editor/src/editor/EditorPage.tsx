@@ -29,6 +29,7 @@ import { useFileUrl } from "../common/Hooks";
 import { ChannelType } from "@kogito-tooling/channel-common-api";
 import { EmbeddedEditor, useDirtyState, useEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { Alert, AlertActionCloseButton, AlertActionLink, Page, PageSection } from "@patternfly/react-core";
+import TestAndDeploy from "./TestAndDeploy";
 
 export enum Alerts {
   NONE,
@@ -66,6 +67,8 @@ export function EditorPage(props: Props) {
   const isDirty = useDirtyState(editor);
   const { locale, i18n } = useOnlineI18n();
 
+  const [showTestPanel, setShowTestPanel] = useState(false);
+
   const close = useCallback(() => {
     if (!isDirty) {
       window.location.href = window.location.href.split("?")[0].split("#")[0];
@@ -92,6 +95,10 @@ export function EditorPage(props: Props) {
       );
     });
   }, [context.file.fileName, editor]);
+
+  const testDeployToggle = useCallback(() => {
+    setShowTestPanel(!showTestPanel);
+  }, [showTestPanel]);
 
   const requestDownload = useCallback(() => {
     editor?.getStateControl().setSavedCommand();
@@ -266,6 +273,7 @@ export function EditorPage(props: Props) {
         <EditorToolbar
           onFullScreen={enterFullscreen}
           onSave={requestSave}
+          onTestDeploy={testDeployToggle}
           onDownload={requestDownload}
           onClose={close}
           onFileNameChanged={props.onFileNameChanged}
@@ -279,6 +287,9 @@ export function EditorPage(props: Props) {
         />
       }
     >
+      <PageSection isFilled={true} style={{ padding: 0 }}>
+        <TestAndDeploy showPanel={showTestPanel} />
+      </PageSection>
       <PageSection isFilled={true} padding={{ default: "noPadding" }} style={{ flexBasis: "100%" }}>
         {!fullscreen && alert === Alerts.COPY && (
           <div className={"kogito--alert-container"}>

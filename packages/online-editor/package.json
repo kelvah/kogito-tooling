@@ -17,10 +17,15 @@
     "@kogito-tooling/kie-bc-editors": "0.8.4",
     "@kogito-tooling/patternfly-base": "0.8.4",
     "@octokit/rest": "16.35.0",
+    "@rjsf/bootstrap-4": "^2.2.2",
+    "@rjsf/core": "^2.2.2",
     "@types/react-router": "5.1.1",
     "@types/react-router-dom": "5.1.1",
+    "bootstrap": "^4.5.2",
+    "react-bootstrap": "^1.2.2",
     "react-router": "5.1.1",
-    "react-router-dom": "5.1.1"
+    "react-router-dom": "5.1.1",
+    "swagger-client": "^3.10.12"
   },
   "scripts": {
     "lint": "tslint -c ../../tslint.json 'src/**/*.{ts,tsx,js,jsx}'",
