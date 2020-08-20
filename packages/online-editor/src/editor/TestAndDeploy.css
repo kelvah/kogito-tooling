@@ -10,10 +10,9 @@
 }
 
 .cd-panel::after {
-    /* overlay layer */
     content: '';
     position: absolute;
-    top: 76px;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -42,15 +41,6 @@
     line-height: 50px;
     background: rgba(255, 255, 255, 0.96);
     z-index: 2;
-    /*-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);*/
-    /*box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);*/
-    /*-webkit-transition: -webkit-transform 0.3s 0s;*/
-    /*transition: -webkit-transform 0.3s 0s;*/
-    /*transition: transform 0.3s 0s;*/
-    /*transition: transform 0.3s 0s, -webkit-transform 0.3s 0s;*/
-    /*-webkit-transform: translateY(-50px);*/
-    /*-ms-transform: translateY(-50px);*/
-    /*transform: translateY(-50px);*/
 }
 
 .cd-panel__header h1 {
@@ -70,7 +60,6 @@
     -webkit-transition: -webkit-transform 0.3s 0.3s;
     transition: -webkit-transform 0.3s 0.3s;
     transition: transform 0.3s 0.3s;
-    transition: transform 0.3s 0.3s, -webkit-transform 0.3s 0.3s;
     -webkit-transform: translateY(0px);
     -ms-transform: translateY(0px);
     transform: translateY(0px);
@@ -88,123 +77,6 @@
     }
 }
 
-.cd-panel__close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    width: 60px;
-    /* image replacement */
-    display: inline-block;
-    overflow: hidden;
-    text-indent: 100%;
-    white-space: nowrap;
-}
-
-.cd-panel__close::before, .cd-panel__close::after {
-    /* close icon created in CSS */
-    content: '';
-    position: absolute;
-    top: 22px;
-    left: 20px;
-    height: 3px;
-    width: 20px;
-    background-color: #424f5c;
-    /* this fixes a bug where pseudo elements are slighty off position */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-}
-
-.cd-panel__close::before {
-    -webkit-transform: rotate(45deg);
-    -ms-transform: rotate(45deg);
-    transform: rotate(45deg);
-}
-
-.cd-panel__close::after {
-    -webkit-transform: rotate(-45deg);
-    -ms-transform: rotate(-45deg);
-    transform: rotate(-45deg);
-}
-
-.cd-panel__close:hover {
-    background-color: #424f5c;
-}
-
-.cd-panel__close:hover::before, .cd-panel__close:hover::after {
-    background-color: #ffffff;
-    -webkit-transition: -webkit-transform 0.3s;
-    transition: -webkit-transform 0.3s;
-    transition: transform 0.3s;
-    transition: transform 0.3s, -webkit-transform 0.3s;
-}
-
-.cd-panel__close:hover::before {
-    -webkit-transform: rotate(220deg);
-    -ms-transform: rotate(220deg);
-    transform: rotate(220deg);
-}
-
-.cd-panel__close:hover::after {
-    -webkit-transform: rotate(135deg);
-    -ms-transform: rotate(135deg);
-    transform: rotate(135deg);
-}
-
-/*.cd-panel--is-visible .cd-panel__close::before {*/
-/*    -webkit-animation: cd-close-1 0.6s 0.3s;*/
-/*    animation: cd-close-1 0.6s 0.3s;*/
-/*}*/
-
-/*.cd-panel--is-visible .cd-panel__close::after {*/
-/*    -webkit-animation: cd-close-2 0.6s 0.3s;*/
-/*    animation: cd-close-2 0.6s 0.3s;*/
-/*}*/
-
-/*@-webkit-keyframes cd-close-1 {*/
-/*    0%, 50% {*/
-/*        -webkit-transform: rotate(0deg);*/
-/*        transform: rotate(0deg);*/
-/*    }*/
-/*    100% {*/
-/*        -webkit-transform: rotate(45deg);*/
-/*        transform: rotate(45deg);*/
-/*    }*/
-/*}*/
-
-/*@keyframes cd-close-1 {*/
-/*    0%, 50% {*/
-/*        -webkit-transform: rotate(0deg);*/
-/*        transform: rotate(0deg);*/
-/*    }*/
-/*    100% {*/
-/*        -webkit-transform: rotate(45deg);*/
-/*        transform: rotate(45deg);*/
-/*    }*/
-/*}*/
-
-/*@-webkit-keyframes cd-close-2 {*/
-/*    0%, 50% {*/
-/*        -webkit-transform: rotate(0deg);*/
-/*        transform: rotate(0deg);*/
-/*    }*/
-/*    100% {*/
-/*        -webkit-transform: rotate(-45deg);*/
-/*        transform: rotate(-45deg);*/
-/*    }*/
-/*}*/
-
-/*@keyframes cd-close-2 {*/
-/*    0%, 50% {*/
-/*        -webkit-transform: rotate(0deg);*/
-/*        transform: rotate(0deg);*/
-/*    }*/
-/*    100% {*/
-/*        -webkit-transform: rotate(-45deg);*/
-/*        transform: rotate(-45deg);*/
-/*    }*/
-/*}*/
-
 .cd-panel__container {
     position: fixed;
     width: 90%;
@@ -215,7 +87,6 @@
     -webkit-transition: -webkit-transform 0.3s 0s;
     transition: -webkit-transform 0.3s 0s;
     transition: transform 0.3s 0s;
-    transition: transform 0.3s 0s, -webkit-transform 0.3s 0s;
 }
 
 .cd-panel--from-right .cd-panel__container {
@@ -255,26 +126,41 @@
     left: 0;
     width: 100%;
     height: 100%;
-    /*padding: 5%;*/
     overflow: auto;
-    /* smooth scrolling on touch devices */
     -webkit-overflow-scrolling: touch;
 }
 
-.cd-panel__content p {
-    font-size: 1.4rem;
-    color: #424f5c;
-    line-height: 1.4;
-    margin: 2em 0;
-}
-
-.cd-panel__content p:first-of-type {
-    margin-top: 0;
-}
 
 @media only screen and (min-width: 768px) {
     .cd-panel__content p {
         font-size: 1.6rem;
         line-height: 1.6;
     }
+}
+.endpoint-selection {
+    margin-right: 1em;
+}
+.dynamic-form {
+    margin-right: 1em;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active  {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
+
+.dynamic-form input, .dynamic-form textarea {
+    border-radius: 0 !important;
+}
+.endpoint-response {
+    position: sticky;
+    top: 5px;
+}
+.response-viewer {
+    padding: var(--pf-global--spacer--sm);
+    border: 1px solid var(--pf-global--disabled-color--200);
+    background-color: #fff;
+    min-height: 10em;
 }
