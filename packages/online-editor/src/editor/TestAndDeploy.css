@@ -160,7 +160,12 @@ input:-webkit-autofill:active  {
 }
 .response-viewer {
     padding: var(--pf-global--spacer--sm);
+    margin-bottom: var(--pf-global--spacer--sm);
     border: 1px solid var(--pf-global--disabled-color--200);
     background-color: #fff;
     min-height: 10em;
+}
+.response-input-filter {
+    margin-left: 10px;
+    padding-top: var(--pf-global--spacer--sm)
 }

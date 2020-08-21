@@ -16,21 +16,16 @@ import {
   SelectOption,
   SelectVariant,
   SelectDirection,
-  Spinner
+  Spinner,
+  Switch
 } from "@patternfly/react-core";
 import ReactJson from "react-json-view";
 import Form from "@rjsf/bootstrap-4";
 import "bootstrap/dist/css/bootstrap.css";
-
 import "./TestAndDeploy.css";
 
 interface TestAndDeployProps {
   showPanel: boolean;
-}
-interface ModelDeploy {
-  deployed: boolean;
-  waiting: boolean;
-  time?: string;
 }
 
 const TestAndDeploy = (props: TestAndDeployProps) => {
@@ -38,9 +33,13 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   // const context = useContext(GlobalContext);
   const [schemas, setSchemas] = useState<Schema[]>();
   const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
-  const [selectedEndpoint, setSelectedEndpoint] = useState<Schema>();
+  const [selectedEndpoint, setSelectedEndpoint] = useState<string>();
+  const [selectedSchema, setSelectedSchema] = useState<{}>();
   const [requestPayload, setRequestPayload] = useState();
-  const [responsePayload, setResponsePayload] = useState<{}>();
+  const [responsePayload, setResponsePayload] = useState<{} | null>(null);
+  const [hideInputsFromEndpointResponse, setHideInputsFromEndpointResponse] = useState(true);
+  const [requestBody, setRequestBody] = useState<{}>();
+  const [processedResponse, setProcessedResponse] = useState<{}>({});
   const [testEnvironment, setTestEnvironment] = useState(1);
   const [modelDeploy, setModelDeploy] = useState<ModelDeploy>({ deployed: false, waiting: false });
 
@@ -58,9 +57,16 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
         }
       }
       setSchemas(endpoints);
-      setSelectedEndpoint(endpoints[0]);
+      setSelectedEndpoint(endpoints[0].url);
     });
   }, []);
+
+  useEffect(() => {
+    if (selectedEndpoint) {
+      const schema = schemas?.filter(item => item.url === selectedEndpoint)[0];
+      setSelectedSchema(schema?.schema);
+    }
+  }, [selectedEndpoint]);
 
   const handleDeploy = () => {
     setTestEnvironment(1);
@@ -74,17 +80,21 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const onEndpointSelectToggle = (openStatus: boolean) => {
     setIsEndpointSelectOpen(openStatus);
   };
-  const onEndpointSelect = (event: React.MouseEvent | React.ChangeEvent, selection: Schema) => {
+  const onEndpointSelect = (event: React.MouseEvent | React.ChangeEvent, selection: string) => {
     setSelectedEndpoint(selection);
     setIsEndpointSelectOpen(false);
+    setResponsePayload(null);
+    setProcessedResponse({});
   };
   const handleForm = (form: { formData: any }) => {
     const formData = form.formData;
     setRequestPayload(formData);
 
     if (selectedEndpoint) {
-      setResponsePayload({});
-      fetch("http://localhost:8080" + selectedEndpoint.url, {
+      setRequestBody(formData);
+      setResponsePayload(null);
+      setProcessedResponse({});
+      fetch("http://localhost:8080" + selectedEndpoint, {
         headers: {
           Accept: "application/json, text/plain",
           "Content-Type": "application/json"
@@ -102,6 +112,19 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
         });
     }
   };
+
+  useEffect(() => {
+    if (responsePayload && requestBody) {
+      const keys = Object.keys(requestBody);
+      const withoutInputs: { [key: string]: any } = Object.assign({}, responsePayload);
+      for (const key in withoutInputs) {
+        if (keys.includes(key)) {
+          delete withoutInputs[key];
+        }
+      }
+      setProcessedResponse(withoutInputs);
+    }
+  }, [responsePayload]);
 
   return (
     <div className={`cd-panel cd-panel--from-right js-cd-panel-main ${showPanel ? "cd-panel--is-visible" : ""}`}>
@@ -151,7 +174,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                     >
                       {schemas &&
                         schemas.map((schema, index) => (
-                          <SelectOption key={index} value={schema}>
+                          <SelectOption key={index} value={schema.url}>
                             {schema.url.replace(/%20/g, " ")}
                           </SelectOption>
                         ))}
@@ -194,9 +217,9 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
             <PageSection>
               <Grid hasGutter={true}>
                 <GridItem span={6}>
-                  {selectedEndpoint && (
+                  {selectedSchema && (
                     <Form
-                      schema={selectedEndpoint.schema}
+                      schema={selectedSchema}
                       onSubmit={handleForm}
                       formData={requestPayload}
                       className="dynamic-form"
@@ -209,15 +232,31 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                     <div className="response-viewer">
                       {responsePayload && (
                         <ReactJson
-                          src={responsePayload}
+                          src={
+                            Object.keys(processedResponse).length > 0 && hideInputsFromEndpointResponse
+                              ? processedResponse
+                              : responsePayload
+                          }
                           displayDataTypes={false}
                           displayObjectSize={false}
                           enableClipboard={false}
+                          shouldCollapse={false}
                           name={false}
                           theme="shapeshifter:inverted"
                         />
                       )}
                     </div>
+                    {responsePayload && Object.keys(processedResponse).length !== Object.keys(responsePayload).length && (
+                      <div className="response-input-filter">
+                        <Switch
+                          id="no-label-switch-on"
+                          aria-label="Message when on"
+                          isChecked={hideInputsFromEndpointResponse}
+                          label="Hide request inputs from response"
+                          onChange={() => setHideInputsFromEndpointResponse(!hideInputsFromEndpointResponse)}
+                        />
+                      </div>
+                    )}
                   </div>
                 </GridItem>
               </Grid>
@@ -234,4 +273,10 @@ export default TestAndDeploy;
 interface Schema {
   url: string;
   schema: any;
+}
+
+interface ModelDeploy {
+  deployed: boolean;
+  waiting: boolean;
+  time?: string;
 }
