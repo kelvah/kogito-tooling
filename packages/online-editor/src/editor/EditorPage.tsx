@@ -29,7 +29,7 @@ import { useFileUrl } from "../common/Hooks";
 import { ChannelType } from "@kogito-tooling/channel-common-api";
 import { EmbeddedEditor, useDirtyState, useEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { Alert, AlertActionCloseButton, AlertActionLink, Page, PageSection } from "@patternfly/react-core";
-import TestAndDeploy from "./TestAndDeploy";
+import TestAndDeploy from "./TestAndDeploy/TestAndDeploy";
 
 export enum Alerts {
   NONE,
