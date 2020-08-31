@@ -22,6 +22,7 @@ import { ServerIcon } from "@patternfly/react-icons";
 import "bootstrap/dist/css/bootstrap.css";
 import "./TestAndDeploy.scss";
 import ModelTester from "../ModelTester/ModelTester";
+import { config } from "../../config";
 
 interface TestAndDeployProps {
   showPanel: boolean;
@@ -35,7 +36,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const [modelDeploy, setModelDeploy] = useState<ModelDeploy>({ deployed: false, waiting: false });
 
   useEffect(() => {
-    new SwaggerClient("http://localhost:8080/openapi").then((client: { spec: { paths: any } }) => {
+    new SwaggerClient(config.development.openApiUrl + "/openapi").then((client: { spec: { paths: any } }) => {
       const endpoints = [];
       const paths = client.spec.paths;
       console.log(paths);
