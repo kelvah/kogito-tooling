@@ -3,6 +3,7 @@ import { Schema } from "../TestAndDeploy/TestAndDeploy";
 import { useEffect, useState } from "react";
 import Form from "@rjsf/bootstrap-4";
 import ReactJson from "react-json-view";
+import { config } from "../../config";
 
 import {
   Grid,
@@ -15,10 +16,10 @@ import {
   Switch
 } from "@patternfly/react-core";
 
-type ModelTesterProps = {
+interface ModelTesterProps {
   schemas: Schema[];
   environment: "PROD" | "DEV";
-};
+}
 
 const ModelTester = (props: ModelTesterProps) => {
   const { schemas } = props;
@@ -61,7 +62,7 @@ const ModelTester = (props: ModelTesterProps) => {
       setRequestBody(formData);
       setResponsePayload(null);
       setProcessedResponse({});
-      fetch("http://localhost:8080" + selectedEndpoint, {
+      fetch(config.development.openApiUrl + selectedEndpoint, {
         headers: {
           Accept: "application/json, text/plain",
           "Content-Type": "application/json"
