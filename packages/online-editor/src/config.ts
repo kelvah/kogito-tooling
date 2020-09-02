@@ -21,6 +21,14 @@ export const config = {
       projectName: "my-project",
       saveDirectory: "src/main/resources"
     },
-    openApiUrl: "http://localhost:8080"
+    openApi: {
+      url: "http://localhost:8080",
+      specPath: "/openapi"
+    },
+    publish: {
+      url: "http://el-daas-workflow-kiegroup.apps-crc.testing",
+      appName: "dmn-quarkus-example",
+      envName: "kiegroup"
+    }
   }
 };

@@ -62,7 +62,7 @@ const ModelTester = (props: ModelTesterProps) => {
       setRequestBody(formData);
       setResponsePayload(null);
       setProcessedResponse({});
-      fetch(config.development.openApiUrl + selectedEndpoint, {
+      fetch(config.development.openApi.url + selectedEndpoint, {
         headers: {
           Accept: "application/json, text/plain",
           "Content-Type": "application/json"

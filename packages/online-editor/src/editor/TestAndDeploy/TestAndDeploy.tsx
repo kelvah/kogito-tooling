@@ -36,20 +36,22 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const [modelDeploy, setModelDeploy] = useState<ModelDeploy>({ deployed: false, waiting: false });
 
   useEffect(() => {
-    new SwaggerClient(config.development.openApiUrl + "/openapi").then((client: { spec: { paths: any } }) => {
-      const endpoints = [];
-      const paths = client.spec.paths;
-      console.log(paths);
-      for (const url in paths) {
-        if (paths.hasOwnProperty(url)) {
-          const schema = paths[url].post?.requestBody?.content["application/json"]?.schema;
-          if (schema) {
-            endpoints.push({ url: url, schema: schema });
+    new SwaggerClient(config.development.openApi.url + config.development.openApi.specPath).then(
+      (client: { spec: { paths: any } }) => {
+        const endpoints = [];
+        const paths = client.spec.paths;
+        console.log(paths);
+        for (const url in paths) {
+          if (paths.hasOwnProperty(url)) {
+            const schema = paths[url].post?.requestBody?.content["application/json"]?.schema;
+            if (schema) {
+              endpoints.push({ url: url, schema: schema });
+            }
           }
         }
+        setSchemas(endpoints);
       }
-      setSchemas(endpoints);
-    });
+    );
   }, []);
 
   const handleDeploy = () => {
