@@ -97,7 +97,7 @@ export function EditorPage(props: Props) {
         `${config.development.server.backendUrl}/projects/${config.development.server.projectName}/file?path=${
           context.file.filePath
             ? context.file.filePath
-            : `${config.development.server.saveDirectory}/${context.file.fileName}.${context.file.fileExtension}`
+            : `${config.development.server.saveDirectory}${context.file.fileName}.${context.file.fileExtension}`
         }`,
         {
           method: "PUT",

@@ -48,7 +48,7 @@ import { Table, TableHeader, TableBody, IRowData, IExtraData, IRow, ICell } from
 
 import { CodeBranchIcon, CodeIcon, CubeIcon } from "@patternfly/react-icons";
 import * as React from "react";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { ReactElement, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import { AnimatedTripleDotLabel } from "../common/AnimatedTripleDotLabel";
@@ -479,7 +479,9 @@ export function HomePage(props: Props) {
   const [isLinkDropdownOpen, setIsLinkDropdownOpen] = useState(false);
 
   const openSavedFile = useCallback((fileName: string, filePath: string) => {
-    fetch(`${config.development.server.backendUrl}/projects/${config.development.server.projectName}/file?path=${filePath}`)
+    fetch(
+      `${config.development.server.backendUrl}/projects/${config.development.server.projectName}/file?path=${filePath}`
+    )
       .then(response => {
         if (response.ok) {
           response.text().then((content: string) => {
@@ -513,15 +515,22 @@ export function HomePage(props: Props) {
     {
       title: "Edit",
       onClick: (event, rowId, rowData, extra) => {
-        openSavedFile(rowData.cells![1]!.toString().split("/").pop()!, rowData.cells![1]!.toString());
+        const cell: any = rowData.cells![0]!;
+        openSavedFile(
+          cell.title.key
+            .split("/")
+            .pop()!,
+          cell.title.key
+        );
       }
     },
     {
       title: "Delete",
       onClick: (event, rowId, rowData, extra) => {
+        const cell: any = rowData.cells![0]!;
         fetch(
           `${config.development.server.backendUrl}/projects/${config.development.server.projectName}/file?path=${
-            rowData.cells![1]
+            cell.title.key
           }`,
           {
             method: "DELETE"
@@ -547,11 +556,22 @@ export function HomePage(props: Props) {
       .then(response => {
         if (response.ok) {
           response.json().then((files: string[]) => {
+            const pathHidden = !files.some(path => path.includes("/"));
             setFilesRows(
               files.map(file => {
-                return { cells: [fileNameCell(file.split("/").pop()!, file), file] };
+                const row = {
+                  cells: [
+                    { title: fileNameCell(file.split("/").pop()!, file) },
+                    { title: filePathCell(file.split("/").pop()!, file, pathHidden) }
+                  ]
+                };
+
+                return row;
               })
             );
+            if (pathHidden) {
+              setFilesColumns(["File", ""]);
+            }
           });
         } else {
           console.error(response.status, response.statusText);
@@ -563,8 +583,12 @@ export function HomePage(props: Props) {
   }, []);
 
   const fileNameCell = (fileName: string, filePath: string) => (
-    <a onClick={() => openSavedFile(fileName, filePath)}>
-      {fileName}
+    <a onClick={() => openSavedFile(fileName, filePath)} key={filePath}>{fileName}</a>
+  );
+
+  const filePathCell = (fileName: string, filePath: string, hidden: boolean) => (
+    <a onClick={() => openSavedFile(fileName, filePath)} style={hidden ? { display: "none" } : {}}>
+      {filePath}
     </a>
   );
 

@@ -126,15 +126,18 @@ export const createProjectFile = (request: any, response: any) => {
   const fileRelativePath = request.body.path;
 
   execSync(`\
-    cd ${projectsDir + projectName}.git &&\
-    git read-tree HEAD &&\
-    newhash=$(echo "" | git hash-object -w --path="${fileRelativePath}" --stdin) &&\
-    git update-index --add --cacheinfo 0644 $newhash "${fileRelativePath}" &&\
-    newtree=$(git write-tree) &&\
-    newcommit=$(git commit-tree $newtree -p HEAD -m 'Added file: ${fileRelativePath}') &&\
-    git update-ref HEAD $newcommit && \
-    type ./hooks/post-receive && ./hooks/post-receive \
-  `);
+    cd ${projectsDir + projectName}.git
+    git read-tree HEAD
+    newhash=$(echo "" | git hash-object -w --path="${fileRelativePath}" --stdin)
+    git update-index --add --cacheinfo 0644 $newhash "${fileRelativePath}"
+    newtree=$(git write-tree)
+    newcommit=$(git commit-tree $newtree -p HEAD -m 'Added file: ${fileRelativePath}')
+    git update-ref HEAD $newcommit
+    if [ -f ./hooks/post-receive ] 
+    then
+      sh hooks/post-receive
+    fi
+  `, { shell: '/bin/bash' });
 
   response.status(201).end();
 };
@@ -156,7 +159,10 @@ export const deleteProjectFile = (request: any, response: any) => {
     newtree=$(git write-tree)
     newcommit=$(git commit-tree $newtree -p HEAD -m 'Removed file: ${fileRelativePath}')
     git update-ref HEAD $newcommit
-    type ./hooks/post-receive && ./hooks/post-receive
+    if [ -f ./hooks/post-receive ] 
+    then
+      sh hooks/post-receive
+    fi
   `, { shell: '/bin/bash' });
 
   response.status(200).end();
@@ -186,15 +192,18 @@ export const setProjectFileContent = (request: any, response: any) => {
   const fileContent = request.body;
 
   execSync(`\
-    cd ${projectsDir + projectName}.git &&\
-    git read-tree HEAD &&\
-    newhash=$(echo "${fileContent.replace(/\"/g, '\\"')}" | git hash-object -w --path="${fileRelativePath}" --stdin) &&\
-    git update-index --add --cacheinfo 0644 $newhash "${fileRelativePath}" &&\
-    newtree=$(git write-tree) &&\
-    newcommit=$(git commit-tree $newtree -p HEAD -m 'Added file: ${fileRelativePath}') &&\
-    git update-ref HEAD $newcommit && \
-    type ./hooks/post-receive && ./hooks/post-receive \
-  `);
+    cd ${projectsDir + projectName}.git
+    git read-tree HEAD
+    newhash=$(echo "${fileContent.replace(/\"/g, '\\"')}" | git hash-object -w --path="${fileRelativePath}" --stdin)
+    git update-index --add --cacheinfo 0644 $newhash "${fileRelativePath}"
+    newtree=$(git write-tree)
+    newcommit=$(git commit-tree $newtree -p HEAD -m 'Added file: ${fileRelativePath}')
+    git update-ref HEAD $newcommit
+    if [ -f ./hooks/post-receive ] 
+    then
+      sh hooks/post-receive
+    fi
+  `, { shell: '/bin/bash' });
 
   response.status(201).end();
 };

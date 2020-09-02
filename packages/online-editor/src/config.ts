@@ -19,7 +19,7 @@ export const config = {
     server: {
       backendUrl: "http://localhost:9002",
       projectName: "my-project",
-      saveDirectory: "src/main/resources"
+      saveDirectory: "" // empty to save in the root path, or like src/main/resources/ (with ending "/").
     },
     openApi: {
       url: "http://localhost:8080",
