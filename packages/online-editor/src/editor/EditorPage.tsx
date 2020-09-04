@@ -30,6 +30,7 @@ import { ChannelType } from "@kogito-tooling/channel-common-api";
 import { EmbeddedEditor, useDirtyState, useEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { Alert, AlertActionCloseButton, AlertActionLink, Page, PageSection } from "@patternfly/react-core";
 import TestAndDeploy from "./TestAndDeploy/TestAndDeploy";
+import { config } from "../config";
 
 export enum Alerts {
   NONE,
@@ -66,6 +67,7 @@ export function EditorPage(props: Props) {
   const [modal, setModal] = useState(Modal.NONE);
   const isDirty = useDirtyState(editor);
   const { locale, i18n } = useOnlineI18n();
+  const [lastSave, setLastSave] = useState<Date | null>(null);
 
   const [showTestPanel, setShowTestPanel] = useState(false);
 
@@ -104,6 +106,7 @@ export function EditorPage(props: Props) {
     editor?.getStateControl().setSavedCommand();
     setAlert(Alerts.NONE);
     editor?.getContent().then(content => {
+      setLastSave(new Date());
       if (downloadRef.current) {
         const fileBlob = new Blob([content], { type: "text/plain" });
         downloadRef.current.href = URL.createObjectURL(fileBlob);
@@ -288,7 +291,7 @@ export function EditorPage(props: Props) {
       }
     >
       <PageSection isFilled={true} style={{ padding: 0 }}>
-        <TestAndDeploy showPanel={showTestPanel} />
+        <TestAndDeploy showPanel={showTestPanel} lastSave={lastSave} />
       </PageSection>
       <PageSection isFilled={true} padding={{ default: "noPadding" }} style={{ flexBasis: "100%" }}>
         {!fullscreen && alert === Alerts.COPY && (
