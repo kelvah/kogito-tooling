@@ -35,10 +35,6 @@ interface Props {
 
 const ALERT_AUTO_CLOSE_TIMEOUT = 3000;
 
-// const logger = (msg: string) => {
-//   console.log("%c " + msg, "background: #222; color: #fff");
-// };
-
 export function EditorPage(props: Props) {
   const context = useContext(GlobalContext);
   const location = useLocation();
@@ -54,6 +50,7 @@ export function EditorPage(props: Props) {
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
   const isDirty = useDirtyState(editorRef);
   const { locale, i18n } = useOnlineI18n();
+  const [lastSave, setLastSave] = useState<Date | null>(null);
 
   const [showTestPanel, setShowTestPanel] = useState(false);
 
@@ -108,6 +105,7 @@ export function EditorPage(props: Props) {
         .then(response => {
           if (response.ok) {
             setSaveSuccessAlertVisible(true);
+            setLastSave(new Date());
           } else {
             console.error(response.status, response.statusText);
           }
@@ -194,10 +192,6 @@ export function EditorPage(props: Props) {
 
   const onReady = useCallback(() => {
     setIsEditorReady(true);
-    // logger(context.file.fileName);
-    // editorRef.current?.getContent().then(content => {
-    //   logger(content);
-    // });
   }, []);
 
   useEffect(() => {
@@ -275,7 +269,7 @@ export function EditorPage(props: Props) {
       }
     >
       <PageSection isFilled={true} style={{ padding: 0 }}>
-        <TestAndDeploy showPanel={showTestPanel} />
+        <TestAndDeploy showPanel={showTestPanel} lastSave={lastSave} />
       </PageSection>
       <PageSection isFilled={true} padding={{ default: "noPadding" }} style={{ flexBasis: "100%" }}>
         {!fullscreen && saveSuccessAlertVisible && (

@@ -10,15 +10,15 @@ import {
   EmptyStateIcon,
   Flex,
   FlexItem,
+  Label,
   Page,
   PageSection,
   Title,
-  Spinner,
   Tab,
   Tabs,
   TabTitleText
 } from "@patternfly/react-core";
-import { ServerIcon } from "@patternfly/react-icons";
+import { ServerIcon, SyncIcon } from "@patternfly/react-icons";
 import "bootstrap/dist/css/bootstrap.css";
 import "./TestAndDeploy.scss";
 import ModelTester from "../ModelTester/ModelTester";
@@ -26,16 +26,21 @@ import { config } from "../../config";
 
 interface TestAndDeployProps {
   showPanel: boolean;
+  lastSave: Date | null;
 }
 
 const TestAndDeploy = (props: TestAndDeployProps) => {
-  const { showPanel } = props;
-  // const context = useContext(GlobalContext);
+  const { showPanel, lastSave } = props;
   const [activeTab, setActiveTab] = useState<React.ReactText>(0);
   const [schemas, setSchemas] = useState<Schema[]>();
   const [modelDeploy, setModelDeploy] = useState<ModelDeploy>({ deployed: false, waiting: false });
+  const [refreshCssClass, setRefreshCssClass] = useState("");
 
   useEffect(() => {
+    getOpenApiSpec();
+  }, []);
+
+  const getOpenApiSpec = () => {
     new SwaggerClient(config.development.openApi.url + config.development.openApi.specPath).then(
       (client: { spec: { paths: any } }) => {
         const endpoints = [];
@@ -52,14 +57,41 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
         setSchemas(endpoints);
       }
     );
-  }, []);
+  };
+
+  useEffect(() => {
+    if (lastSave) {
+      getOpenApiSpec();
+    }
+  }, [lastSave]);
 
   const handleDeploy = () => {
     setModelDeploy({ deployed: false, waiting: true });
+    // setTimeout(() => {
+    //   const now = new Date().toLocaleTimeString();
+    //   setModelDeploy({ deployed: true, waiting: false, time: now });
+    // }, 2500);
+    fetch(config.development.publish.url, {
+      headers: {
+        Accept: "application/json, text/plain",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        appname: config.development.publish.appName,
+        envname: config.development.publish.envName
+      }),
+      method: "POST",
+      mode: "cors"
+    }).then(() => {
+      setModelDeploy({ deployed: false, waiting: true });
+    });
+  };
+
+  const refreshDeployStatus = () => {
+    setRefreshCssClass("rotating");
     setTimeout(() => {
-      const now = new Date().toLocaleTimeString();
-      setModelDeploy({ deployed: true, waiting: false, time: now });
-    }, 2500);
+      setRefreshCssClass("");
+    }, 1500);
   };
 
   const handleTabClick = (event: React.MouseEvent<HTMLElement, MouseEvent>, tabIndex: React.ReactText) => {
@@ -85,6 +117,27 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                       </Title>
                       <Flex>
                         <FlexItem>
+                          <span style={{ fontWeight: 700 }}>Status</span>
+                        </FlexItem>
+                        <FlexItem>
+                          {!modelDeploy.deployed && !modelDeploy.waiting && <Label>Not deployed</Label>}
+                          {modelDeploy.waiting && (
+                            <span>
+                              <Label color="blue">Deployment in progress</Label>
+                              <Button
+                                className="test-and-deploy__update-deploy-status"
+                                variant="plain"
+                                title="Refresh status"
+                                aria-label="Refresh"
+                                onClick={refreshDeployStatus}
+                              >
+                                <SyncIcon className={refreshCssClass} />
+                              </Button>
+                            </span>
+                          )}
+                          {modelDeploy.deployed && <em>Last published today at {modelDeploy.time}</em>}
+                        </FlexItem>
+                        <FlexItem align={{ default: "alignRight" }}>
                           <Button
                             type="button"
                             variant="primary"
@@ -93,14 +146,6 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                           >
                             Publish Model
                           </Button>
-                        </FlexItem>
-                        <FlexItem>
-                          {modelDeploy.waiting && (
-                            <span>
-                              <Spinner size="md" style={{ marginRight: ".5em" }} /> <em>Deploying</em>
-                            </span>
-                          )}
-                          {modelDeploy.deployed && <em>Last published today at {modelDeploy.time}</em>}
                         </FlexItem>
                       </Flex>
                     </div>
