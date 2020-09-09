@@ -44,7 +44,9 @@ const ModelTester = (props: ModelTesterProps) => {
   };
 
   useEffect(() => {
-    setSelectedEndpoint(schemas[0].url);
+    if (schemas.length > 0) {
+      setSelectedEndpoint(schemas[0].url);
+    }
   }, []);
 
   useEffect(() => {
@@ -107,6 +109,7 @@ const ModelTester = (props: ModelTesterProps) => {
           onSelect={onEndpointSelect}
           selections={selectedEndpoint}
           isOpen={isEndpointSelectOpen}
+          isDisabled={schemas.length === 0}
           aria-labelledby={"test-endpoints"}
           direction={SelectDirection.down}
         >
