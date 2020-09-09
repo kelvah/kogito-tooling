@@ -18,7 +18,7 @@ import {
   Tabs,
   TabTitleText
 } from "@patternfly/react-core";
-import { ServerIcon, SyncIcon } from "@patternfly/react-icons";
+import { ProjectDiagramIcon, ServerIcon, SyncIcon } from "@patternfly/react-icons";
 import "bootstrap/dist/css/bootstrap.css";
 import "./TestAndDeploy.scss";
 import ModelTester from "../ModelTester/ModelTester";
@@ -106,13 +106,26 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
               <Tabs isFilled={true} activeKey={activeTab} onSelect={handleTabClick} isBox={true}>
                 <Tab eventKey={0} title={<TabTitleText>Test Development Environment</TabTitleText>}>
                   <PageSection variant={"light"}>
-                    {schemas && <ModelTester schemas={schemas} environment={"DEV"} />}
+                    {schemas && schemas.length > 0 && <ModelTester schemas={schemas} environment={"DEV"} />}
+                    {schemas && schemas.length === 0 && (
+                      <EmptyState variant={"small"} style={{ minHeight: "380px" }}>
+                        <EmptyStateIcon icon={ProjectDiagramIcon} />
+                        <Title headingLevel="h3" size="lg">
+                          Empty Model
+                        </Title>
+                        <EmptyStateBody>
+                          It seems there are no endpoints to test right now.
+                          <br />
+                          Go back editing the model.
+                        </EmptyStateBody>
+                      </EmptyState>
+                    )}
                   </PageSection>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>Deploy to Production</TabTitleText>}>
                   <PageSection variant={"light"}>
                     <div className="test-and-deploy__deploy">
-                      <Title headingLevel="h3" className="test-and-deploy__title">
+                      <Title headingLevel="h3" size="lg" className="test-and-deploy__title">
                         Deployment
                       </Title>
                       <Flex>
@@ -154,7 +167,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                     {!modelDeploy.deployed && (
                       <EmptyState variant={"small"}>
                         <EmptyStateIcon icon={ServerIcon} />
-                        <Title headingLevel="h3" size="md">
+                        <Title headingLevel="h3" size="lg">
                           Model not deployed
                         </Title>
                         <EmptyStateBody>

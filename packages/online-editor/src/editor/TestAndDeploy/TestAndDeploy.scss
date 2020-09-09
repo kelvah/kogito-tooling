@@ -123,6 +123,9 @@
     top: 5px;
     margin-left: 1em;
   }
+  .pf-c-empty-state__content > .pf-c-title.pf-m-lg {
+    --pf-c-empty-state__content--c-title--m-lg--FontSize: 1.125rem;
+  }
 }
 
 .dynamic-form {
