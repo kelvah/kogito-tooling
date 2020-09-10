@@ -2,9 +2,7 @@ import * as React from "react";
 import { Schema } from "../TestAndDeploy/TestAndDeploy";
 import { useEffect, useState } from "react";
 import Form from "@rjsf/bootstrap-4";
-import ReactJson from "react-json-view";
 import { config } from "../../config";
-
 import {
   Grid,
   GridItem,
@@ -15,6 +13,7 @@ import {
   SelectDirection,
   Switch
 } from "@patternfly/react-core";
+import ResponseViewer from "../ResponseViewer/ResponseViewer";
 
 interface ModelTesterProps {
   schemas: Schema[];
@@ -137,20 +136,14 @@ const ModelTester = (props: ModelTesterProps) => {
             <Title headingLevel="h3" className="test-and-deploy__title">
               Response
             </Title>
-            <div className="response-viewer">
+            <div className="response-box">
               {responsePayload && (
-                <ReactJson
-                  src={
+                <ResponseViewer
+                  source={
                     Object.keys(processedResponse).length > 0 && hideInputsFromEndpointResponse
                       ? processedResponse
                       : responsePayload
                   }
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  enableClipboard={false}
-                  shouldCollapse={false}
-                  name={false}
-                  theme="shapeshifter:inverted"
                 />
               )}
             </div>

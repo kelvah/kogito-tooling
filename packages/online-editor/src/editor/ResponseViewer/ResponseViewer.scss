@@ -1,0 +1,38 @@
+.response-viewer {
+  &__item {
+    display: block;
+    margin-bottom: var(--pf-global--spacer--sm);
+    &--struct {
+      padding-left: var(--pf-global--spacer--md);
+      border-left: 2px solid var(--pf-global--info-color--100);
+    }
+    &--array {
+      padding: var(--pf-global--spacer--md);
+      border: 2px solid #d3eafd;
+    }
+  }
+  &__property {
+    margin-bottom: var(--pf-global--spacer--xs);
+    max-width: 680px;
+    &__name {
+      font-weight: 600;
+      padding-right: 1em;
+    }
+    &__value {
+      &--bigger {
+        font-size: 2em;
+      }
+    }
+  }
+  &__title {
+    margin-bottom: var(--pf-global--spacer--xs);
+  }
+  &__no-value {
+    color: var(--pf-global--Color--200);
+  }
+}
+.response-viewer__item .response-viewer__item {
+  .response-viewer__item {
+    margin-top: var(--pf-global--spacer--md);
+  }
+}
