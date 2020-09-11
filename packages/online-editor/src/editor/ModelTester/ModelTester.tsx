@@ -24,9 +24,9 @@ const ModelTester = (props: ModelTesterProps) => {
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>();
   const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
   const [selectedSchema, setSelectedSchema] = useState<{}>();
-  const [processedResponse, setProcessedResponse] = useState<{}>({});
-  const [requestPayload, setRequestPayload] = useState();
-  const [requestBody, setRequestBody] = useState<{}>();
+  const [processedResponse, setProcessedResponse] = useState({});
+  const [requestPayload, setRequestPayload] = useState({});
+  const [requestBody, setRequestBody] = useState({});
   const [responsePayload, setResponsePayload] = useState<{} | null>(null);
   const [hideInputsFromEndpointResponse, setHideInputsFromEndpointResponse] = useState(true);
 
@@ -45,14 +45,16 @@ const ModelTester = (props: ModelTesterProps) => {
     if (schemas.length > 0) {
       setSelectedEndpoint(schemas[0].url);
     }
-  }, []);
+    setRequestPayload({});
+    setResponsePayload({});
+  }, [schemas]);
 
   useEffect(() => {
     if (selectedEndpoint) {
       const schema = schemas?.filter(item => item.url === selectedEndpoint)[0];
       setSelectedSchema(schema?.schema);
     }
-  }, [selectedEndpoint]);
+  }, [schemas, selectedEndpoint]);
 
   const handleForm = (form: { formData: any }) => {
     const formData = form.formData;
