@@ -2,7 +2,6 @@ import * as React from "react";
 import { Schema } from "../TestAndDeploy/TestAndDeploy";
 import { useEffect, useState } from "react";
 import Form from "@rjsf/bootstrap-4";
-import { config } from "../../config";
 import {
   Grid,
   GridItem,
@@ -17,11 +16,11 @@ import ResponseViewer from "../ResponseViewer/ResponseViewer";
 
 interface ModelTesterProps {
   schemas: Schema[];
-  environment: "PROD" | "DEV";
+  baseUrl: string;
 }
 
 const ModelTester = (props: ModelTesterProps) => {
-  const { schemas } = props;
+  const { schemas, baseUrl } = props;
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>();
   const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
   const [selectedSchema, setSelectedSchema] = useState<{}>();
@@ -63,7 +62,7 @@ const ModelTester = (props: ModelTesterProps) => {
       setRequestBody(formData);
       setResponsePayload(null);
       setProcessedResponse({});
-      fetch(config.development.openApi.url + selectedEndpoint, {
+      fetch(baseUrl + selectedEndpoint, {
         headers: {
           Accept: "application/json, text/plain",
           "Content-Type": "application/json"

@@ -18,11 +18,12 @@ import {
   Tabs,
   TabTitleText
 } from "@patternfly/react-core";
-import { ProjectDiagramIcon, ServerIcon, SyncIcon } from "@patternfly/react-icons";
+import { ServerIcon, SyncIcon, CheckCircleIcon, HourglassHalfIcon } from "@patternfly/react-icons";
 import "bootstrap/dist/css/bootstrap.css";
-import "./TestAndDeploy.scss";
-import ModelTester from "../ModelTester/ModelTester";
 import { config } from "../../config";
+import ModelTester from "../ModelTester/ModelTester";
+import EmptyModelMessage from "../EmptyModelMessage/EmptyModelMessage";
+import "./TestAndDeploy.scss";
 
 interface TestAndDeployProps {
   showPanel: boolean;
@@ -32,45 +33,54 @@ interface TestAndDeployProps {
 const TestAndDeploy = (props: TestAndDeployProps) => {
   const { showPanel, lastSave } = props;
   const [activeTab, setActiveTab] = useState<React.ReactText>(0);
-  const [schemas, setSchemas] = useState<Schema[]>();
+  const [devSchemas, setDevSchemas] = useState<Schema[]>();
+  const [prodSchemas, setProdSchemas] = useState<Schema[]>();
   const [modelDeploy, setModelDeploy] = useState<ModelDeploy>({ deployed: false, waiting: false });
   const [refreshCssClass, setRefreshCssClass] = useState("");
 
+  const openApiDevUrl = config.development.openApi.url + config.development.openApi.specPath;
+  const prodUrl = config.development.publish.url.replace(
+    "el-daas-workflow",
+    config.development.publish.appName + "-daas-executor-native"
+  );
+  const openApiProdUrl = prodUrl + "/openapi";
+
   useEffect(() => {
-    getOpenApiSpec();
+    getOpenApiSpec("DEV");
   }, []);
 
-  const getOpenApiSpec = () => {
-    new SwaggerClient(config.development.openApi.url + config.development.openApi.specPath).then(
-      (client: { spec: { paths: any } }) => {
-        const endpoints = [];
-        const paths = client.spec.paths;
-        console.log(paths);
-        for (const url in paths) {
-          if (paths.hasOwnProperty(url)) {
-            const schema = paths[url].post?.requestBody?.content["application/json"]?.schema;
-            if (schema) {
-              endpoints.push({ url: url, schema: schema });
-            }
+  const getOpenApiSpec = (environment: Environment) => {
+    const endpoint = environment === "DEV" ? openApiDevUrl : openApiProdUrl;
+    new SwaggerClient(endpoint).then((client: { spec: { paths: any } }) => {
+      const endpoints = [];
+      const paths = client.spec.paths;
+      console.log(paths);
+      for (const url in paths) {
+        if (paths.hasOwnProperty(url)) {
+          const schema = paths[url].post?.requestBody?.content["application/json"]?.schema;
+          if (schema) {
+            endpoints.push({ url: url, schema: schema });
           }
         }
-        setSchemas(endpoints);
       }
-    );
+      switch (environment) {
+        case "DEV":
+          setDevSchemas(endpoints);
+          break;
+        case "PROD":
+          setProdSchemas(endpoints);
+      }
+    });
   };
 
   useEffect(() => {
     if (lastSave) {
-      getOpenApiSpec();
+      getOpenApiSpec("DEV");
     }
   }, [lastSave]);
 
   const handleDeploy = () => {
     setModelDeploy({ deployed: false, waiting: true });
-    // setTimeout(() => {
-    //   const now = new Date().toLocaleTimeString();
-    //   setModelDeploy({ deployed: true, waiting: false, time: now });
-    // }, 2500);
     fetch(config.development.publish.url, {
       headers: {
         Accept: "application/json, text/plain",
@@ -89,9 +99,21 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
 
   const refreshDeployStatus = () => {
     setRefreshCssClass("rotating");
-    setTimeout(() => {
-      setRefreshCssClass("");
-    }, 1500);
+    fetch(openApiProdUrl, {
+      headers: {
+        Accept: "application/json, text/plain",
+        "Content-Type": "application/json"
+      },
+      method: "GET",
+      mode: "cors"
+    })
+      .then(() => {
+        getOpenApiSpec("PROD");
+        setModelDeploy({ deployed: true, waiting: false });
+      })
+      .finally(() => {
+        setRefreshCssClass("");
+      });
   };
 
   const handleTabClick = (event: React.MouseEvent<HTMLElement, MouseEvent>, tabIndex: React.ReactText) => {
@@ -104,25 +126,15 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
           <Page>
             <PageSection>
               <Tabs isFilled={true} activeKey={activeTab} onSelect={handleTabClick} isBox={true}>
-                <Tab eventKey={0} title={<TabTitleText>Test Development Environment</TabTitleText>}>
+                <Tab eventKey={0} id="test-tab" title={<TabTitleText>Test Development Environment</TabTitleText>}>
                   <PageSection variant={"light"}>
-                    {schemas && schemas.length > 0 && <ModelTester schemas={schemas} environment={"DEV"} />}
-                    {schemas && schemas.length === 0 && (
-                      <EmptyState variant={"small"} style={{ minHeight: "380px" }}>
-                        <EmptyStateIcon icon={ProjectDiagramIcon} />
-                        <Title headingLevel="h3" size="lg">
-                          Empty Model
-                        </Title>
-                        <EmptyStateBody>
-                          It seems there are no endpoints to test right now.
-                          <br />
-                          Go back editing the model.
-                        </EmptyStateBody>
-                      </EmptyState>
+                    {devSchemas && devSchemas.length > 0 && (
+                      <ModelTester schemas={devSchemas} baseUrl={config.development.openApi.url} />
                     )}
+                    {devSchemas && devSchemas.length === 0 && <EmptyModelMessage />}
                   </PageSection>
                 </Tab>
-                <Tab eventKey={1} title={<TabTitleText>Deploy to Production</TabTitleText>}>
+                <Tab eventKey={1} id="deploy-tab" title={<TabTitleText>Deploy to Production</TabTitleText>}>
                   <PageSection variant={"light"}>
                     <div className="test-and-deploy__deploy">
                       <Title headingLevel="h3" size="lg" className="test-and-deploy__title">
@@ -136,7 +148,9 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                           {!modelDeploy.deployed && !modelDeploy.waiting && <Label>Not deployed</Label>}
                           {modelDeploy.waiting && (
                             <span>
-                              <Label color="blue">Deployment in progress</Label>
+                              <Label color="blue" icon={<HourglassHalfIcon />}>
+                                Deployment in progress
+                              </Label>
                               <Button
                                 className="test-and-deploy__update-deploy-status"
                                 variant="plain"
@@ -148,7 +162,11 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                               </Button>
                             </span>
                           )}
-                          {modelDeploy.deployed && <em>Last published today at {modelDeploy.time}</em>}
+                          {modelDeploy.deployed && (
+                            <Label color={"green"} icon={<CheckCircleIcon />}>
+                              Deployed Successfully
+                            </Label>
+                          )}
                         </FlexItem>
                         <FlexItem align={{ default: "alignRight" }}>
                           <Button
@@ -163,7 +181,6 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                       </Flex>
                     </div>
                     <Divider />
-                    {schemas && modelDeploy.deployed && <ModelTester schemas={schemas} environment={"PROD"} />}
                     {!modelDeploy.deployed && (
                       <EmptyState variant={"small"}>
                         <EmptyStateIcon icon={ServerIcon} />
@@ -175,6 +192,10 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                         </EmptyStateBody>
                       </EmptyState>
                     )}
+                    {prodSchemas && prodSchemas.length > 0 && modelDeploy.deployed && (
+                      <ModelTester schemas={prodSchemas} baseUrl={prodUrl} />
+                    )}
+                    {prodSchemas && prodSchemas.length === 0 && modelDeploy.deployed && <EmptyModelMessage />}
                   </PageSection>
                 </Tab>
               </Tabs>
@@ -198,3 +219,5 @@ export interface ModelDeploy {
   waiting: boolean;
   time?: string;
 }
+
+export type Environment = "PROD" | "DEV";
