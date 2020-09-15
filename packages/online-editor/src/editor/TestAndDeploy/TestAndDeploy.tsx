@@ -24,6 +24,7 @@ import { config } from "../../config";
 import ModelTester from "../ModelTester/ModelTester";
 import EmptyModelMessage from "../EmptyModelMessage/EmptyModelMessage";
 import "./TestAndDeploy.scss";
+import { filterEndpoints } from "./filterEndpoints";
 
 interface TestAndDeployProps {
   showPanel: boolean;
@@ -49,17 +50,9 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const getOpenApiSpec = (environment: Environment) => {
     const endpoint = environment === "DEV" ? openApiDevUrl : openApiProdUrl;
     new SwaggerClient(endpoint).then((client: { spec: { paths: any } }) => {
-      const endpoints = [];
       const paths = client.spec.paths;
+      const endpoints = filterEndpoints(paths);
       console.log(paths);
-      for (const url in paths) {
-        if (paths.hasOwnProperty(url)) {
-          const schema = paths[url].post?.requestBody?.content["application/json"]?.schema;
-          if (schema) {
-            endpoints.push({ url: url, schema: schema });
-          }
-        }
-      }
       switch (environment) {
         case "DEV":
           setDevSchemas(endpoints);
@@ -207,6 +200,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
 export default TestAndDeploy;
 
 export interface Schema {
+  label: string;
   url: string;
   schema: any;
 }

@@ -35,10 +35,12 @@ const ModelTester = (props: ModelTesterProps) => {
   };
 
   const onEndpointSelect = (event: React.MouseEvent | React.ChangeEvent, selection: string) => {
-    setSelectedEndpoint(selection);
     setIsEndpointSelectOpen(false);
-    setResponsePayload(null);
-    setProcessedResponse({});
+    if (selection !== selectedEndpoint) {
+      setSelectedEndpoint(selection);
+      setResponsePayload(null);
+      setProcessedResponse({});
+    }
   };
 
   useEffect(() => {
@@ -116,7 +118,7 @@ const ModelTester = (props: ModelTesterProps) => {
           {schemas &&
             schemas.map((schema, index) => (
               <SelectOption key={index} value={schema.url}>
-                {schema.url.replace(/%20/g, " ")}
+                {schema.label}
               </SelectOption>
             ))}
         </Select>
