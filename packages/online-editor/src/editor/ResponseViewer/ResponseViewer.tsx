@@ -30,7 +30,7 @@ function renderData(object: { [index: string]: any }): JSX.Element {
   return <React.Fragment key={uuid()}>{renderItems}</React.Fragment>;
 }
 
-const isObjectOrArrayOfObjects = (item: unknown): boolean => {
+export const isObjectOrArrayOfObjects = (item: unknown): boolean => {
   return (
     (item !== null && typeof item === "object" && !Array.isArray(item)) ||
     (item !== null && Array.isArray(item) && item.length > 0 && typeof item[0] === "object")
@@ -77,14 +77,16 @@ interface ObjectPropertyProps {
   value: unknown;
 }
 
-const ObjectProperty = (props: ObjectPropertyProps) => {
+export const ObjectProperty = (props: ObjectPropertyProps) => {
   const { property, value } = props;
 
   return (
     <Split key={uuid()} className="response-viewer__property">
-      <SplitItem className="response-viewer__property__name" key="property-name">
-        {property}:
-      </SplitItem>
+      {property.length > 0 && (
+        <SplitItem className="response-viewer__property__name" key="property-name">
+          {property}:
+        </SplitItem>
+      )}
       <SplitItem className="response-viewer__property__value" key="property-value">
         <FormattedValue value={value} />
       </SplitItem>
