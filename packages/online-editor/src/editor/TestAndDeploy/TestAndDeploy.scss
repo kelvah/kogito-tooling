@@ -97,9 +97,16 @@
 }
 
 .test-and-deploy {
+  // removing outline is a bad thing but this is a PoC
   .pf-c-tab-content,
   .pf-c-tabs__link {
     outline: none;
+  }
+  // do not like growing tabs width uneven widths
+  .pf-c-tabs.pf-m-fill .pf-c-tabs__item {
+    flex-basis: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
   }
   .pf-c-divider {
     margin: var(--pf-global--spacer--xl) 0;
