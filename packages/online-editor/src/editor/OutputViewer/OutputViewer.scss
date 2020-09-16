@@ -1,0 +1,14 @@
+.output-viewer {
+  &__section {
+    margin-bottom: var(--pf-global--spacer--lg);
+    &__title {
+      margin-bottom: var(--pf-global--spacer--md);
+    }
+  }
+
+  // overriding bootstrap styles
+  .pf-c-alert__title {
+    font-size: 1em;
+    text-transform: capitalize;
+  }
+}

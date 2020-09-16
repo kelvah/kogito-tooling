@@ -5,14 +5,17 @@ import Form from "@rjsf/bootstrap-4";
 import {
   Grid,
   GridItem,
+  EmptyState,
+  EmptyStateIcon,
   Title,
   Select,
   SelectOption,
   SelectVariant,
-  SelectDirection,
-  Switch
+  SelectDirection
 } from "@patternfly/react-core";
-import ResponseViewer from "../ResponseViewer/ResponseViewer";
+import { EnvelopeIcon } from "@patternfly/react-icons";
+// import ResponseViewer from "../ResponseViewer/ResponseViewer";
+import OutputViewer from "../OutputViewer/OutputViewer";
 
 interface ModelTesterProps {
   schemas: Schema[];
@@ -48,7 +51,7 @@ const ModelTester = (props: ModelTesterProps) => {
       setSelectedEndpoint(schemas[0].url);
     }
     setRequestPayload({});
-    setResponsePayload({});
+    setResponsePayload(null);
   }, [schemas]);
 
   useEffect(() => {
@@ -139,28 +142,39 @@ const ModelTester = (props: ModelTesterProps) => {
             <Title headingLevel="h3" className="test-and-deploy__title">
               Response
             </Title>
-            <div className="response-box">
-              {responsePayload && (
-                <ResponseViewer
-                  source={
-                    Object.keys(processedResponse).length > 0 && hideInputsFromEndpointResponse
-                      ? processedResponse
-                      : responsePayload
-                  }
-                />
+            <div>
+              {responsePayload === null && (
+                <EmptyState variant={"small"}>
+                  <EmptyStateIcon icon={EnvelopeIcon} />
+                  <Title headingLevel="h3" size="lg">
+                    Waiting for a new request
+                  </Title>
+                </EmptyState>
               )}
             </div>
-            {responsePayload && Object.keys(processedResponse).length !== Object.keys(responsePayload).length && (
-              <div className="response-input-filter">
-                <Switch
-                  id="no-label-switch-on"
-                  aria-label="Message when on"
-                  isChecked={hideInputsFromEndpointResponse}
-                  label="Hide input parameters from response"
-                  onChange={() => setHideInputsFromEndpointResponse(!hideInputsFromEndpointResponse)}
-                />
-              </div>
-            )}
+            <div>{responsePayload && <OutputViewer responsePayload={responsePayload as ResponsePayload} />}</div>
+            {/*<div className="response-box">*/}
+            {/*  {responsePayload && (*/}
+            {/*    <ResponseViewer*/}
+            {/*      source={*/}
+            {/*        Object.keys(processedResponse).length > 0 && hideInputsFromEndpointResponse*/}
+            {/*          ? processedResponse*/}
+            {/*          : responsePayload*/}
+            {/*      }*/}
+            {/*    />*/}
+            {/*  )}*/}
+            {/*</div>*/}
+            {/*{responsePayload && Object.keys(processedResponse).length !== Object.keys(responsePayload).length && (*/}
+            {/*  <div className="response-input-filter">*/}
+            {/*    <Switch*/}
+            {/*      id="no-label-switch-on"*/}
+            {/*      aria-label="Message when on"*/}
+            {/*      isChecked={hideInputsFromEndpointResponse}*/}
+            {/*      label="Hide input parameters from response"*/}
+            {/*      onChange={() => setHideInputsFromEndpointResponse(!hideInputsFromEndpointResponse)}*/}
+            {/*    />*/}
+            {/*  </div>*/}
+            {/*)}*/}
           </div>
         </GridItem>
       </Grid>
@@ -169,3 +183,29 @@ const ModelTester = (props: ModelTesterProps) => {
 };
 
 export default ModelTester;
+
+export interface ResponsePayload {
+  namespace: string;
+  modelName: string;
+  dmnContext: unknown;
+  messages: ResponseMessage[];
+  decisionResults: DecisionResult[];
+}
+
+export interface DecisionResult {
+  decisionId: string;
+  decisionName: string;
+  result: unknown;
+  messages: ResponseMessage[];
+  evaluationStatus: EvaluationStatus;
+}
+
+export interface ResponseMessage {
+  severity: "WARN" | "ERR";
+  message: string;
+  messageType: string;
+  sourceId: string;
+  level: "WARNING" | "ERROR";
+}
+
+export type EvaluationStatus = "SUCCEEDED" | "FAILED";
