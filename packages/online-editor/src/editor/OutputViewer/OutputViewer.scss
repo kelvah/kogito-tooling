@@ -1,4 +1,18 @@
 .output-viewer {
+  width: 100%;
+  overflow: hidden;
+  &__content {
+    width: 200%;
+    transform: translateX(0);
+    transition: all 0.4s cubic-bezier(0.43, 0.29, 0.25, 1.07);
+    &--second-panel {
+      transform: translateX(-50%);
+    }
+    &__panel {
+      margin: 0 2px;
+    }
+  }
+
   &__section {
     margin-bottom: var(--pf-global--spacer--lg);
     &__title {
