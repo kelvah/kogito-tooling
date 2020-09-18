@@ -197,15 +197,23 @@ export interface DecisionResult {
   decisionName: string;
   result: unknown;
   messages: ResponseMessage[];
-  evaluationStatus: EvaluationStatus;
+  evaluationStatus: evaluationStatusStrings;
 }
 
 export interface ResponseMessage {
-  severity: "WARN" | "ERR";
+  severity: "WARN" | "ERROR" | "INFO";
   message: string;
   messageType: string;
   sourceId: string;
-  level: "WARNING" | "ERROR";
+  level: "WARNING" | "ERROR" | "INFO";
 }
 
-export type EvaluationStatus = "SUCCEEDED" | "FAILED";
+export enum evaluationStatus {
+  EVALUATING = "EVALUATING",
+  FAILED = "FAILED",
+  NOT_EVALUATED = "NOT EVALUATED",
+  SKIPPED = "SKIPPED",
+  SUCCEEDED = "SUCCEEDED"
+}
+
+export type evaluationStatusStrings = keyof typeof evaluationStatus;
