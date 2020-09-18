@@ -39,10 +39,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const [refreshCssClass, setRefreshCssClass] = useState("");
 
   const openApiDevUrl = config.development.openApi.url + config.development.openApi.specPath;
-  const prodUrl = config.development.publish.url.replace(
-    "el-daas-workflow",
-    config.development.publish.appName + "-daas-executor-native"
-  );
+  const prodUrl = config.development.openApi.url.replace("daas-executor", "daas-executor-native");
   const openApiProdUrl = prodUrl + "/openapi";
 
   useEffect(() => {
