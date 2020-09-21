@@ -16,6 +16,7 @@ import {
 import { EnvelopeIcon } from "@patternfly/react-icons";
 // import ResponseViewer from "../ResponseViewer/ResponseViewer";
 import OutputViewer from "../OutputViewer/OutputViewer";
+import useSaliencies from "../TestAndDeploy/useSaliencies";
 
 interface ModelTesterProps {
   schemas: Schema[];
@@ -30,8 +31,9 @@ const ModelTester = (props: ModelTesterProps) => {
   const [processedResponse, setProcessedResponse] = useState({});
   const [requestPayload, setRequestPayload] = useState({});
   const [requestBody, setRequestBody] = useState({});
-  const [responsePayload, setResponsePayload] = useState<{} | null>(null);
+  const [responsePayload, setResponsePayload] = useState<ResponsePayload | null>(null);
   const [hideInputsFromEndpointResponse, setHideInputsFromEndpointResponse] = useState(true);
+  const saliencies = useSaliencies(responsePayload);
 
   const onEndpointSelectToggle = (openStatus: boolean) => {
     setIsEndpointSelectOpen(openStatus);
@@ -100,6 +102,7 @@ const ModelTester = (props: ModelTesterProps) => {
       setProcessedResponse(withoutInputs);
     }
   }, [responsePayload]);
+
   return (
     <div>
       <div className="test-and-deploy__endpoint-selection">
@@ -152,7 +155,7 @@ const ModelTester = (props: ModelTesterProps) => {
                 </EmptyState>
               )}
             </div>
-            <div>{responsePayload && <OutputViewer responsePayload={responsePayload as ResponsePayload} />}</div>
+            <div>{responsePayload && <OutputViewer responsePayload={responsePayload} saliencies={saliencies} />}</div>
             {/*<div className="response-box">*/}
             {/*  {responsePayload && (*/}
             {/*    <ResponseViewer*/}

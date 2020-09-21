@@ -37,14 +37,18 @@ import ResponseViewer, { isObjectOrArrayOfObjects, ObjectProperty } from "../Res
 import "./OutputViewer.scss";
 import FeaturesScoreChart, { FeatureScores } from "../../FeaturesScoreChart/FeaturesScoreChart";
 import FeaturesScoreTable from "../../FeaturesScoreTable/FeaturesScoreTable";
+import { RemoteData, Saliencies } from "../TestAndDeploy/useSaliencies";
+import useFeaturesScores from "./useFeaturesScores";
 
 interface OutputViewerProps {
   responsePayload: ResponsePayload;
+  saliencies: RemoteData<Error, Saliencies>;
 }
 
-const OutputViewer = ({ responsePayload }: OutputViewerProps) => {
+const OutputViewer = ({ responsePayload, saliencies }: OutputViewerProps) => {
   const [viewSection, setViewSection] = useState(1);
   const [decisionDetail, setDecisionDetail] = useState<DecisionResult | null>(null);
+  const { featuresScores } = useFeaturesScores(saliencies, decisionDetail?.decisionId);
 
   const viewDecision = (decisionId: string) => {
     const decision = responsePayload.decisionResults.find(item => item.decisionId === decisionId);
@@ -53,47 +57,49 @@ const OutputViewer = ({ responsePayload }: OutputViewerProps) => {
       setViewSection(2);
     }
   };
+
   const backToResults = () => {
     setViewSection(1);
     setTimeout(() => {
       setDecisionDetail(null);
     }, 300);
   };
+
   useEffect(() => {
     setViewSection(1);
     setDecisionDetail(null);
   }, [responsePayload]);
 
-  const featureScores = [
-    {
-      featureName: "Age",
-      featureScore: -0.08937896629080377
-    },
-    {
-      featureName: "State",
-      featureScore: 0.21272743757961554
-    },
-    {
-      featureName: "Points",
-      featureScore: 0.23272743757961554
-    },
-    {
-      featureName: "City",
-      featureScore: 0.6780527129423648
-    },
-    {
-      featureName: "Code",
-      featureScore: 0.7033802543201365
-    },
-    {
-      featureName: "Speed Limit",
-      featureScore: 0.7693802543201365
-    },
-    {
-      featureName: "Actual Speed",
-      featureScore: -0.9240811677386516
-    }
-  ] as FeatureScores[];
+  // const featuresScoresDemo = [
+  //   {
+  //     featureName: "Age",
+  //     featureScore: -0.08937896629080377
+  //   },
+  //   {
+  //     featureName: "State",
+  //     featureScore: 0.21272743757961554
+  //   },
+  //   {
+  //     featureName: "Points",
+  //     featureScore: 0.23272743757961554
+  //   },
+  //   {
+  //     featureName: "City",
+  //     featureScore: -0.6780527129423648
+  //   },
+  //   {
+  //     featureName: "Code",
+  //     featureScore: 0.7033802543201365
+  //   },
+  //   {
+  //     featureName: "Speed Limit",
+  //     featureScore: 0.7693802543201365
+  //   },
+  //   {
+  //     featureName: "Actual Speed",
+  //     featureScore: -0.9240811677386516
+  //   }
+  // ] as FeatureScores[];
 
   return (
     <section className="output-viewer">
@@ -203,7 +209,7 @@ const OutputViewer = ({ responsePayload }: OutputViewerProps) => {
                       <StackItem>
                         <Card isCompact={true} isFlat={true}>
                           <CardTitle>
-                            Explanation Chart{" "}
+                            Features Scores Chart{" "}
                             <Tooltip
                               position="top"
                               content={
@@ -216,14 +222,14 @@ const OutputViewer = ({ responsePayload }: OutputViewerProps) => {
                               <OutlinedQuestionCircleIcon style={{ color: "var(--pf-global--primary-color--100)" }} />
                             </Tooltip>
                           </CardTitle>
-                          <FeaturesScoreChart featuresScore={featureScores} />
+                          <FeaturesScoreChart featuresScore={featuresScores} />
                         </Card>
                       </StackItem>
                       <StackItem>
                         <Card isCompact={true} isFlat={true}>
-                          <CardTitle>Explanation Scores</CardTitle>
+                          <CardTitle>Features Scores List</CardTitle>
                           <CardBody>
-                            <FeaturesScoreTable featuresScore={featureScores} />
+                            <FeaturesScoreTable featuresScore={featuresScores} />
                           </CardBody>
                         </Card>
                       </StackItem>

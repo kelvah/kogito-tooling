@@ -25,6 +25,9 @@ export const config = {
       url: "http://localhost:8080",
       specPath: "/openapi"
     },
+    explainability: {
+      url: "http://localhost:9500/explainability"
+    },
     publish: {
       url: "http://el-daas-workflow-kiegroup.apps-crc.testing",
       appName: "dmn-quarkus-example",
