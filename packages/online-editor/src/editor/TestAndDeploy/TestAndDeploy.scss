@@ -89,24 +89,21 @@
   -webkit-overflow-scrolling: touch;
 }
 
-@media only screen and (min-width: 768px) {
-  .cd-panel__content p {
-    font-size: 1.6rem;
-    line-height: 1.6;
-  }
-}
-
 .test-and-deploy {
   // removing outline is a bad thing but this is a PoC
   .pf-c-tab-content,
   .pf-c-tabs__link {
     outline: none;
   }
-  // do not like growing tabs width uneven widths
+  // tabs width uneven widths are evil
   .pf-c-tabs.pf-m-fill .pf-c-tabs__item {
     flex-basis: 100%;
     flex-grow: 1;
     flex-shrink: 1;
+  }
+  // overriding bootstrap
+  a {
+    color: var(--pf-c-button--m-link--Color);
   }
   .pf-c-divider {
     margin: var(--pf-global--spacer--xl) 0;

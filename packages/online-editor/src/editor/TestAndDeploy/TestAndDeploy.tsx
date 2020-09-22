@@ -119,7 +119,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                 <Tab eventKey={0} id="test-tab" title={<TabTitleText>Test Development Environment</TabTitleText>}>
                   <PageSection variant={"light"}>
                     {devSchemas && devSchemas.length > 0 && (
-                      <ModelTester schemas={devSchemas} baseUrl={config.development.openApi.url} />
+                      <ModelTester schemas={devSchemas} baseUrl={config.development.openApi.url} environment="DEV" />
                     )}
                     {devSchemas && devSchemas.length === 0 && <EmptyModelMessage />}
                   </PageSection>
@@ -183,7 +183,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                       </EmptyState>
                     )}
                     {prodSchemas && prodSchemas.length > 0 && modelDeploy.deployed && (
-                      <ModelTester schemas={prodSchemas} baseUrl={prodUrl} />
+                      <ModelTester schemas={prodSchemas} baseUrl={prodUrl} environment="PROD" />
                     )}
                     {prodSchemas && prodSchemas.length === 0 && modelDeploy.deployed && <EmptyModelMessage />}
                   </PageSection>

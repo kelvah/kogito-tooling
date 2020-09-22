@@ -26,7 +26,8 @@ export const config = {
       specPath: "/openapi"
     },
     explainability: {
-      url: "http://localhost:9500/explainability"
+      serviceUrl: "http://localhost:9500/explainability",
+      auditUIUrl: "http://someurl.com"
     },
     publish: {
       url: "http://el-daas-workflow-kiegroup.apps-crc.testing",

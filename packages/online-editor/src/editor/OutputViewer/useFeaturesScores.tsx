@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { orderBy, find } from "lodash";
 import { FeatureScores, RemoteData, Saliencies } from "../TestAndDeploy/useSaliencies";
 
-const useFeaturesScores = (saliencies: RemoteData<Error, Saliencies>, outcomeId: string | undefined) => {
+const useFeaturesScores = (saliencies: RemoteData<Error, Saliencies>, outcomeName: string | undefined) => {
   const [featuresScores, setFeaturesScores] = useState<FeatureScores[]>([]);
   const [topFeaturesScores, setTopFeaturesScores] = useState<FeatureScores[]>([]);
 
   useEffect(() => {
-    if (saliencies.status === "SUCCESS" && outcomeId) {
+    if (saliencies.status === "SUCCESS" && outcomeName) {
       if (saliencies.data.status === "SUCCEEDED") {
         const selectedExplanation = find(saliencies.data.saliencies, saliency => {
-          return saliency.outcomeId === outcomeId;
+          return saliency.outcomeName === outcomeName;
         });
 
         if (selectedExplanation) {
@@ -26,7 +26,7 @@ const useFeaturesScores = (saliencies: RemoteData<Error, Saliencies>, outcomeId:
         }
       }
     }
-  }, [saliencies, outcomeId]);
+  }, [saliencies, outcomeName]);
 
   return { featuresScores, topFeaturesScores };
 };
