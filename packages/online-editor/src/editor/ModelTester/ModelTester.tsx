@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Schema } from "../TestAndDeploy/TestAndDeploy";
+import { Environment, Schema } from "../TestAndDeploy/TestAndDeploy";
 import { useEffect, useState } from "react";
 import Form from "@rjsf/bootstrap-4";
 import {
@@ -21,10 +21,11 @@ import useSaliencies from "../TestAndDeploy/useSaliencies";
 interface ModelTesterProps {
   schemas: Schema[];
   baseUrl: string;
+  environment: Environment;
 }
 
 const ModelTester = (props: ModelTesterProps) => {
-  const { schemas, baseUrl } = props;
+  const { schemas, baseUrl, environment } = props;
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>();
   const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
   const [selectedSchema, setSelectedSchema] = useState<{}>();
@@ -33,7 +34,7 @@ const ModelTester = (props: ModelTesterProps) => {
   const [requestBody, setRequestBody] = useState({});
   const [responsePayload, setResponsePayload] = useState<ResponsePayload | null>(null);
   const [hideInputsFromEndpointResponse, setHideInputsFromEndpointResponse] = useState(true);
-  const saliencies = useSaliencies(responsePayload);
+  const saliencies = useSaliencies(responsePayload, baseUrl);
 
   const onEndpointSelectToggle = (openStatus: boolean) => {
     setIsEndpointSelectOpen(openStatus);
@@ -155,7 +156,11 @@ const ModelTester = (props: ModelTesterProps) => {
                 </EmptyState>
               )}
             </div>
-            <div>{responsePayload && <OutputViewer responsePayload={responsePayload} saliencies={saliencies} />}</div>
+            <div>
+              {responsePayload && (
+                <OutputViewer responsePayload={responsePayload} saliencies={saliencies} environment={environment} />
+              )}
+            </div>
             {/*<div className="response-box">*/}
             {/*  {responsePayload && (*/}
             {/*    <ResponseViewer*/}
@@ -190,7 +195,7 @@ export default ModelTester;
 export interface ResponsePayload {
   namespace: string;
   modelName: string;
-  dmnContext: unknown;
+  dmnContext: object;
   messages: ResponseMessage[];
   decisionResults: DecisionResult[];
 }

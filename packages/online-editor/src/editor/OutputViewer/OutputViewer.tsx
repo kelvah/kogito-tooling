@@ -8,26 +8,27 @@ import {
   Badge,
   Button,
   Card,
-  CardTitle,
   CardBody,
   CardFooter,
+  CardTitle,
   Flex,
   FlexItem,
-  Label,
-  LabelProps,
   Grid,
   GridItem,
+  Label,
+  LabelProps,
   Stack,
   StackItem,
   Title,
   Tooltip
 } from "@patternfly/react-core";
 import {
-  ArrowRightIcon,
   ArrowLeftIcon,
+  ArrowRightIcon,
   CheckCircleIcon,
   EnvelopeIcon,
   ErrorCircleOIcon,
+  ExternalLinkSquareAltIcon,
   FastForwardIcon,
   HourglassHalfIcon,
   MinusCircleIcon,
@@ -35,20 +36,23 @@ import {
 } from "@patternfly/react-icons";
 import ResponseViewer, { isObjectOrArrayOfObjects, ObjectProperty } from "../ResponseViewer/ResponseViewer";
 import "./OutputViewer.scss";
-import FeaturesScoreChart, { FeatureScores } from "../../FeaturesScoreChart/FeaturesScoreChart";
+import FeaturesScoreChart from "../../FeaturesScoreChart/FeaturesScoreChart";
 import FeaturesScoreTable from "../../FeaturesScoreTable/FeaturesScoreTable";
 import { RemoteData, Saliencies } from "../TestAndDeploy/useSaliencies";
 import useFeaturesScores from "./useFeaturesScores";
+import { Environment } from "../TestAndDeploy/TestAndDeploy";
+import { config } from "../../config";
 
 interface OutputViewerProps {
   responsePayload: ResponsePayload;
   saliencies: RemoteData<Error, Saliencies>;
+  environment: Environment;
 }
 
-const OutputViewer = ({ responsePayload, saliencies }: OutputViewerProps) => {
+const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewerProps) => {
   const [viewSection, setViewSection] = useState(1);
   const [decisionDetail, setDecisionDetail] = useState<DecisionResult | null>(null);
-  const { featuresScores } = useFeaturesScores(saliencies, decisionDetail?.decisionId);
+  const { featuresScores, topFeaturesScores } = useFeaturesScores(saliencies, decisionDetail?.decisionName);
 
   const viewDecision = (decisionId: string) => {
     const decision = responsePayload.decisionResults.find(item => item.decisionId === decisionId);
@@ -205,35 +209,57 @@ const OutputViewer = ({ responsePayload, saliencies }: OutputViewerProps) => {
                     <Title headingLevel="h4" className="output-viewer__section__title">
                       Explanation
                     </Title>
-                    <Stack hasGutter={true}>
-                      <StackItem>
-                        <Card isCompact={true} isFlat={true}>
-                          <CardTitle>
-                            Features Scores Chart{" "}
-                            <Tooltip
-                              position="top"
-                              content={
-                                <div>
-                                  The explanation chart displays each input influencing the decision result, with a
-                                  positive or negative score.
-                                </div>
-                              }
-                            >
-                              <OutlinedQuestionCircleIcon style={{ color: "var(--pf-global--primary-color--100)" }} />
-                            </Tooltip>
-                          </CardTitle>
-                          <FeaturesScoreChart featuresScore={featuresScores} />
-                        </Card>
-                      </StackItem>
-                      <StackItem>
-                        <Card isCompact={true} isFlat={true}>
-                          <CardTitle>Features Scores List</CardTitle>
-                          <CardBody>
-                            <FeaturesScoreTable featuresScore={featuresScores} />
-                          </CardBody>
-                        </Card>
-                      </StackItem>
-                    </Stack>
+                    {environment === "DEV" && (
+                      <Stack hasGutter={true}>
+                        <StackItem>
+                          <Card isCompact={true} isFlat={true}>
+                            <CardTitle>
+                              Features Scores Chart{" "}
+                              <Tooltip
+                                position="top"
+                                content={
+                                  <div>
+                                    The explanation chart displays each input influencing the decision result, with a
+                                    positive or negative score.
+                                  </div>
+                                }
+                              >
+                                <OutlinedQuestionCircleIcon style={{ color: "var(--pf-global--primary-color--100)" }} />
+                              </Tooltip>
+                            </CardTitle>
+                            <FeaturesScoreChart
+                              featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
+                            />
+                          </Card>
+                        </StackItem>
+                        <StackItem>
+                          <Card isCompact={true} isFlat={true}>
+                            <CardTitle>Features Scores List</CardTitle>
+                            <CardBody>
+                              <FeaturesScoreTable
+                                featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
+                              />
+                            </CardBody>
+                          </Card>
+                        </StackItem>
+                      </Stack>
+                    )}
+                    {environment === "PROD" && (
+                      <p>
+                        Visit the{" "}
+                        <Button
+                          variant="link"
+                          icon={<ExternalLinkSquareAltIcon />}
+                          iconPosition="right"
+                          isInline={true}
+                        >
+                          <a href={config.development.explainability.auditUIUrl} target="_blank">
+                            Audit Investigation Console
+                          </a>
+                        </Button>{" "}
+                        to retrieve explanations for model executions.
+                      </p>
+                    )}
                   </div>
                 </>
               )}
