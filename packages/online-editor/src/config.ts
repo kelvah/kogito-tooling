@@ -26,7 +26,7 @@ export const config = {
       specPath: "/openapi"
     },
     explainability: {
-      serviceUrl: "http://localhost:9500/explainability",
+      serviceUrl: "http://localhost:8081/explanations/saliencies",
       auditUIUrl: "http://someurl.com"
     },
     publish: {
