@@ -86,6 +86,6 @@ export interface Saliency {
 }
 export interface Saliencies {
   status: "SUCCEEDED" | "FAILED";
-  statusDetail: string;
+  statusDetails: string;
   saliencies: Saliency[];
 }
