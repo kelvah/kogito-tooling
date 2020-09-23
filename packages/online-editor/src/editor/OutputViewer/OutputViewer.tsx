@@ -11,6 +11,9 @@ import {
   CardBody,
   CardFooter,
   CardTitle,
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateIcon,
   Flex,
   FlexItem,
   Grid,
@@ -28,6 +31,7 @@ import {
   CheckCircleIcon,
   EnvelopeIcon,
   ErrorCircleOIcon,
+  ExclamationTriangleIcon,
   ExternalLinkSquareAltIcon,
   FastForwardIcon,
   HourglassHalfIcon,
@@ -211,37 +215,64 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
                     </Title>
                     {environment === "DEV" && (
                       <Stack hasGutter={true}>
-                        <StackItem>
-                          <Card isCompact={true} isFlat={true}>
-                            <CardTitle>
-                              Features Scores Chart{" "}
-                              <Tooltip
-                                position="top"
-                                content={
-                                  <div>
-                                    The explanation chart displays each input influencing the decision result, with a
-                                    positive or negative score.
-                                  </div>
-                                }
-                              >
-                                <OutlinedQuestionCircleIcon style={{ color: "var(--pf-global--primary-color--100)" }} />
-                              </Tooltip>
-                            </CardTitle>
-                            <FeaturesScoreChart
-                              featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
-                            />
-                          </Card>
-                        </StackItem>
-                        <StackItem>
-                          <Card isCompact={true} isFlat={true}>
-                            <CardTitle>Features Scores List</CardTitle>
-                            <CardBody>
-                              <FeaturesScoreTable
-                                featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
-                              />
-                            </CardBody>
-                          </Card>
-                        </StackItem>
+                        {saliencies.status === "SUCCESS" && saliencies.data.status === "SUCCEEDED" && (
+                          <>
+                            <StackItem>
+                              <Card isCompact={true} isFlat={true}>
+                                <CardTitle>
+                                  Features Scores Chart{" "}
+                                  <Tooltip
+                                    position="top"
+                                    content={
+                                      <div>
+                                        The explanation chart displays each input influencing the decision result, with
+                                        a positive or negative score.
+                                      </div>
+                                    }
+                                  >
+                                    <OutlinedQuestionCircleIcon
+                                      style={{ color: "var(--pf-global--primary-color--100)" }}
+                                    />
+                                  </Tooltip>
+                                </CardTitle>
+                                <FeaturesScoreChart
+                                  featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
+                                />
+                              </Card>
+                            </StackItem>
+                            <StackItem>
+                              <Card isCompact={true} isFlat={true}>
+                                <CardTitle>Features Scores List</CardTitle>
+                                <CardBody>
+                                  <FeaturesScoreTable
+                                    featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
+                                  />
+                                </CardBody>
+                              </Card>
+                            </StackItem>
+                          </>
+                        )}
+                        {saliencies.status === "SUCCESS" && saliencies.data.status === "FAILED" && (
+                          <StackItem>
+                            <Card isCompact={true} isFlat={true}>
+                              <EmptyState variant={"small"} style={{ minHeight: "300px" }}>
+                                <EmptyStateIcon icon={ExclamationTriangleIcon} color={"#F0AB00"} />
+                                <Title headingLevel="h3" size="lg">
+                                  Explanation Error
+                                </Title>
+                                <EmptyStateBody>
+                                  <p>There was an error calculating explanation information for this execution.</p>
+                                  {saliencies.data.statusDetails && (
+                                    <p>
+                                      Error Message:{" "}
+                                      <span className="explanation-error-detail">{saliencies.data.statusDetails}</span>
+                                    </p>
+                                  )}
+                                </EmptyStateBody>
+                              </EmptyState>
+                            </Card>
+                          </StackItem>
+                        )}
                       </Stack>
                     )}
                     {environment === "PROD" && (
