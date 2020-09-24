@@ -108,6 +108,11 @@
   .pf-c-divider {
     margin: var(--pf-global--spacer--xl) 0;
   }
+  .pf-c-alert__title {
+    font-size: 1em;
+    text-transform: capitalize;
+  }
+
   &__title {
     margin-bottom: var(--pf-global--spacer--md);
   }

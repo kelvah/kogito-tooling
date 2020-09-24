@@ -11,9 +11,6 @@ import {
   CardBody,
   CardFooter,
   CardTitle,
-  EmptyState,
-  EmptyStateBody,
-  EmptyStateIcon,
   Flex,
   FlexItem,
   Grid,
@@ -31,7 +28,6 @@ import {
   CheckCircleIcon,
   EnvelopeIcon,
   ErrorCircleOIcon,
-  ExclamationTriangleIcon,
   ExternalLinkSquareAltIcon,
   FastForwardIcon,
   HourglassHalfIcon,
@@ -77,37 +73,6 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
     setViewSection(1);
     setDecisionDetail(null);
   }, [responsePayload]);
-
-  // const featuresScoresDemo = [
-  //   {
-  //     featureName: "Age",
-  //     featureScore: -0.08937896629080377
-  //   },
-  //   {
-  //     featureName: "State",
-  //     featureScore: 0.21272743757961554
-  //   },
-  //   {
-  //     featureName: "Points",
-  //     featureScore: 0.23272743757961554
-  //   },
-  //   {
-  //     featureName: "City",
-  //     featureScore: -0.6780527129423648
-  //   },
-  //   {
-  //     featureName: "Code",
-  //     featureScore: 0.7033802543201365
-  //   },
-  //   {
-  //     featureName: "Speed Limit",
-  //     featureScore: 0.7693802543201365
-  //   },
-  //   {
-  //     featureName: "Actual Speed",
-  //     featureScore: -0.9240811677386516
-  //   }
-  // ] as FeatureScores[];
 
   return (
     <section className="output-viewer">
@@ -254,23 +219,16 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
                         )}
                         {saliencies.status === "SUCCESS" && saliencies.data.status === "FAILED" && (
                           <StackItem>
-                            <Card isCompact={true} isFlat={true}>
-                              <EmptyState variant={"small"} style={{ minHeight: "300px" }}>
-                                <EmptyStateIcon icon={ExclamationTriangleIcon} color={"#F0AB00"} />
-                                <Title headingLevel="h3" size="lg">
-                                  Explanation Error
-                                </Title>
-                                <EmptyStateBody>
-                                  <p>There was an error calculating explanation information for this execution.</p>
-                                  {saliencies.data.statusDetails && (
-                                    <p>
-                                      Error Message:{" "}
-                                      <span className="explanation-error-detail">{saliencies.data.statusDetails}</span>
-                                    </p>
-                                  )}
-                                </EmptyStateBody>
-                              </EmptyState>
-                            </Card>
+                            <Alert isInline={true} variant="warning" title="Explanation Error">
+                              <p>There was an error calculating explanation information for this request.</p>
+                              {saliencies.data.statusDetails && (
+                                <p>
+                                  Error Message:
+                                  <br />
+                                  <span className="explanation-error-detail">{saliencies.data.statusDetails}</span>
+                                </p>
+                              )}
+                            </Alert>
                           </StackItem>
                         )}
                       </Stack>
