@@ -34,8 +34,8 @@ interface TestAndDeployProps {
 const TestAndDeploy = (props: TestAndDeployProps) => {
   const { showPanel, lastSave } = props;
   const [activeTab, setActiveTab] = useState<React.ReactText>(0);
-  const [devSchemas, setDevSchemas] = useState<Schema[]>();
-  const [prodSchemas, setProdSchemas] = useState<Schema[]>();
+  const [devSchemas, setDevSchemas] = useState<Schema[] | null>(null);
+  const [prodSchemas, setProdSchemas] = useState<Schema[] | null>(null);
   const [modelDeploy, setModelDeploy] = useState<ModelDeploy>({ deployed: false, waiting: false });
   const [refreshCssClass, setRefreshCssClass] = useState("");
 
@@ -45,6 +45,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
 
   useEffect(() => {
     getOpenApiSpec("DEV");
+    getOpenApiSpec("PROD");
   }, []);
 
   const getOpenApiSpec = (environment: Environment) => {
@@ -59,6 +60,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
           break;
         case "PROD":
           setProdSchemas(endpoints);
+          setModelDeploy({ deployed: true, waiting: false });
       }
     });
   };
@@ -70,7 +72,6 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   }, [lastSave]);
 
   const handleDeploy = () => {
-    setModelDeploy({ deployed: false, waiting: true });
     fetch(config.development.publish.url, {
       headers: {
         Accept: "application/json, text/plain",
@@ -82,8 +83,11 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
       }),
       method: "POST",
       mode: "cors"
-    }).then(() => {
-      setModelDeploy({ deployed: false, waiting: true });
+    }).then(response => {
+      if (response.ok) {
+        setProdSchemas(null);
+        setModelDeploy({ deployed: false, waiting: true });
+      }
     });
   };
 
@@ -100,7 +104,6 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
       .then(response => {
         if (response.ok) {
           getOpenApiSpec("PROD");
-          setModelDeploy({ deployed: true, waiting: false });
         }
       })
       .finally(() => {
@@ -111,6 +114,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const handleTabClick = (event: React.MouseEvent<HTMLElement, MouseEvent>, tabIndex: React.ReactText) => {
     setActiveTab(tabIndex);
   };
+
   return (
     <div className={`cd-panel cd-panel--from-right js-cd-panel-main ${showPanel ? "cd-panel--is-visible" : ""}`}>
       <div className="cd-panel__container">
@@ -120,10 +124,10 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
               <Tabs isFilled={true} activeKey={activeTab} onSelect={handleTabClick} isBox={true}>
                 <Tab eventKey={0} id="test-tab" title={<TabTitleText>Test Development Environment</TabTitleText>}>
                   <PageSection variant={"light"}>
-                    {devSchemas && devSchemas.length > 0 && (
+                    {devSchemas !== null && devSchemas.length > 0 && (
                       <ModelTester schemas={devSchemas} baseUrl={config.development.openApi.url} environment="DEV" />
                     )}
-                    {devSchemas && devSchemas.length === 0 && <EmptyModelMessage />}
+                    {devSchemas !== null && devSchemas.length === 0 && <EmptyModelMessage />}
                   </PageSection>
                 </Tab>
                 <Tab eventKey={1} id="deploy-tab" title={<TabTitleText>Deploy to Production</TabTitleText>}>
@@ -173,7 +177,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                       </Flex>
                     </div>
                     <Divider />
-                    {!modelDeploy.deployed && (
+                    {!modelDeploy.deployed && !modelDeploy.waiting && prodSchemas === null && (
                       <EmptyState variant={"small"}>
                         <EmptyStateIcon icon={ServerIcon} />
                         <Title headingLevel="h3" size="lg">
@@ -184,10 +188,21 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                         </EmptyStateBody>
                       </EmptyState>
                     )}
-                    {prodSchemas && prodSchemas.length > 0 && modelDeploy.deployed && (
+                    {modelDeploy.waiting && prodSchemas === null && (
+                      <EmptyState variant={"small"}>
+                        <EmptyStateIcon icon={ServerIcon} />
+                        <Title headingLevel="h3" size="lg">
+                          Model not ready
+                        </Title>
+                        <EmptyStateBody>
+                          You will be able to execute the model when the deployment will be complete.
+                        </EmptyStateBody>
+                      </EmptyState>
+                    )}
+                    {prodSchemas !== null && prodSchemas.length > 0 && (
                       <ModelTester schemas={prodSchemas} baseUrl={prodUrl} environment="PROD" />
                     )}
-                    {prodSchemas && prodSchemas.length === 0 && modelDeploy.deployed && <EmptyModelMessage />}
+                    {prodSchemas !== null && prodSchemas.length === 0 && modelDeploy.deployed && <EmptyModelMessage />}
                   </PageSection>
                 </Tab>
               </Tabs>
