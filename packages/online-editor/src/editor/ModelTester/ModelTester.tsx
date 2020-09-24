@@ -3,6 +3,7 @@ import { Environment, Schema } from "../TestAndDeploy/TestAndDeploy";
 import { useEffect, useState } from "react";
 import Form from "@rjsf/bootstrap-4";
 import {
+  Alert,
   Grid,
   GridItem,
   EmptyState,
@@ -14,9 +15,8 @@ import {
   SelectDirection
 } from "@patternfly/react-core";
 import { EnvelopeIcon } from "@patternfly/react-icons";
-// import ResponseViewer from "../ResponseViewer/ResponseViewer";
 import OutputViewer from "../OutputViewer/OutputViewer";
-import useSaliencies from "../TestAndDeploy/useSaliencies";
+import useSaliencies, { RemoteData } from "../TestAndDeploy/useSaliencies";
 
 interface ModelTesterProps {
   schemas: Schema[];
@@ -29,11 +29,8 @@ const ModelTester = (props: ModelTesterProps) => {
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>();
   const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
   const [selectedSchema, setSelectedSchema] = useState<{}>();
-  const [processedResponse, setProcessedResponse] = useState({});
   const [requestPayload, setRequestPayload] = useState({});
-  const [requestBody, setRequestBody] = useState({});
-  const [responsePayload, setResponsePayload] = useState<ResponsePayload | null>(null);
-  const [hideInputsFromEndpointResponse, setHideInputsFromEndpointResponse] = useState(true);
+  const [responsePayload, setResponsePayload] = useState<RemoteData<Error, ResponsePayload>>({ status: "NOT_ASKED" });
   const saliencies = useSaliencies(responsePayload, baseUrl);
 
   const onEndpointSelectToggle = (openStatus: boolean) => {
@@ -44,8 +41,7 @@ const ModelTester = (props: ModelTesterProps) => {
     setIsEndpointSelectOpen(false);
     if (selection !== selectedEndpoint) {
       setSelectedEndpoint(selection);
-      setResponsePayload(null);
-      setProcessedResponse({});
+      setResponsePayload({ status: "NOT_ASKED" });
     }
   };
 
@@ -54,7 +50,7 @@ const ModelTester = (props: ModelTesterProps) => {
       setSelectedEndpoint(schemas[0].url);
     }
     setRequestPayload({});
-    setResponsePayload(null);
+    setResponsePayload({ status: "NOT_ASKED" });
   }, [schemas]);
 
   useEffect(() => {
@@ -69,9 +65,7 @@ const ModelTester = (props: ModelTesterProps) => {
     setRequestPayload(formData);
 
     if (selectedEndpoint) {
-      setRequestBody(formData);
-      setResponsePayload(null);
-      setProcessedResponse({});
+      setResponsePayload({ status: "LOADING" });
       fetch(baseUrl + selectedEndpoint, {
         headers: {
           Accept: "application/json, text/plain",
@@ -82,27 +76,20 @@ const ModelTester = (props: ModelTesterProps) => {
         mode: "cors"
       })
         .then(response => {
-          return response.json();
+          return response.json().then(text => ({
+            json: text,
+            meta: response
+          }));
         })
         .then(data => {
-          console.log(data);
-          setResponsePayload(data);
+          if (data.meta.ok) {
+            setResponsePayload({ status: "SUCCESS", data: data.json });
+          } else {
+            setResponsePayload({ status: "FAILURE", error: data.json?.details });
+          }
         });
     }
   };
-
-  useEffect(() => {
-    if (responsePayload && requestBody) {
-      const keys = Object.keys(requestBody);
-      const withoutInputs: { [key: string]: any } = Object.assign({}, responsePayload);
-      for (const key in withoutInputs) {
-        if (keys.includes(key)) {
-          delete withoutInputs[key];
-        }
-      }
-      setProcessedResponse(withoutInputs);
-    }
-  }, [responsePayload]);
 
   return (
     <div>
@@ -146,43 +133,27 @@ const ModelTester = (props: ModelTesterProps) => {
             <Title headingLevel="h3" className="test-and-deploy__title">
               Response
             </Title>
-            <div>
-              {responsePayload === null && (
-                <EmptyState variant={"small"}>
-                  <EmptyStateIcon icon={EnvelopeIcon} />
-                  <Title headingLevel="h3" size="lg">
-                    Waiting for a new request
-                  </Title>
-                </EmptyState>
-              )}
-            </div>
-            <div>
-              {responsePayload && (
-                <OutputViewer responsePayload={responsePayload} saliencies={saliencies} environment={environment} />
-              )}
-            </div>
-            {/*<div className="response-box">*/}
-            {/*  {responsePayload && (*/}
-            {/*    <ResponseViewer*/}
-            {/*      source={*/}
-            {/*        Object.keys(processedResponse).length > 0 && hideInputsFromEndpointResponse*/}
-            {/*          ? processedResponse*/}
-            {/*          : responsePayload*/}
-            {/*      }*/}
-            {/*    />*/}
-            {/*  )}*/}
-            {/*</div>*/}
-            {/*{responsePayload && Object.keys(processedResponse).length !== Object.keys(responsePayload).length && (*/}
-            {/*  <div className="response-input-filter">*/}
-            {/*    <Switch*/}
-            {/*      id="no-label-switch-on"*/}
-            {/*      aria-label="Message when on"*/}
-            {/*      isChecked={hideInputsFromEndpointResponse}*/}
-            {/*      label="Hide input parameters from response"*/}
-            {/*      onChange={() => setHideInputsFromEndpointResponse(!hideInputsFromEndpointResponse)}*/}
-            {/*    />*/}
-            {/*  </div>*/}
-            {/*)}*/}
+            {responsePayload.status === "NOT_ASKED" && (
+              <EmptyState variant={"small"}>
+                <EmptyStateIcon icon={EnvelopeIcon} />
+                <Title headingLevel="h3" size="lg">
+                  Waiting for a new request
+                </Title>
+              </EmptyState>
+            )}
+            {responsePayload.status === "SUCCESS" && (
+              <OutputViewer responsePayload={responsePayload.data} saliencies={saliencies} environment={environment} />
+            )}
+            {responsePayload.status === "FAILURE" && (
+              <Alert isInline={true} variant="warning" title="The request produced an error">
+                {responsePayload.error && (
+                  <p>
+                    Message:
+                    <br /> {responsePayload.error}
+                  </p>
+                )}
+              </Alert>
+            )}
           </div>
         </GridItem>
       </Grid>

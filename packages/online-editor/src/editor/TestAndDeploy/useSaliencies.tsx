@@ -3,7 +3,7 @@ import { omit, pick } from "lodash";
 import { config } from "../../config";
 import { ResponsePayload } from "../ModelTester/ModelTester";
 
-const useSaliencies = (modelTestResponse: ResponsePayload | null, baseUrl: string) => {
+const useSaliencies = (modelTestResponse: RemoteData<Error, ResponsePayload>, baseUrl: string) => {
   const [saliencies, setSaliencies] = useState<RemoteData<Error, Saliencies>>({
     status: "NOT_ASKED"
   });
@@ -26,7 +26,7 @@ const useSaliencies = (modelTestResponse: ResponsePayload | null, baseUrl: strin
 
   useEffect(() => {
     let isMounted = true;
-    if (modelTestResponse) {
+    if (modelTestResponse.status === "SUCCESS") {
       setSaliencies({ status: "LOADING" });
       fetch(config.development.explainability.serviceUrl, {
         headers: {
@@ -37,10 +37,10 @@ const useSaliencies = (modelTestResponse: ResponsePayload | null, baseUrl: strin
           serviceUrl: baseUrl,
           modelIdentifier: {
             resourceType: "dmn",
-            resourceId: `${modelTestResponse.namespace}:${modelTestResponse.modelName}`
+            resourceId: `${modelTestResponse.data.namespace}:${modelTestResponse.data.modelName}`
           },
-          inputs: contextFilter(modelTestResponse, "inputs"),
-          outputs: contextFilter(modelTestResponse, "outputs")
+          inputs: contextFilter(modelTestResponse.data, "inputs"),
+          outputs: contextFilter(modelTestResponse.data, "outputs")
         }),
         method: "POST",
         mode: "cors"
