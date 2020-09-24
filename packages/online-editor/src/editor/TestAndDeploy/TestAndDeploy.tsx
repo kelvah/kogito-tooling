@@ -49,7 +49,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
 
   const getOpenApiSpec = (environment: Environment) => {
     const endpoint = environment === "DEV" ? openApiDevUrl : openApiProdUrl;
-    new SwaggerClient(endpoint).then((client: { spec: { paths: any } }) => {
+    SwaggerClient(endpoint).then((client: { spec: { paths: any } }) => {
       const paths = client.spec.paths;
       const endpoints = filterEndpoints(paths);
       console.log(paths);
@@ -97,9 +97,11 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
       method: "GET",
       mode: "cors"
     })
-      .then(() => {
-        getOpenApiSpec("PROD");
-        setModelDeploy({ deployed: true, waiting: false });
+      .then(response => {
+        if (response.ok) {
+          getOpenApiSpec("PROD");
+          setModelDeploy({ deployed: true, waiting: false });
+        }
       })
       .finally(() => {
         setRefreshCssClass("");
