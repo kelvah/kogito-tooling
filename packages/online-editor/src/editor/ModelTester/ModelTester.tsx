@@ -17,6 +17,8 @@ import {
 import { EnvelopeIcon } from "@patternfly/react-icons";
 import OutputViewer from "../OutputViewer/OutputViewer";
 import useSaliencies, { RemoteData } from "../TestAndDeploy/useSaliencies";
+import SkeletonCard from "../Skeletons/SkeletonCard/SkeletonCard";
+import SkeletonStripe from "../Skeletons/SkeletonStripe/SkeletonStripe";
 
 interface ModelTesterProps {
   schemas: Schema[];
@@ -140,6 +142,12 @@ const ModelTester = (props: ModelTesterProps) => {
                   Waiting for a new request
                 </Title>
               </EmptyState>
+            )}
+            {responsePayload.status === "LOADING" && (
+              <>
+                <SkeletonStripe size="md" customStyle={{ width: 120, height: 20, marginBottom: 20 }} />
+                <SkeletonCard />
+              </>
             )}
             {responsePayload.status === "SUCCESS" && (
               <OutputViewer responsePayload={responsePayload.data} saliencies={saliencies} environment={environment} />
