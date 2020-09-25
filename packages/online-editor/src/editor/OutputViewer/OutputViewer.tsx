@@ -36,8 +36,8 @@ import {
 } from "@patternfly/react-icons";
 import ResponseViewer, { isObjectOrArrayOfObjects, ObjectProperty } from "../ResponseViewer/ResponseViewer";
 import "./OutputViewer.scss";
-import FeaturesScoreChart from "../../FeaturesScoreChart/FeaturesScoreChart";
-import FeaturesScoreTable from "../../FeaturesScoreTable/FeaturesScoreTable";
+import FeaturesScoreChart from "../FeaturesScoreChart/FeaturesScoreChart";
+import FeaturesScoreTable from "../FeaturesScoreTable/FeaturesScoreTable";
 import { RemoteData, Saliencies } from "../TestAndDeploy/useSaliencies";
 import useFeaturesScores from "./useFeaturesScores";
 import { Environment } from "../TestAndDeploy/TestAndDeploy";

@@ -1,0 +1,9 @@
+.skeleton-cards {
+  grid-auto-rows: 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  &__card {
+    min-height: 140px;
+    background: #fbfbfb;
+    padding: 1.5rem;
+  }
+}
