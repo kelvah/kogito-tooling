@@ -63,7 +63,6 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
     SwaggerClient(endpoint).then((client: { spec: { paths: any } }) => {
       const paths = client.spec.paths;
       const endpoints = filterEndpoints(paths);
-      console.log(paths);
       switch (environment) {
         case "DEV":
           setDevSchemas(endpoints);
@@ -129,9 +128,11 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const deployTab = useRef(null);
 
   return (
-    <div className={`cd-panel cd-panel--from-right js-cd-panel-main ${showPanel ? "cd-panel--is-visible" : ""}`}>
-      <div className="cd-panel__container">
-        <div className="cd-panel__content test-and-deploy">
+    <div
+      className={`side-panel side-panel--from-right js-side-panel-main ${showPanel ? "side-panel--is-visible" : ""}`}
+    >
+      <div className="side-panel__container">
+        <div className="side-panel__content test-and-deploy">
           <Page>
             <PageSection>
               <Tabs isFilled={true} activeKey={activeTab} onSelect={handleTabClick} isBox={true}>

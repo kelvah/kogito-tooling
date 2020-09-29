@@ -98,6 +98,14 @@ export function EditorToolbar(props: Props) {
           {i18n.terms.save}
         </DropdownItem>,
         <DropdownItem
+          key={`dropdown-${dropdownId}-test&deploy`}
+          component={"button"}
+          onClick={props.onTestDeploy}
+          className={"pf-u-display-none-on-xl"}
+        >
+          Test & Deploy
+        </DropdownItem>,
+        <DropdownItem
           key={`dropdown-${dropdownId}-fullscreen`}
           component="button"
           onClick={props.onFullScreen}
@@ -136,7 +144,8 @@ export function EditorToolbar(props: Props) {
         props.onSave,
         props.onDownload,
         props.onCopyContentToClipboard,
-        props.onExportGist
+        props.onExportGist,
+        props.onTestDeploy
       ]
     );
 
@@ -185,7 +194,8 @@ export function EditorToolbar(props: Props) {
             {i18n.terms.save}
           </Button>
         </PageHeaderToolsItem>
-      </PageHeaderToolsGroup><PageHeaderToolsGroup>
+      </PageHeaderToolsGroup>
+      <PageHeaderToolsGroup>
         <PageHeaderToolsItem
           visibility={{
             default: "hidden",
@@ -196,7 +206,12 @@ export function EditorToolbar(props: Props) {
             sm: "hidden"
           }}
         >
-          <Button data-testid="test-deploy" variant={"tertiary"} onClick={props.onTestDeploy} aria-label={"Test&Deploy button"}>
+          <Button
+            data-testid="test-deploy"
+            variant={"tertiary"}
+            onClick={props.onTestDeploy}
+            aria-label={"Test&Deploy button"}
+          >
             Test & Deploy
           </Button>
         </PageHeaderToolsItem>
