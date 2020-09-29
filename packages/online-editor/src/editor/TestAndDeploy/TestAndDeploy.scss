@@ -95,12 +95,14 @@
   .pf-c-tabs__link {
     outline: none;
   }
+
   // tabs width uneven widths are evil
   .pf-c-tabs.pf-m-fill .pf-c-tabs__item {
     flex-basis: 100%;
     flex-grow: 1;
     flex-shrink: 1;
   }
+
   // overriding bootstrap
   a {
     color: var(--pf-c-button--m-link--Color);
@@ -110,17 +112,20 @@
   }
   .pf-c-alert__title {
     font-size: 1em;
-    text-transform: capitalize;
+  }
+
+  // other overrides
+  .pf-c-empty-state__content > .pf-c-title.pf-m-lg {
+    --pf-c-empty-state__content--c-title--m-lg--FontSize: 1.125rem;
   }
 
   &__title {
+    padding-top: var(--pf-global--spacer--md);
     margin-bottom: var(--pf-global--spacer--md);
   }
   &__endpoint-selection {
     max-width: 20em;
-    margin-bottom: var(--pf-global--spacer--xl);
-  }
-  &__deploy {
+    margin-bottom: var(--pf-global--spacer--md);
   }
   &__update-deploy-status {
     &:focus {
@@ -132,8 +137,30 @@
     top: 5px;
     margin-left: 1em;
   }
-  .pf-c-empty-state__content > .pf-c-title.pf-m-lg {
-    --pf-c-empty-state__content--c-title--m-lg--FontSize: 1.125rem;
+
+  &__tabs-content {
+    // magic numbers, I know
+    height: calc(100vh - 76px - 40px - 48px);
+    overflow-y: hidden;
+    &:before {
+      display: block;
+      content: " ";
+      height: 37px;
+      position: absolute;
+      width: calc(100% - 60px);
+      background: rgb(255, 255, 255);
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(255, 253, 253, 0.6) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      z-index: 100;
+    }
+  }
+  &__tabs-scroll {
+    height: 100%;
+    overflow-y: scroll;
   }
 }
 
@@ -147,32 +174,21 @@
   h5 {
     font-size: 1.125rem;
   }
-}
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px white inset !important;
-}
-
-.dynamic-form {
   input,
   textarea {
     border-radius: 0 !important;
   }
 }
 
-.response-box {
-  padding: var(--pf-global--spacer--md);
-  margin-bottom: var(--pf-global--spacer--sm);
-  border: 1px solid var(--pf-global--disabled-color--200);
-  background-color: #fff;
-  min-height: 10em;
+// other bootstrap overrides
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
 }
-.response-input-filter {
-  margin-left: 10px;
-  padding-top: var(--pf-global--spacer--sm);
+.pf-c-alert__title {
+  font-size: 1em;
 }
 
 @keyframes rotating {
