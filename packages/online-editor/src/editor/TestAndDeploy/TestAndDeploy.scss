@@ -1,6 +1,9 @@
-.cd-panel {
+$headerHeight: 76px;
+$mobileHeaderHeight: 108px;
+
+.side-panel {
   position: fixed;
-  top: 76px;
+  top: $headerHeight;
   left: 0;
   height: 100%;
   width: 100%;
@@ -9,7 +12,7 @@
   transition: visibility 0s 0.6s;
 }
 
-.cd-panel::after {
+.side-panel::after {
   content: "";
   position: absolute;
   top: 0;
@@ -22,23 +25,23 @@
   transition: background 0.3s 0.3s;
 }
 
-.cd-panel.cd-panel--is-visible {
+.side-panel.side-panel--is-visible {
   visibility: visible;
   -webkit-transition: visibility 0s 0s;
   transition: visibility 0s 0s;
 }
 
-.cd-panel.cd-panel--is-visible::after {
+.side-panel.side-panel--is-visible::after {
   background: rgba(0, 0, 0, 0.6);
   -webkit-transition: background 0.3s 0s;
   transition: background 0.3s 0s;
 }
 
-.cd-panel__container {
+.side-panel__container {
   position: fixed;
   width: 90%;
   height: calc(100% - 76px);
-  top: 76px;
+  top: $headerHeight;
   background: #ffffff;
   z-index: 1;
   -webkit-transition: -webkit-transform 0.3s 0s;
@@ -47,19 +50,19 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.cd-panel--from-right .cd-panel__container {
+.side-panel--from-right .side-panel__container {
   right: 0;
   -webkit-transform: translateX(100%);
   transform: translateX(100%);
 }
 
-.cd-panel--from-left .cd-panel__container {
+.side-panel--from-left .side-panel__container {
   left: 0;
   -webkit-transform: translateX(-100%);
   transform: translateX(-100%);
 }
 
-.cd-panel--is-visible .cd-panel__container {
+.side-panel--is-visible .side-panel__container {
   -webkit-transform: translateX(0);
   transform: translateX(0);
   -webkit-transition-delay: 0s;
@@ -68,18 +71,30 @@
 }
 
 @media only screen and (min-width: 768px) {
-  .cd-panel__container {
-    width: 70%;
+  .side-panel__container {
+    width: 100%;
   }
 }
 
 @media only screen and (min-width: 1170px) {
-  .cd-panel__container {
+  .side-panel__container {
+    width: 80%;
+  }
+}
+
+@media only screen and (min-width: 1300px) {
+  .side-panel__container {
+    width: 70%;
+  }
+}
+
+@media only screen and (min-width: 1680px) {
+  .side-panel__container {
     width: 60%;
   }
 }
 
-.cd-panel__content {
+.side-panel__content {
   position: absolute;
   top: 0;
   left: 0;
@@ -142,7 +157,8 @@
   }
   &__tabs-content {
     // magic numbers, I know
-    height: calc(100vh - 76px - 40px - 48px);
+    // 40 is the tabs heading height, 48 is the container vertical padding
+    height: calc(100vh - #{$headerHeight} - 40px - 48px);
     overflow-y: hidden;
     &:before {
       display: block;
@@ -163,6 +179,16 @@
   &__tabs-scroll {
     height: 100%;
     overflow-y: scroll;
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .test-and-deploy__tabs-content {
+    height: calc(100vh - #{$mobileHeaderHeight} - 40px - 36px);
+  }
+  .side-panel,
+  .side-panel__container {
+    top: $mobileHeaderHeight;
   }
 }
 

@@ -105,6 +105,14 @@ export function EditorToolbar(props: Props) {
           </DropdownItem>
         )}
       </React.Fragment>,
+      <DropdownItem
+        key={`dropdown-${dropdownId}-test&deploy`}
+        component={"button"}
+        onClick={props.onTestDeploy}
+        className={"pf-u-display-none-on-xl"}
+      >
+        Test & Deploy
+      </DropdownItem>,
       <DropdownItem key={`dropdown-${dropdownId}-fullscreen`} component={"button"} onClick={props.onFullScreen}>
         {i18n.editorToolbar.enterFullScreenView}
       </DropdownItem>
@@ -172,7 +180,7 @@ export function EditorToolbar(props: Props) {
         </DropdownItem>
       </DropdownGroup>
     ],
-    [i18n, context, props.onSave, props.onDownload, props.onCopyContentToClipboard, props.onGistIt]
+    [i18n, context, props.onSave, props.onDownload, props.onCopyContentToClipboard, props.onGistIt, props.onTestDeploy]
   );
 
   return !props.isPageFullscreen ? (
