@@ -137,7 +137,9 @@
     top: 5px;
     margin-left: 1em;
   }
-
+  &__warn-icon {
+    fill: var(--pf-global--warning-color--100);
+  }
   &__tabs-content {
     // magic numbers, I know
     height: calc(100vh - 76px - 40px - 48px);
