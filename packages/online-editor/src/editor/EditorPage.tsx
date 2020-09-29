@@ -291,7 +291,7 @@ export function EditorPage(props: Props) {
       }
     >
       <PageSection isFilled={true} style={{ padding: 0 }}>
-        <TestAndDeploy showPanel={showTestPanel} lastSave={lastSave} />
+        <TestAndDeploy showPanel={showTestPanel} lastSave={lastSave} isModelDirty={isDirty} />
       </PageSection>
       <PageSection isFilled={true} padding={{ default: "noPadding" }} style={{ flexBasis: "100%" }}>
         {!fullscreen && alert === Alerts.COPY && (

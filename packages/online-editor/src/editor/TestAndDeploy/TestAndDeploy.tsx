@@ -3,6 +3,7 @@ import * as React from "react";
 import SwaggerClient from "swagger-client";
 import { useEffect, useState, useRef } from "react";
 import {
+  Alert,
   Button,
   Divider,
   EmptyState,
@@ -14,12 +15,19 @@ import {
   Page,
   PageSection,
   Title,
+  Tooltip,
   Tab,
   TabContent,
   Tabs,
   TabTitleText
 } from "@patternfly/react-core";
-import { CheckCircleIcon, HourglassHalfIcon, ServerIcon, SyncIcon } from "@patternfly/react-icons";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  HourglassHalfIcon,
+  ServerIcon,
+  SyncIcon
+} from "@patternfly/react-icons";
 import "bootstrap/dist/css/bootstrap.css";
 import { config } from "../../config";
 import ModelTester from "../ModelTester/ModelTester";
@@ -30,10 +38,11 @@ import { filterEndpoints } from "./filterEndpoints";
 interface TestAndDeployProps {
   showPanel: boolean;
   lastSave: Date | null;
+  isModelDirty: boolean;
 }
 
 const TestAndDeploy = (props: TestAndDeployProps) => {
-  const { showPanel, lastSave } = props;
+  const { showPanel, lastSave, isModelDirty } = props;
   const [activeTab, setActiveTab] = useState<React.ReactText>(0);
   const [devSchemas, setDevSchemas] = useState<Schema[] | null>(null);
   const [prodSchemas, setProdSchemas] = useState<Schema[] | null>(null);
@@ -129,7 +138,29 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                 <Tab
                   eventKey={0}
                   id="test-tab"
-                  title={<TabTitleText>Test Development Environment</TabTitleText>}
+                  title={
+                    <TabTitleText>
+                      {isModelDirty && (
+                        <Tooltip
+                          position="bottom"
+                          content={
+                            <div>
+                              The model has unsaved changes.
+                              <br />
+                              Save it to test the latest version.
+                            </div>
+                          }
+                        >
+                          <>
+                            <ExclamationTriangleIcon className="test-and-deploy__warn-icon" />
+                            &nbsp;
+                            <span>Test Development Environment</span>
+                          </>
+                        </Tooltip>
+                      )}
+                      {!isModelDirty && <span>Test Development Environment</span>}
+                    </TabTitleText>
+                  }
                   tabContentRef={testTab}
                   tabContentId="test-tab-content"
                 />
@@ -145,6 +176,11 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                 <div className="test-and-deploy__tabs-scroll">
                   <TabContent eventKey={0} id="test-tab-content" ref={testTab} aria-label="Test Tab Content">
                     <PageSection variant={"light"}>
+                      {isModelDirty && (
+                        <Alert variant="warning" title="The model has unsaved changes" isInline={true}>
+                          <span>Save the model to test the latest version.</span>
+                        </Alert>
+                      )}
                       {devSchemas !== null && devSchemas.length > 0 && (
                         <ModelTester schemas={devSchemas} baseUrl={config.development.openApi.url} environment="DEV" />
                       )}
