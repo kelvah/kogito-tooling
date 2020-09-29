@@ -1,7 +1,7 @@
 import * as React from "react";
 // @ts-ignore
 import SwaggerClient from "swagger-client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Button,
   Divider,
@@ -15,10 +15,11 @@ import {
   PageSection,
   Title,
   Tab,
+  TabContent,
   Tabs,
   TabTitleText
 } from "@patternfly/react-core";
-import { ServerIcon, SyncIcon, CheckCircleIcon, HourglassHalfIcon } from "@patternfly/react-icons";
+import { CheckCircleIcon, HourglassHalfIcon, ServerIcon, SyncIcon } from "@patternfly/react-icons";
 import "bootstrap/dist/css/bootstrap.css";
 import { config } from "../../config";
 import ModelTester from "../ModelTester/ModelTester";
@@ -115,6 +116,9 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
     setActiveTab(tabIndex);
   };
 
+  const testTab = useRef(null);
+  const deployTab = useRef(null);
+
   return (
     <div className={`cd-panel cd-panel--from-right js-cd-panel-main ${showPanel ? "cd-panel--is-visible" : ""}`}>
       <div className="cd-panel__container">
@@ -122,90 +126,116 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
           <Page>
             <PageSection>
               <Tabs isFilled={true} activeKey={activeTab} onSelect={handleTabClick} isBox={true}>
-                <Tab eventKey={0} id="test-tab" title={<TabTitleText>Test Development Environment</TabTitleText>}>
-                  <PageSection variant={"light"}>
-                    {devSchemas !== null && devSchemas.length > 0 && (
-                      <ModelTester schemas={devSchemas} baseUrl={config.development.openApi.url} environment="DEV" />
-                    )}
-                    {devSchemas !== null && devSchemas.length === 0 && <EmptyModelMessage />}
-                  </PageSection>
-                </Tab>
-                <Tab eventKey={1} id="deploy-tab" title={<TabTitleText>Deploy to Production</TabTitleText>}>
-                  <PageSection variant={"light"}>
-                    <div className="test-and-deploy__deploy">
-                      <Title headingLevel="h3" size="lg" className="test-and-deploy__title">
-                        Deployment
-                      </Title>
-                      <Flex>
-                        <FlexItem>
-                          <span style={{ fontWeight: 700 }}>Status</span>
-                        </FlexItem>
-                        <FlexItem>
-                          {!modelDeploy.deployed && !modelDeploy.waiting && <Label>Not deployed</Label>}
-                          {modelDeploy.waiting && (
-                            <span>
-                              <Label color="blue" icon={<HourglassHalfIcon />}>
-                                Deployment in progress
-                              </Label>
-                              <Button
-                                className="test-and-deploy__update-deploy-status"
-                                variant="plain"
-                                title="Refresh status"
-                                aria-label="Refresh"
-                                onClick={refreshDeployStatus}
-                              >
-                                <SyncIcon className={refreshCssClass} />
-                              </Button>
-                            </span>
-                          )}
-                          {modelDeploy.deployed && (
-                            <Label color={"green"} icon={<CheckCircleIcon />}>
-                              Deployed Successfully
-                            </Label>
-                          )}
-                        </FlexItem>
-                        <FlexItem align={{ default: "alignRight" }}>
-                          <Button
-                            type="button"
-                            variant="primary"
-                            onClick={handleDeploy}
-                            isDisabled={modelDeploy.waiting}
-                          >
-                            Publish Model
-                          </Button>
-                        </FlexItem>
-                      </Flex>
-                    </div>
-                    <Divider />
-                    {!modelDeploy.deployed && !modelDeploy.waiting && prodSchemas === null && (
-                      <EmptyState variant={"small"}>
-                        <EmptyStateIcon icon={ServerIcon} />
-                        <Title headingLevel="h3" size="lg">
-                          Model not deployed
-                        </Title>
-                        <EmptyStateBody>
-                          You need to deploy the model to production to be able to execute it
-                        </EmptyStateBody>
-                      </EmptyState>
-                    )}
-                    {modelDeploy.waiting && prodSchemas === null && (
-                      <EmptyState variant={"small"}>
-                        <EmptyStateIcon icon={ServerIcon} />
-                        <Title headingLevel="h3" size="lg">
-                          Model not ready
-                        </Title>
-                        <EmptyStateBody>
-                          You will be able to execute the model when the deployment will be complete.
-                        </EmptyStateBody>
-                      </EmptyState>
-                    )}
-                    {prodSchemas !== null && prodSchemas.length > 0 && (
-                      <ModelTester schemas={prodSchemas} baseUrl={prodUrl} environment="PROD" />
-                    )}
-                    {prodSchemas !== null && prodSchemas.length === 0 && modelDeploy.deployed && <EmptyModelMessage />}
-                  </PageSection>
-                </Tab>
+                <Tab
+                  eventKey={0}
+                  id="test-tab"
+                  title={<TabTitleText>Test Development Environment</TabTitleText>}
+                  tabContentRef={testTab}
+                  tabContentId="test-tab-content"
+                />
+                <Tab
+                  eventKey={1}
+                  id="deploy-tab"
+                  title={<TabTitleText>Deploy to Production</TabTitleText>}
+                  tabContentRef={deployTab}
+                  tabContentId="deploy-tab-content"
+                />
               </Tabs>
+              <div className="test-and-deploy__tabs-content">
+                <div className="test-and-deploy__tabs-scroll">
+                  <TabContent eventKey={0} id="test-tab-content" ref={testTab} aria-label="Test Tab Content">
+                    <PageSection variant={"light"}>
+                      {devSchemas !== null && devSchemas.length > 0 && (
+                        <ModelTester schemas={devSchemas} baseUrl={config.development.openApi.url} environment="DEV" />
+                      )}
+                      {devSchemas !== null && devSchemas.length === 0 && <EmptyModelMessage />}
+                    </PageSection>
+                  </TabContent>
+                  <TabContent
+                    eventKey={1}
+                    id="deploy-tab-content"
+                    ref={deployTab}
+                    aria-label="Deploy Tab Content"
+                    hidden={true}
+                  >
+                    <PageSection variant={"light"}>
+                      <div className="test-and-deploy__deploy">
+                        <Title headingLevel="h3" size="lg" className="test-and-deploy__title">
+                          Deployment
+                        </Title>
+                        <Flex>
+                          <FlexItem>
+                            <span style={{ fontWeight: 700 }}>Status</span>
+                          </FlexItem>
+                          <FlexItem>
+                            {!modelDeploy.deployed && !modelDeploy.waiting && <Label>Not deployed</Label>}
+                            {modelDeploy.waiting && (
+                              <span>
+                                <Label color="blue" icon={<HourglassHalfIcon />}>
+                                  Deployment in progress
+                                </Label>
+                                <Button
+                                  className="test-and-deploy__update-deploy-status"
+                                  variant="plain"
+                                  title="Refresh status"
+                                  aria-label="Refresh"
+                                  onClick={refreshDeployStatus}
+                                >
+                                  <SyncIcon className={refreshCssClass} />
+                                </Button>
+                              </span>
+                            )}
+                            {modelDeploy.deployed && (
+                              <Label color={"green"} icon={<CheckCircleIcon />}>
+                                Deployed Successfully
+                              </Label>
+                            )}
+                          </FlexItem>
+                          <FlexItem align={{ default: "alignRight" }}>
+                            <Button
+                              type="button"
+                              variant="primary"
+                              onClick={handleDeploy}
+                              isDisabled={modelDeploy.waiting}
+                            >
+                              Publish Model
+                            </Button>
+                          </FlexItem>
+                        </Flex>
+                      </div>
+                      <Divider />
+                      {!modelDeploy.deployed && !modelDeploy.waiting && prodSchemas === null && (
+                        <EmptyState variant={"small"}>
+                          <EmptyStateIcon icon={ServerIcon} />
+                          <Title headingLevel="h3" size="lg">
+                            Model not deployed
+                          </Title>
+                          <EmptyStateBody>
+                            You need to deploy the model to production to be able to execute it
+                          </EmptyStateBody>
+                        </EmptyState>
+                      )}
+                      {modelDeploy.waiting && prodSchemas === null && (
+                        <EmptyState variant={"small"}>
+                          <EmptyStateIcon icon={ServerIcon} />
+                          <Title headingLevel="h3" size="lg">
+                            Model not ready
+                          </Title>
+                          <EmptyStateBody>
+                            You will be able to execute the model when the deployment will be complete.
+                          </EmptyStateBody>
+                        </EmptyState>
+                      )}
+                      {prodSchemas !== null && prodSchemas.length > 0 && (
+                        <ModelTester schemas={prodSchemas} baseUrl={prodUrl} environment="PROD" />
+                      )}
+                      {prodSchemas !== null && prodSchemas.length === 0 && modelDeploy.deployed && (
+                        <EmptyModelMessage />
+                      )}
+                    </PageSection>
+                  </TabContent>
+                </div>
+              </div>
             </PageSection>
           </Page>
         </div>
