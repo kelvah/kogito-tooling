@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Environment, Schema } from "../TestAndDeploy/TestAndDeploy";
 import { useEffect, useState } from "react";
-import Form from "@rjsf/bootstrap-4";
 import {
   Alert,
   Grid,
@@ -15,6 +14,10 @@ import {
   SelectDirection
 } from "@patternfly/react-core";
 import { EnvelopeIcon } from "@patternfly/react-icons";
+import { JSONSchemaBridge } from "uniforms-bridge-json-schema";
+import * as Ajv from "ajv";
+import { AutoForm } from "uniforms-patternfly";
+
 import OutputViewer from "../OutputViewer/OutputViewer";
 import useSaliencies, { RemoteData } from "../TestAndDeploy/useSaliencies";
 import SkeletonCard from "../Skeletons/SkeletonCard/SkeletonCard";
@@ -31,9 +34,11 @@ const ModelTester = (props: ModelTesterProps) => {
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>();
   const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
   const [selectedSchema, setSelectedSchema] = useState<{}>();
-  const [requestPayload, setRequestPayload] = useState({});
   const [responsePayload, setResponsePayload] = useState<RemoteData<Error, ResponsePayload>>({ status: "NOT_ASKED" });
   const saliencies = useSaliencies(responsePayload, baseUrl);
+
+  const autoForm = React.createRef<HTMLFormElement>();
+  const ajv = new Ajv({ allErrors: true, useDefaults: true });
 
   const onEndpointSelectToggle = (openStatus: boolean) => {
     setIsEndpointSelectOpen(openStatus);
@@ -51,21 +56,32 @@ const ModelTester = (props: ModelTesterProps) => {
     if (schemas.length > 0) {
       setSelectedEndpoint(schemas[0].url);
     }
-    setRequestPayload({});
+    autoForm.current?.reset();
     setResponsePayload({ status: "NOT_ASKED" });
   }, [schemas]);
+
+  const createValidator = (schema: object) => {
+    const validator = ajv.compile(schema);
+
+    return (model: object) => {
+      validator(model);
+      return validator.errors?.length ? { details: validator.errors } : null;
+    };
+  };
 
   useEffect(() => {
     if (selectedEndpoint) {
       const schema = schemas?.filter(item => item.url === selectedEndpoint)[0];
-      setSelectedSchema(schema?.schema);
+      console.log("SCHEMA");
+      console.log(schema.schema);
+
+      const schemaValidator = createValidator(schema.schema as object);
+      const bridgedSchema = new JSONSchemaBridge(schema.schema, schemaValidator);
+      setSelectedSchema(bridgedSchema);
     }
   }, [schemas, selectedEndpoint]);
 
-  const handleForm = (form: { formData: any }) => {
-    const formData = form.formData;
-    setRequestPayload(formData);
-
+  const handleForm = (form: any) => {
     if (selectedEndpoint) {
       setResponsePayload({ status: "LOADING" });
       fetch(baseUrl + selectedEndpoint, {
@@ -73,7 +89,7 @@ const ModelTester = (props: ModelTesterProps) => {
           Accept: "application/json, text/plain",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(form),
         method: "POST",
         mode: "cors"
       })
@@ -126,7 +142,7 @@ const ModelTester = (props: ModelTesterProps) => {
               <Title headingLevel="h3" className="test-and-deploy__title">
                 Request
               </Title>
-              <Form schema={selectedSchema} onSubmit={handleForm} formData={requestPayload} className="dynamic-form" />
+              <AutoForm schema={selectedSchema} onSubmit={handleForm} ref={autoForm} />
             </div>
           )}
         </GridItem>

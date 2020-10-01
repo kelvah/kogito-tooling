@@ -28,7 +28,6 @@ import {
   ServerIcon,
   SyncIcon
 } from "@patternfly/react-icons";
-import "bootstrap/dist/css/bootstrap.css";
 import { config } from "../../config";
 import ModelTester from "../ModelTester/ModelTester";
 import EmptyModelMessage from "../EmptyModelMessage/EmptyModelMessage";
@@ -60,7 +59,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
 
   const getOpenApiSpec = (environment: Environment) => {
     const endpoint = environment === "DEV" ? openApiDevUrl : openApiProdUrl;
-    SwaggerClient(endpoint).then((client: { spec: { paths: any } }) => {
+    SwaggerClient({ url: endpoint, allowMetaPatches: false }).then((client: { spec: { paths: any } }) => {
       const paths = client.spec.paths;
       const endpoints = filterEndpoints(paths);
       switch (environment) {
