@@ -241,10 +241,11 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
                           icon={<ExternalLinkSquareAltIcon />}
                           iconPosition="right"
                           isInline={true}
+                          component="a"
+                          href={config.development.explainability.auditUIUrl}
+                          target="_blank"
                         >
-                          <a href={config.development.explainability.auditUIUrl} target="_blank">
-                            Audit Investigation Console
-                          </a>
+                          Audit Investigation Console
                         </Button>{" "}
                         to retrieve explanations for model executions.
                       </p>
