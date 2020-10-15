@@ -124,7 +124,7 @@ const FormattedValue = (props: FormattedValueProps) => {
   return (
     <>
       {value === null && <span className="response-viewer__no-value">&ndash;</span>}
-      {value && <span>{formattedValue}</span>}
+      {value !== null && <span>{formattedValue}</span>}
     </>
   );
 };

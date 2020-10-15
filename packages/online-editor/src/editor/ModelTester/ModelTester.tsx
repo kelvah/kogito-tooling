@@ -51,7 +51,6 @@ const ModelTester = (props: ModelTesterProps) => {
     if (schemas.length > 0) {
       setSelectedEndpoint(schemas[0].url);
     }
-    setRequestPayload({});
     setResponsePayload({ status: "NOT_ASKED" });
   }, [schemas]);
 
