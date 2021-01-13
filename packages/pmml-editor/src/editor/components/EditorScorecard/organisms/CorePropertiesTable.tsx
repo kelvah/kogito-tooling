@@ -21,14 +21,16 @@ import {
   Bullseye,
   Form,
   FormGroup,
+  Label,
   Level,
   LevelItem,
   PageSection,
   PageSectionVariants,
+  Split,
+  SplitItem,
   Stack,
   StackItem,
   Switch,
-  TextContent,
   TextInput,
   Title
 } from "@patternfly/react-core";
@@ -41,14 +43,14 @@ import set = Reflect.set;
 import get = Reflect.get;
 
 interface CoreProperties {
-  isScorable: boolean;
-  functionName: MiningFunction;
-  algorithmName: string;
+  isScorable: boolean | undefined;
+  functionName: MiningFunction | undefined;
+  algorithmName: string | undefined;
   baselineScore: number | undefined;
-  baselineMethod: BaselineMethod;
+  baselineMethod: BaselineMethod | undefined;
   initialScore: number | undefined;
-  useReasonCodes: boolean;
-  reasonCodeAlgorithm: ReasonCodeAlgorithm;
+  useReasonCodes: boolean | undefined;
+  reasonCodeAlgorithm: ReasonCodeAlgorithm | undefined;
 }
 
 interface CorePropertiesTableProps extends CoreProperties {
@@ -74,8 +76,8 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
   const [algorithmName, setAlgorithmName] = useState<string | undefined>();
   const [baselineScore, setBaselineScore] = useState<number | undefined>();
   const [baselineMethod, setBaselineMethod] = useState<BaselineMethod | undefined>();
-  const [initialScore, setInitialScore] = useState<number | undefined>(props.initialScore);
-  const [useReasonCodes, setUseReasonCodes] = useState<boolean>(props.useReasonCodes);
+  const [initialScore, setInitialScore] = useState<number | undefined>();
+  const [useReasonCodes, setUseReasonCodes] = useState<boolean>();
   const [reasonCodeAlgorithm, setReasonCodeAlgorithm] = useState<ReasonCodeAlgorithm | undefined>();
 
   useEffect(() => {
@@ -89,14 +91,10 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
     setReasonCodeAlgorithm(props.reasonCodeAlgorithm);
   }, [props]);
 
-  const ref = useOnclickOutside(event => onCommitAndClose(), {
+  const ref = useOnclickOutside(() => onCommitAndClose(), {
     disabled: activeOperation !== Operation.UPDATE_CORE,
     eventTypes: ["click"]
   });
-
-  const value = (_value: any | undefined) => {
-    return _value ? <span>{_value}</span> : <span>&nbsp;</span>;
-  };
 
   const toNumber = (_value: string): number | undefined => {
     if (_value === "") {
@@ -116,6 +114,7 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
   const onEdit = () => {
     setEditing(true);
     setActiveOperation(Operation.UPDATE_CORE);
+    console.log(algorithmName);
   };
 
   const onCommitAndClose = () => {
@@ -159,26 +158,39 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
       <PageSection variant={PageSectionVariants.light}>
         <Stack hasGutter={true}>
           <StackItem>
-            <TextContent>
-              <Title size="lg" headingLevel="h1">
-                Model setup
-              </Title>
-            </TextContent>
+            <Split hasGutter={true}>
+              <SplitItem>
+                <Title size="lg" headingLevel="h1">
+                  Model Setup
+                </Title>
+              </SplitItem>
+              {!isEditModeEnabled && (
+                <SplitItem>
+                  {isScorable !== undefined && CorePropertyLabel("Is Scorable", toYesNo(isScorable))}
+                  {functionName !== undefined && CorePropertyLabel("Function", functionName)}
+                  {algorithmName !== undefined && CorePropertyLabel("Algorithm", algorithmName)}
+                  {initialScore !== undefined && CorePropertyLabel("Initial Score", initialScore)}
+                  {useReasonCodes !== undefined && CorePropertyLabel("Use Reason Codes", toYesNo(useReasonCodes))}
+                  {reasonCodeAlgorithm !== undefined && CorePropertyLabel("Reason Code Algorithm", reasonCodeAlgorithm)}
+                  {baselineScore !== undefined && CorePropertyLabel("Baseline Score", baselineScore)}
+                  {baselineMethod !== undefined && CorePropertyLabel("Baseline Method", baselineMethod)}
+                </SplitItem>
+              )}
+            </Split>
           </StackItem>
-          <StackItem>
-            <Bullseye>
-              <Form
-                onSubmit={e => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }}
-                className="core-properties__container"
-              >
-                <Level hasGutter={true}>
-                  <LevelItem>
-                    <FormGroup label="Scorable?" fieldId="core-isScorable">
-                      {!isEditModeEnabled && value(toYesNo(isScorable))}
-                      {isEditModeEnabled && (
+          {isEditModeEnabled && (
+            <StackItem>
+              <Bullseye>
+                <Form
+                  onSubmit={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                  className="core-properties__container"
+                >
+                  <Level hasGutter={true}>
+                    <LevelItem>
+                      <FormGroup label="Is Scorable" fieldId="core-isScorable">
                         <Switch
                           id="core-isScorable"
                           isChecked={isScorable}
@@ -187,14 +199,11 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                             onCommit({ isScorable: checked });
                           }}
                         />
-                      )}
-                    </FormGroup>
-                  </LevelItem>
-                  <LevelItem>
-                    <FormGroup label="Function" fieldId="core-functionName" required={true}>
-                      {!isEditModeEnabled && value(functionName)}
-                      {isEditModeEnabled &&
-                        GenericSelectorEditor(
+                      </FormGroup>
+                    </LevelItem>
+                    <LevelItem>
+                      <FormGroup label="Function" fieldId="core-functionName" required={true}>
+                        {GenericSelectorEditor(
                           "core-functionName",
                           [
                             "associationRules",
@@ -214,12 +223,10 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                           // See http://dmg.org/pmml/v4-4/Scorecard.html
                           true
                         )}
-                    </FormGroup>
-                  </LevelItem>
-                  <LevelItem>
-                    <FormGroup label="Algorithm" fieldId="core-algorithmName">
-                      {!isEditModeEnabled && value(algorithmName)}
-                      {isEditModeEnabled && (
+                      </FormGroup>
+                    </LevelItem>
+                    <LevelItem>
+                      <FormGroup label="Algorithm" fieldId="core-algorithmName">
                         <TextInput
                           type="text"
                           id="core-algorithmName"
@@ -227,17 +234,14 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                           aria-describedby="core-algorithmName"
                           value={algorithmName}
                           onChange={e => setAlgorithmName(e)}
-                          onBlur={e => {
+                          onBlur={() => {
                             onCommit({ algorithmName: algorithmName });
                           }}
                         />
-                      )}
-                    </FormGroup>
-                  </LevelItem>
-                  <LevelItem>
-                    <FormGroup label="Initial score" fieldId="core-initialScore">
-                      {!isEditModeEnabled && value(initialScore)}
-                      {isEditModeEnabled && (
+                      </FormGroup>
+                    </LevelItem>
+                    <LevelItem>
+                      <FormGroup label="Initial score" fieldId="core-initialScore">
                         <TextInput
                           id="core-initialScore"
                           value={initialScore}
@@ -247,13 +251,10 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                           }}
                           type="number"
                         />
-                      )}
-                    </FormGroup>
-                  </LevelItem>
-                  <LevelItem>
-                    <FormGroup label="Use reason codes?" fieldId="core-useReasonCodes">
-                      {!isEditModeEnabled && value(toYesNo(useReasonCodes))}
-                      {isEditModeEnabled && (
+                      </FormGroup>
+                    </LevelItem>
+                    <LevelItem>
+                      <FormGroup label="Use reason codes?" fieldId="core-useReasonCodes">
                         <Switch
                           id="core-useReasonCodes"
                           isChecked={useReasonCodes}
@@ -262,14 +263,11 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                             onCommit({ useReasonCodes: checked });
                           }}
                         />
-                      )}
-                    </FormGroup>
-                  </LevelItem>
-                  <LevelItem>
-                    <FormGroup label="Reason code algorithm" fieldId="core-reasonCodeAlgorithm">
-                      {!isEditModeEnabled && value(reasonCodeAlgorithm)}
-                      {isEditModeEnabled &&
-                        GenericSelectorEditor(
+                      </FormGroup>
+                    </LevelItem>
+                    <LevelItem>
+                      <FormGroup label="Reason code algorithm" fieldId="core-reasonCodeAlgorithm">
+                        {GenericSelectorEditor(
                           "core-reasonCodeAlgorithm",
                           ["pointsAbove", "pointsBelow"],
                           reasonCodeAlgorithm,
@@ -281,12 +279,10 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                           // See http://dmg.org/pmml/v4-4/Scorecard.html
                           !useReasonCodes
                         )}
-                    </FormGroup>
-                  </LevelItem>
-                  <LevelItem>
-                    <FormGroup label="Baseline score" fieldId="core-baselineScore">
-                      {!isEditModeEnabled && value(baselineScore)}
-                      {isEditModeEnabled && (
+                      </FormGroup>
+                    </LevelItem>
+                    <LevelItem>
+                      <FormGroup label="Baseline score" fieldId="core-baselineScore">
                         <TextInput
                           id="core-baselineScore"
                           value={baselineScore}
@@ -299,14 +295,11 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                           // See http://dmg.org/pmml/v4-4/Scorecard.html
                           isDisabled={!useReasonCodes}
                         />
-                      )}
-                    </FormGroup>
-                  </LevelItem>
-                  <LevelItem>
-                    <FormGroup label="Baseline method" fieldId="core-baselineMethod">
-                      {!isEditModeEnabled && value(baselineMethod)}
-                      {isEditModeEnabled &&
-                        GenericSelectorEditor(
+                      </FormGroup>
+                    </LevelItem>
+                    <LevelItem>
+                      <FormGroup label="Baseline method" fieldId="core-baselineMethod">
+                        {GenericSelectorEditor(
                           "core-baselineMethod",
                           ["max", "min", "mean", "neutral", "other"],
                           baselineMethod,
@@ -318,14 +311,25 @@ export const CorePropertiesTable = (props: CorePropertiesTableProps) => {
                           // See http://dmg.org/pmml/v4-4/Scorecard.html
                           !useReasonCodes
                         )}
-                    </FormGroup>
-                  </LevelItem>
-                </Level>
-              </Form>
-            </Bullseye>
-          </StackItem>
+                      </FormGroup>
+                    </LevelItem>
+                  </Level>
+                </Form>
+              </Bullseye>
+            </StackItem>
+          )}
         </Stack>
       </PageSection>
     </div>
+  );
+};
+
+const CorePropertyLabel = (name: string, value: any) => {
+  return (
+    <Label color="purple" className="core-properties__label">
+      <strong>{name}:</strong>
+      &nbsp;
+      <span>{value}</span>
+    </Label>
   );
 };
