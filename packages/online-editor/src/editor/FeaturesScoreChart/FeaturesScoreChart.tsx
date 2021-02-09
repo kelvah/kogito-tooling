@@ -10,7 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipProps
 } from "@patternfly/react-charts";
-import { Selection } from "victory";
+import { Selection } from "victory-core";
 import { maxBy } from "lodash";
 import "./FeaturesScoreChart.scss";
 
