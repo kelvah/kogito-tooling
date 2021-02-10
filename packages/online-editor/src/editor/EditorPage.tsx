@@ -30,7 +30,6 @@ import { ChannelType } from "@kogito-tooling/channel-common-api";
 import { EmbeddedEditor, useDirtyState, useEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { Alert, AlertActionCloseButton, AlertActionLink, Page, PageSection } from "@patternfly/react-core";
 import TestAndDeploy from "./TestAndDeploy/TestAndDeploy";
-import { config } from "../config";
 
 export enum Alerts {
   NONE,
@@ -287,11 +286,18 @@ export function EditorPage(props: Props) {
           onGistIt={requestGistIt}
           onEmbed={requestEmbed}
           isEdited={isDirty}
+          isEditorReady={isEditorReady}
         />
       }
     >
       <PageSection isFilled={true} style={{ padding: 0 }}>
-        <TestAndDeploy showPanel={showTestPanel} lastSave={lastSave} isModelDirty={isDirty} />
+        <TestAndDeploy
+          editor={editor}
+          isEditorReady={isEditorReady}
+          showPanel={showTestPanel}
+          lastSave={lastSave}
+          isModelDirty={isDirty}
+        />
       </PageSection>
       <PageSection isFilled={true} padding={{ default: "noPadding" }} style={{ flexBasis: "100%" }}>
         {!fullscreen && alert === Alerts.COPY && (

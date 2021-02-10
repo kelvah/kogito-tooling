@@ -242,7 +242,7 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
                           iconPosition="right"
                           isInline={true}
                           component="a"
-                          href={config.development.explainability.auditUIUrl}
+                          href={config.explainability.auditUIUrl}
                           target="_blank"
                         >
                           Audit Investigation Console

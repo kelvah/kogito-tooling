@@ -51,6 +51,7 @@ interface Props {
   onTestDeploy: () => void;
   isPageFullscreen: boolean;
   isEdited: boolean;
+  isEditorReady: boolean;
 }
 
 export function EditorToolbar(props: Props) {
@@ -110,6 +111,7 @@ export function EditorToolbar(props: Props) {
         component={"button"}
         onClick={props.onTestDeploy}
         className={"pf-u-display-none-on-xl"}
+        isDisabled={!props.isEditorReady}
       >
         Test & Deploy
       </DropdownItem>,
@@ -222,7 +224,13 @@ export function EditorToolbar(props: Props) {
                 sm: "hidden"
               }}
             >
-              <Button data-testid="test-deploy" variant={"tertiary"} onClick={props.onTestDeploy} aria-label={"Test&Deploy button"}>
+              <Button
+                data-testid="test-deploy"
+                variant={"tertiary"}
+                onClick={props.onTestDeploy}
+                aria-label={"Test&Deploy button"}
+                isDisabled={!props.isEditorReady}
+              >
                 Test & Deploy
               </Button>
             </PageHeaderToolsItem>

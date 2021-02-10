@@ -28,7 +28,7 @@ const useSaliencies = (modelTestResponse: RemoteData<Error, ResponsePayload>, ba
     let isMounted = true;
     if (modelTestResponse.status === "SUCCESS") {
       setSaliencies({ status: "LOADING" });
-      fetch(config.development.explainability.serviceUrl, {
+      fetch(config.explainability.serviceUrl, {
         headers: {
           Accept: "application/json, text/plain",
           "Content-Type": "application/json"

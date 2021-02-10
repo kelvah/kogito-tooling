@@ -15,24 +15,18 @@
  */
 
 export const config = {
-  development: {
-    server: {
-      backendUrl: "http://localhost:9002",
-      projectName: "my-project",
-      saveDirectory: "src/main/resources"
-    },
-    openApi: {
-      url: "http://localhost:8080",
-      specPath: "/openapi"
-    },
-    explainability: {
-      serviceUrl: "http://localhost:8081/explanations/saliencies",
-      auditUIUrl: "http://someurl.com"
-    },
-    publish: {
-      url: "http://el-daas-workflow-kiegroup.apps-crc.testing",
-      appName: "dmn-quarkus-example",
-      envName: "kiegroup"
-    }
+  openApi: {
+    url: "http://localhost:8080",
+    specPath: "/jitdmn/schema/form",
+    runModel: "/jitdmn/dmnresult"
+  },
+  explainability: {
+    serviceUrl: "http://localhost:8081/explanations/saliencies",
+    auditUIUrl: "http://someurl.com"
+  },
+  publish: {
+    url: "http://el-daas-workflow-kiegroup.apps-crc.testing",
+    appName: "dmn-quarkus-example",
+    envName: "kiegroup"
   }
 };
