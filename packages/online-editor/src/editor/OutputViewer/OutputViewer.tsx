@@ -1,6 +1,12 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { DecisionResult, evaluationStatusStrings, ResponseMessage, ResponsePayload } from "../ModelTester/ModelTester";
+import {
+  DecisionResult,
+  evaluationStatusStrings,
+  ResponseMessage,
+  DmnResult,
+  Saliencies
+} from "../ModelTester/ModelTester";
 import { v4 as uuid } from "uuid";
 import {
   Alert,
@@ -38,14 +44,13 @@ import ResponseViewer, { isObjectOrArrayOfObjects, ObjectProperty } from "../Res
 import "./OutputViewer.scss";
 import FeaturesScoreChart from "../FeaturesScoreChart/FeaturesScoreChart";
 import FeaturesScoreTable from "../FeaturesScoreTable/FeaturesScoreTable";
-import { RemoteData, Saliencies } from "../TestAndDeploy/useSaliencies";
 import useFeaturesScores from "./useFeaturesScores";
 import { Environment } from "../TestAndDeploy/TestAndDeploy";
 import { config } from "../../config";
 
 interface OutputViewerProps {
-  responsePayload: ResponsePayload;
-  saliencies: RemoteData<Error, Saliencies>;
+  responsePayload: DmnResult;
+  saliencies: Saliencies;
   environment: Environment;
 }
 
@@ -180,7 +185,7 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
                     </Title>
                     {environment === "DEV" && (
                       <Stack hasGutter={true}>
-                        {saliencies.status === "SUCCESS" && saliencies.data.status === "SUCCEEDED" && (
+                        {saliencies.status === "SUCCEEDED" && (
                           <>
                             <StackItem>
                               <Card isCompact={true} isFlat={true}>
@@ -217,15 +222,15 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
                             </StackItem>
                           </>
                         )}
-                        {saliencies.status === "SUCCESS" && saliencies.data.status === "FAILED" && (
+                        {saliencies.status === "FAILED" && (
                           <StackItem>
                             <Alert isInline={true} variant="warning" title="Explanation Error">
                               <p>There was an error calculating explanation information for this request.</p>
-                              {saliencies.data.statusDetails && (
+                              {saliencies.statusDetails && (
                                 <p>
                                   Error Message:
                                   <br />
-                                  <span className="explanation-error-detail">{saliencies.data.statusDetails}</span>
+                                  <span className="explanation-error-detail">{saliencies.statusDetails}</span>
                                 </p>
                               )}
                             </Alert>

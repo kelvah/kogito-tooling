@@ -18,7 +18,7 @@ export const config = {
   openApi: {
     url: "http://localhost:8080",
     specPath: "/jitdmn/schema/form",
-    runModel: "/jitdmn/dmnresult"
+    runModel: "/jitdmn/evaluateAndExplain"
   },
   explainability: {
     serviceUrl: "http://localhost:8081/explanations/saliencies",

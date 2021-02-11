@@ -16,7 +16,7 @@ import {
 } from "@patternfly/react-core";
 import { EnvelopeIcon } from "@patternfly/react-icons";
 import OutputViewer from "../OutputViewer/OutputViewer";
-import useSaliencies, { RemoteData } from "../TestAndDeploy/useSaliencies";
+// import useSaliencies from "../TestAndDeploy/useSaliencies";
 import SkeletonCard from "../Skeletons/SkeletonCard/SkeletonCard";
 import SkeletonStripe from "../Skeletons/SkeletonStripe/SkeletonStripe";
 import { config } from "../../config";
@@ -34,8 +34,10 @@ const ModelTester = (props: ModelTesterProps) => {
   const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
   const [selectedSchema, setSelectedSchema] = useState<{}>();
   const [requestPayload, setRequestPayload] = useState({});
-  const [responsePayload, setResponsePayload] = useState<RemoteData<Error, ResponsePayload>>({ status: "NOT_ASKED" });
-  const saliencies = useSaliencies(responsePayload, baseUrl);
+  const [responsePayload, setResponsePayload] = useState<RemoteData<Error, EvaluateAndExplainResponse>>({
+    status: "NOT_ASKED"
+  });
+  // const saliencies = useSaliencies(responsePayload, baseUrl);
 
   const onEndpointSelectToggle = (openStatus: boolean) => {
     setIsEndpointSelectOpen(openStatus);
@@ -176,7 +178,11 @@ const ModelTester = (props: ModelTesterProps) => {
               </>
             )}
             {responsePayload.status === "SUCCESS" && (
-              <OutputViewer responsePayload={responsePayload.data} saliencies={saliencies} environment={environment} />
+              <OutputViewer
+                responsePayload={responsePayload.data.dmnResult}
+                saliencies={responsePayload.data.saliencies}
+                environment={environment}
+              />
             )}
             {responsePayload.status === "FAILURE" && (
               <Alert isInline={true} variant="warning" title="The request produced an error">
@@ -197,7 +203,12 @@ const ModelTester = (props: ModelTesterProps) => {
 
 export default ModelTester;
 
-export interface ResponsePayload {
+export interface EvaluateAndExplainResponse {
+  dmnResult: DmnResult;
+  saliencies: Saliencies;
+}
+
+export interface DmnResult {
   namespace: string;
   modelName: string;
   dmnContext: object;
@@ -230,3 +241,26 @@ export enum evaluationStatus {
 }
 
 export type evaluationStatusStrings = keyof typeof evaluationStatus;
+
+export interface Saliency {
+  outcomeName: string;
+  featureImportance: FeatureScores[];
+}
+
+export interface Saliencies {
+  status: "SUCCEEDED" | "FAILED";
+  statusDetails: string;
+  saliencies: Saliency[];
+}
+
+export interface FeatureScores {
+  featureName: string;
+  featureId: string;
+  featureScore: number;
+}
+
+export type RemoteData<E, D> =
+  | { status: "NOT_ASKED" }
+  | { status: "LOADING" }
+  | { status: "FAILURE"; error: E }
+  | { status: "SUCCESS"; data: D };

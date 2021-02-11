@@ -1,6 +1,7 @@
 import * as React from "react";
 import { DataList, DataListCell, DataListItem, DataListItemCells, DataListItemRow } from "@patternfly/react-core";
-import { FeatureScores, formattedScore } from "../FeaturesScoreChart/FeaturesScoreChart";
+import { formattedScore } from "../FeaturesScoreChart/FeaturesScoreChart";
+import { FeatureScores } from "../ModelTester/ModelTester";
 import "./FeaturesScoreTable.scss";
 
 interface FeatureScoreTableProps {

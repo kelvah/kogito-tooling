@@ -12,6 +12,7 @@ import {
 } from "@patternfly/react-charts";
 import { Selection } from "victory-core";
 import { maxBy } from "lodash";
+import { FeatureScores } from "../ModelTester/ModelTester";
 import "./FeaturesScoreChart.scss";
 
 interface FeaturesScoreChartProps {
@@ -226,9 +227,3 @@ export const formattedScore = (inputScore: number) => {
     ? `\u003c ${Math.sign(inputScore) * 0.01}`
     : inputScore.toFixed(2);
 };
-
-export interface FeatureScores {
-  featureName: string;
-  featureId: string;
-  featureScore: number;
-}

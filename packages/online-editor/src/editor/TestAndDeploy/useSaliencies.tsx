@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { omit, pick } from "lodash";
 import { config } from "../../config";
-import { ResponsePayload } from "../ModelTester/ModelTester";
+import { DmnResult, RemoteData, Saliencies } from "../ModelTester/ModelTester";
 
-const useSaliencies = (modelTestResponse: RemoteData<Error, ResponsePayload>, baseUrl: string) => {
+const useSaliencies = (modelTestResponse: RemoteData<Error, DmnResult>, baseUrl: string) => {
   const [saliencies, setSaliencies] = useState<RemoteData<Error, Saliencies>>({
     status: "NOT_ASKED"
   });
 
-  const contextFilter = useCallback((responsePayload: ResponsePayload, contextType: "inputs" | "outputs") => {
+  const contextFilter = useCallback((responsePayload: DmnResult, contextType: "inputs" | "outputs") => {
     let result;
     const outputKeys = responsePayload.decisionResults.map(decision => decision.decisionName);
     switch (contextType) {
@@ -67,25 +67,3 @@ const useSaliencies = (modelTestResponse: RemoteData<Error, ResponsePayload>, ba
 };
 
 export default useSaliencies;
-
-export type RemoteData<E, D> =
-  | { status: "NOT_ASKED" }
-  | { status: "LOADING" }
-  | { status: "FAILURE"; error: E }
-  | { status: "SUCCESS"; data: D };
-
-export interface FeatureScores {
-  featureName: string;
-  featureId: string;
-  featureScore: number;
-}
-
-export interface Saliency {
-  outcomeName: string;
-  featureImportance: FeatureScores[];
-}
-export interface Saliencies {
-  status: "SUCCEEDED" | "FAILED";
-  statusDetails: string;
-  saliencies: Saliency[];
-}
