@@ -32,12 +32,14 @@ import {
   TextInput,
   Title,
   FlexItem,
-  Flex
+  Flex,
+  PageSection
 } from "@patternfly/react-core";
 import { useState } from "react";
 import { CheckCircleIcon, ExternalLinkAltIcon, RedoAltIcon } from "@patternfly/react-icons";
+import DecisionVersions from "../DecisionVersions/DecisionVersions";
 
-const DeployToolbar = () => {
+const DeploymentConsole = () => {
   const [description, setDescription] = useState("");
   const [kafkaSource, setKafkaSource] = useState<string>("endpoint 1");
   const [kafkaSink, setKafkaSink] = useState<string>("endpoint 2");
@@ -113,7 +115,7 @@ const DeployToolbar = () => {
               </section>
             </FormGroup>
           </FlexItem>
-          <FlexItem>
+          <FlexItem style={{ maxWidth: "25em" }}>
             <FormGroup label="Description" fieldId="d">
               <section style={{ marginTop: 6 }}>Added some new rules and fixed others</section>
             </FormGroup>
@@ -128,14 +130,19 @@ const DeployToolbar = () => {
             </FormGroup>
           </FlexItem>
           <FlexItem>
-            <FormGroup label="Created" fieldId="c">
+            <FormGroup label="Created on" fieldId="c">
               <section style={{ marginTop: 6 }}>02/25/2021</section>
             </FormGroup>
           </FlexItem>
         </Flex>
       </Form>
+      <Divider className="test-and-deploy__divider" />
+      <Title headingLevel="h3" size="xl" className="test-and-deploy__title">
+        Version History
+      </Title>
+      <DecisionVersions />
     </section>
   );
 };
 
-export default DeployToolbar;
+export default DeploymentConsole;

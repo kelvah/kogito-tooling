@@ -35,8 +35,7 @@ import EmptyModelMessage from "../EmptyModelMessage/EmptyModelMessage";
 import "./TestAndDeploy.scss";
 import { filterEndpoints } from "./filterEndpoints";
 import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
-import DeployToolbar from "../DeployToolbar/DeployToolbar";
-import DecisionVersions from "../DecisionVersions/DecisionVersions";
+import DeploymentConsole from "../DeploymentConsole/DeploymentConsole";
 
 interface TestAndDeployProps {
   editor?: EmbeddedEditorRef;
@@ -206,7 +205,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                 <Tab
                   eventKey={1}
                   id="deploy-tab"
-                  title={<TabTitleText>Deploy to Production</TabTitleText>}
+                  title={<TabTitleText>Deployment Console</TabTitleText>}
                   tabContentRef={deployTab}
                   tabContentId="deploy-tab-content"
                 />
@@ -214,7 +213,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
               <div className="test-and-deploy__tabs-content">
                 <div className="test-and-deploy__tabs-scroll">
                   <TabContent eventKey={0} id="test-tab-content" ref={testTab} aria-label="Test Tab Content">
-                    <PageSection variant={"light"}>
+                    <PageSection variant={"light"} isFilled={true}>
                       {isModelDirty && (
                         <Alert variant="warning" title="The model has unsaved changes" isInline={true}>
                           <span>Save the model to test the latest version.</span>
@@ -238,58 +237,47 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                     aria-label="Deploy Tab Content"
                     hidden={true}
                   >
-                    <PageSection variant={"light"}>
-                      <div className="test-and-deploy__deploy">
-                        <Title headingLevel="h3" size="lg" className="test-and-deploy__title">
-                          Deployment
-                        </Title>
-                        <section>
-                          <DeployToolbar />
-                        </section>
-                        {/*<Flex>*/}
-                        {/*  <FlexItem>*/}
-                        {/*    <span style={{ fontWeight: 700 }}>Status</span>*/}
-                        {/*  </FlexItem>*/}
-                        {/*  <FlexItem>*/}
-                        {/*    {!modelDeploy.deployed && !modelDeploy.waiting && <Label>Not deployed</Label>}*/}
-                        {/*    {modelDeploy.waiting && (*/}
-                        {/*      <span>*/}
-                        {/*        <Label color="blue" icon={<HourglassHalfIcon />}>*/}
-                        {/*          Deployment in progress*/}
-                        {/*        </Label>*/}
-                        {/*        <Button*/}
-                        {/*          className="test-and-deploy__update-deploy-status"*/}
-                        {/*          variant="plain"*/}
-                        {/*          title="Refresh status"*/}
-                        {/*          aria-label="Refresh"*/}
-                        {/*          onClick={refreshDeployStatus}*/}
-                        {/*        >*/}
-                        {/*          <SyncIcon className={refreshCssClass} />*/}
-                        {/*        </Button>*/}
-                        {/*      </span>*/}
-                        {/*    )}*/}
-                        {/*    {modelDeploy.deployed && (*/}
-                        {/*      <Label color={"green"} icon={<CheckCircleIcon />}>*/}
-                        {/*        Deployed Successfully*/}
-                        {/*      </Label>*/}
-                        {/*    )}*/}
-                        {/*  </FlexItem>*/}
-                        {/*  <FlexItem align={{ default: "alignRight" }}>*/}
-                        {/*    <Button*/}
-                        {/*      type="button"*/}
-                        {/*      variant="primary"*/}
-                        {/*      onClick={handleDeploy}*/}
-                        {/*      isDisabled={modelDeploy.waiting}*/}
-                        {/*    >*/}
-                        {/*      Deploy*/}
-                        {/*    </Button>*/}
-                        {/*  </FlexItem>*/}
-                        {/*</Flex>*/}
-                      </div>
-                      <Divider />
-                      <section>
-                        <DecisionVersions />
-                      </section>
+                    <PageSection variant={"light"} isFilled={true}>
+                      <DeploymentConsole />
+                      {/*<Flex>*/}
+                      {/*  <FlexItem>*/}
+                      {/*    <span style={{ fontWeight: 700 }}>Status</span>*/}
+                      {/*  </FlexItem>*/}
+                      {/*  <FlexItem>*/}
+                      {/*    {!modelDeploy.deployed && !modelDeploy.waiting && <Label>Not deployed</Label>}*/}
+                      {/*    {modelDeploy.waiting && (*/}
+                      {/*      <span>*/}
+                      {/*        <Label color="blue" icon={<HourglassHalfIcon />}>*/}
+                      {/*          Deployment in progress*/}
+                      {/*        </Label>*/}
+                      {/*        <Button*/}
+                      {/*          className="test-and-deploy__update-deploy-status"*/}
+                      {/*          variant="plain"*/}
+                      {/*          title="Refresh status"*/}
+                      {/*          aria-label="Refresh"*/}
+                      {/*          onClick={refreshDeployStatus}*/}
+                      {/*        >*/}
+                      {/*          <SyncIcon className={refreshCssClass} />*/}
+                      {/*        </Button>*/}
+                      {/*      </span>*/}
+                      {/*    )}*/}
+                      {/*    {modelDeploy.deployed && (*/}
+                      {/*      <Label color={"green"} icon={<CheckCircleIcon />}>*/}
+                      {/*        Deployed Successfully*/}
+                      {/*      </Label>*/}
+                      {/*    )}*/}
+                      {/*  </FlexItem>*/}
+                      {/*  <FlexItem align={{ default: "alignRight" }}>*/}
+                      {/*    <Button*/}
+                      {/*      type="button"*/}
+                      {/*      variant="primary"*/}
+                      {/*      onClick={handleDeploy}*/}
+                      {/*      isDisabled={modelDeploy.waiting}*/}
+                      {/*    >*/}
+                      {/*      Deploy*/}
+                      {/*    </Button>*/}
+                      {/*  </FlexItem>*/}
+                      {/*</Flex>*/}
                       {false && !modelDeploy.deployed && !modelDeploy.waiting && prodSchemas === null && (
                         <EmptyState variant={"small"}>
                           <EmptyStateIcon icon={ServerIcon} />

@@ -17,11 +17,10 @@
 import * as React from "react";
 import {
   Button,
-  DescriptionList,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  DescriptionListDescription,
-  Divider,
+  Dropdown,
+  DropdownGroup,
+  DropdownItem,
+  DropdownToggle,
   Form,
   FormGroup,
   FormSelect,
@@ -29,24 +28,16 @@ import {
   Label,
   Split,
   SplitItem,
-  TextInput,
-  Title,
-  FlexItem,
-  Flex
+  Title
 } from "@patternfly/react-core";
 import { useState } from "react";
 import { CheckCircleIcon, ExternalLinkAltIcon, RedoAltIcon } from "@patternfly/react-icons";
 
-const DeployToolbar = () => {
-  const [description, setDescription] = useState("");
+const DeployToolbarCompact = () => {
   const [kafkaSource, setKafkaSource] = useState<string>("endpoint 1");
   const [kafkaSink, setKafkaSink] = useState<string>("endpoint 2");
 
   const kafkaOptions = ["endpoint 1", "endpoint 2", "endpoint 3", "endpoint 4"];
-
-  const onDescriptionChange = (value: string) => {
-    setDescription(value);
-  };
 
   const onKafkaSourceChange = (value: string) => {
     setKafkaSource(value);
@@ -56,16 +47,55 @@ const DeployToolbar = () => {
     setKafkaSink(value);
   };
 
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onToggle = (status: boolean) => {
+    setIsOpen(status);
+  };
+  const onSelect = () => {
+    setIsOpen(!isOpen);
+    onFocus();
+  };
+  const onFocus = () => {
+    const element = document.getElementById("toggle-id-3");
+    element?.focus();
+  };
+
+  const dropdownItems = [
+    <DropdownItem key="v4" component="button">
+      v4 ~ 14:11
+    </DropdownItem>,
+    <DropdownItem key="v3" component="button">
+      v3 ~ 12:00
+    </DropdownItem>,
+    <DropdownItem key="v2" component="button">
+      v2 ~ 02/10/2022
+    </DropdownItem>,
+    <DropdownItem key="v1" component="button">
+      v1 ~ 02/08/2022
+    </DropdownItem>
+  ];
+
   return (
     <section className="test-and-deploy__deployment">
-      <Title headingLevel="h2" size="xl" className="test-and-deploy__title">
+      <Title headingLevel="h3" size="lg" className="test-and-deploy__title">
         Deployment
       </Title>
       <Form>
         <Split hasGutter={true}>
           <SplitItem isFilled={true}>
-            <FormGroup label="Description" fieldId="description">
-              <TextInput type="text" value={description} onChange={onDescriptionChange} />
+            <FormGroup label="Status" fieldId="a">
+              <section style={{ marginTop: 2 }}>
+                <strong>Version 5</strong>
+                &nbsp;
+                <Label color={"green"} icon={<CheckCircleIcon />}>
+                  Current
+                </Label>
+                &nbsp;
+                <Label color="blue" href="https://www.google.com" icon={<ExternalLinkAltIcon />} target="_blank">
+                  Link
+                </Label>
+              </section>
             </FormGroup>
           </SplitItem>
           <SplitItem style={{ minWidth: "15em" }}>
@@ -91,51 +121,25 @@ const DeployToolbar = () => {
               </FormSelect>
             </FormGroup>
           </SplitItem>
+          {/*<SplitItem style={{ paddingTop: 24 }}>*/}
+          {/*  <Dropdown*/}
+          {/*    onSelect={onSelect}*/}
+          {/*    toggle={*/}
+          {/*      <DropdownToggle onToggle={onToggle} icon={<RedoAltIcon />} id="toggle-id-3">*/}
+          {/*        Rollback*/}
+          {/*      </DropdownToggle>*/}
+          {/*    }*/}
+          {/*    isOpen={isOpen}*/}
+          {/*    dropdownItems={dropdownItems}*/}
+          {/*  />*/}
+          {/*</SplitItem>*/}
           <SplitItem style={{ paddingTop: 32 }}>
             <Button variant="primary">Deploy</Button>
           </SplitItem>
         </Split>
       </Form>
-      <Divider className="test-and-deploy__divider" />
-      <Title headingLevel="h2" size="xl" className="test-and-deploy__title">
-        Status
-      </Title>
-      <Form readOnly={true}>
-        <Flex spaceItems={{ default: "spaceItemsXl" }}>
-          <FlexItem>
-            <FormGroup label="Version" fieldId="a">
-              <section style={{ marginTop: 6 }}>
-                <strong>v5</strong>
-                &nbsp;
-                <Label color={"green"} icon={<CheckCircleIcon />}>
-                  Current
-                </Label>
-              </section>
-            </FormGroup>
-          </FlexItem>
-          <FlexItem>
-            <FormGroup label="Description" fieldId="d">
-              <section style={{ marginTop: 6 }}>Added some new rules and fixed others</section>
-            </FormGroup>
-          </FlexItem>
-          <FlexItem>
-            <FormGroup label="Url" fieldId="b">
-              <section style={{ marginTop: 6 }}>
-                <Label color="blue" href="https://www.redhat.com" icon={<ExternalLinkAltIcon />} target="_blank">
-                  Link
-                </Label>
-              </section>
-            </FormGroup>
-          </FlexItem>
-          <FlexItem>
-            <FormGroup label="Created" fieldId="c">
-              <section style={{ marginTop: 6 }}>02/25/2021</section>
-            </FormGroup>
-          </FlexItem>
-        </Flex>
-      </Form>
     </section>
   );
 };
 
-export default DeployToolbar;
+export default DeployToolbarCompact;

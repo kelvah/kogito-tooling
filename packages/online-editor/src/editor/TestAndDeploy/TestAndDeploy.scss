@@ -122,14 +122,16 @@ $mobileHeaderHeight: 108px;
   a {
     color: var(--pf-c-button--m-link--Color);
   }
-  .pf-c-divider {
-    margin: var(--pf-global--spacer--xl) 0;
+
+  // other overrides
+  &__divider {
+    margin: var(--pf-global--spacer--lg) 0 var(--pf-global--spacer--lg);
   }
+
   .pf-c-alert__title {
     font-size: 1em;
   }
 
-  // other overrides
   .pf-c-empty-state__content > .pf-c-title.pf-m-lg {
     --pf-c-empty-state__content--c-title--m-lg--FontSize: 1.125rem;
   }
@@ -174,6 +176,10 @@ $mobileHeaderHeight: 108px;
         rgba(255, 255, 255, 0) 100%
       );
       z-index: 100;
+    }
+    #deploy-tab-content {
+      height: 100%;
+      display: flex;
     }
   }
   &__tabs-scroll {

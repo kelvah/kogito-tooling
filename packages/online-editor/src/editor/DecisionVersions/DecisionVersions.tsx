@@ -15,18 +15,61 @@
  */
 
 import * as React from "react";
-import { Table, TableHeader, TableBody } from "@patternfly/react-table";
-import { Button } from "@patternfly/react-core";
-import { RedoAltIcon } from "@patternfly/react-icons";
+import { nowrap, Table, TableHeader, TableBody } from "@patternfly/react-table";
+import { Button, Label } from "@patternfly/react-core";
+import {
+  CheckCircleIcon,
+  ErrorCircleOIcon,
+  ExternalLinkAltIcon,
+  RedoAltIcon,
+  StopCircleIcon
+} from "@patternfly/react-icons";
 
 const DecisionVersions = () => {
-  const columns = ["Version", "Deployed", "Status", ""];
+  const columns = [
+    { title: "Version", transforms: [nowrap] },
+    "Status",
+    "Created on",
+    "Description",
+    "Url",
+    "Source",
+    "Sink",
+    ""
+  ];
   const rows = [
     {
       cells: [
-        "4",
+        "v5",
+        <>
+          <Label color={"green"} icon={<CheckCircleIcon />}>
+            Current
+          </Label>
+        </>,
+        "02/25/2021",
+        "Added some new rules and fixed others",
+        <>
+          <Label color="blue" href="https://www.redhat.com" icon={<ExternalLinkAltIcon />} target="_blank">
+            Link
+          </Label>
+        </>,
+        "source endpoint",
+        "sink endpoint",
+        ""
+      ]
+    },
+    {
+      cells: [
+        "v4",
+        <>
+          <Label color="red" icon={<ErrorCircleOIcon />}>
+            Failed
+          </Label>
+        </>,
         "02/10/2021",
-        "Ready",
+        "Updated some rule",
+        "url",
+        "source endpoint",
+        "sink endpoint",
         <>
           <RollbackButton />
         </>
@@ -34,9 +77,17 @@ const DecisionVersions = () => {
     },
     {
       cells: [
-        "3",
+        "v3",
+        <>
+          <Label color="grey" icon={<StopCircleIcon />}>
+            Ready
+          </Label>
+        </>,
         "02/09/2021",
-        "Ready",
+        "Fixed some issue",
+        "url",
+        "source endpoint",
+        "sink endpoint",
         <>
           <RollbackButton />
         </>
@@ -44,9 +95,17 @@ const DecisionVersions = () => {
     },
     {
       cells: [
-        "2",
+        "v2",
+        <>
+          <Label color="grey" icon={<StopCircleIcon />}>
+            Ready
+          </Label>
+        </>,
         "02/08/2021",
-        "Ready",
+        "Some changes",
+        "url",
+        "source endpoint",
+        "sink endpoint",
         <>
           <RollbackButton />
         </>
@@ -54,9 +113,17 @@ const DecisionVersions = () => {
     },
     {
       cells: [
-        "1",
+        "v1",
+        <>
+          <Label color="grey" icon={<StopCircleIcon />}>
+            Ready
+          </Label>
+        </>,
         "02/07/2021",
-        "Ready",
+        "Some changes",
+        "url",
+        "source endpoint",
+        "sink endpoint",
         <>
           <RollbackButton />
         </>
