@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { nowrap, Table, TableHeader, TableBody } from "@patternfly/react-table";
+import { nowrap, cellWidth, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
 import { Button, Label } from "@patternfly/react-core";
 import {
   CheckCircleIcon,
@@ -28,105 +28,117 @@ import {
 const DecisionVersions = () => {
   const columns = [
     { title: "Version", transforms: [nowrap] },
-    "Status",
-    "Created on",
-    "Description",
-    "Url",
-    "Source",
-    "Sink",
-    ""
+    { title: "Status" },
+    { title: "Created on" },
+    { title: "Description", transforms: [cellWidth(20)], cellTransforms: [truncate] },
+    { title: "Url" },
+    { title: "Source" },
+    { title: "Sink" },
+    { title: "" }
   ];
   const rows = [
     {
       cells: [
         "v5",
-        <>
-          <Label color={"green"} icon={<CheckCircleIcon />}>
-            Current
-          </Label>
-        </>,
+        {
+          title: (
+            <Label color={"green"} icon={<CheckCircleIcon />}>
+              Deployed
+            </Label>
+          )
+        },
         "02/25/2021",
-        "Added some new rules and fixed others",
-        <>
-          <Label color="blue" href="https://www.redhat.com" icon={<ExternalLinkAltIcon />} target="_blank">
-            Link
-          </Label>
-        </>,
+        { title: <span>Added some new rules and fixed others</span> },
+        {
+          title: (
+            <Label color="blue" href="https://www.redhat.com" icon={<ExternalLinkAltIcon />} target="_blank">
+              Link
+            </Label>
+          )
+        },
         "source endpoint",
         "sink endpoint",
-        ""
+        { title: "" }
       ]
     },
     {
       cells: [
         "v4",
-        <>
-          <Label color="red" icon={<ErrorCircleOIcon />}>
-            Failed
-          </Label>
-        </>,
+        {
+          title: (
+            <Label color="red" icon={<ErrorCircleOIcon />}>
+              Failed
+            </Label>
+          )
+        },
         "02/10/2021",
-        "Updated some rule",
+        { title: "Updated some rule" },
         "url",
         "source endpoint",
         "sink endpoint",
-        <>
-          <RollbackButton />
-        </>
+        {
+          title: <RollbackButton />
+        }
       ]
     },
     {
       cells: [
         "v3",
-        <>
-          <Label color="grey" icon={<StopCircleIcon />}>
-            Ready
-          </Label>
-        </>,
+        {
+          title: (
+            <Label color="grey" icon={<StopCircleIcon />}>
+              Ready
+            </Label>
+          )
+        },
         "02/09/2021",
-        "Fixed some issue",
+        { title: "Fixed some issue" },
         "url",
         "source endpoint",
         "sink endpoint",
-        <>
-          <RollbackButton />
-        </>
+        {
+          title: <RollbackButton />
+        }
       ]
     },
     {
       cells: [
         "v2",
-        <>
-          <Label color="grey" icon={<StopCircleIcon />}>
-            Ready
-          </Label>
-        </>,
-        "02/08/2021",
-        "Some changes",
+        {
+          title: (
+            <Label color="grey" icon={<StopCircleIcon />}>
+              Ready
+            </Label>
+          )
+        },
+        "02/09/2021",
+        { title: "Fixed some issue" },
         "url",
         "source endpoint",
         "sink endpoint",
-        <>
-          <RollbackButton />
-        </>
+        {
+          title: <RollbackButton />
+        }
       ]
     },
     {
       cells: [
         "v1",
-        <>
-          <Label color="grey" icon={<StopCircleIcon />}>
-            Ready
-          </Label>
-        </>,
-        "02/07/2021",
-        "Some changes",
+        {
+          title: (
+            <Label color="grey" icon={<StopCircleIcon />}>
+              Ready
+            </Label>
+          )
+        },
+        "02/09/2021",
+        { title: "Fixed some issue" },
         "url",
         "source endpoint",
         "sink endpoint",
-        <>
-          <RollbackButton />
-        </>
+        {
+          title: <RollbackButton />
+        }
       ]
     }
   ];
@@ -146,7 +158,7 @@ export default DecisionVersions;
 const RollbackButton = () => {
   return (
     <div className={"pf-u-text-align-right"}>
-      <Button key={"rollback"} variant="secondary" isSmall={true} icon={<RedoAltIcon />} iconPosition="left">
+      <Button key={"rollback"} variant="control" isSmall={true} icon={<RedoAltIcon />} iconPosition="left">
         Rollback
       </Button>
     </div>

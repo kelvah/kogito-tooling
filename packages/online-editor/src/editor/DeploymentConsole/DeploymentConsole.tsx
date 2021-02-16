@@ -33,11 +33,15 @@ import {
   Title,
   FlexItem,
   Flex,
-  PageSection
+  Text,
+  TextContent,
+  TextVariants,
+  ClipboardCopy
 } from "@patternfly/react-core";
 import { useState } from "react";
-import { CheckCircleIcon, ExternalLinkAltIcon, RedoAltIcon } from "@patternfly/react-icons";
+import { CheckCircleIcon, ExternalLinkAltIcon } from "@patternfly/react-icons";
 import DecisionVersions from "../DecisionVersions/DecisionVersions";
+import "./DeploymentConsole.scss";
 
 const DeploymentConsole = () => {
   const [description, setDescription] = useState("");
@@ -102,7 +106,90 @@ const DeploymentConsole = () => {
       <Title headingLevel="h2" size="xl" className="test-and-deploy__title">
         Status
       </Title>
-      <Form readOnly={true}>
+      <section>
+        <Flex
+          direction={{ default: "row" }}
+          alignItems={{ default: "alignItemsStretch" }}
+          justifyContent={{ default: "justifyContentFlexStart" }}
+          className="test-and-deploy__deployment__status-bar"
+        >
+          <FlexItem grow={{ default: "grow" }}>
+            <Split hasGutter={true}>
+              <SplitItem>
+                <Flex
+                  direction={{ default: "column" }}
+                  alignSelf={{ default: "alignSelfCenter" }}
+                  justifyContent={{ default: "justifyContentCenter" }}
+                  style={{ height: "100%" }}
+                >
+                  <FlexItem>
+                    <CheckCircleIcon
+                      style={{
+                        fontSize: "var(--pf-global--icon--FontSize--lg)",
+                        color: "var(--pf-global--success-color--100)"
+                      }}
+                    />
+                  </FlexItem>
+                </Flex>
+              </SplitItem>
+              <SplitItem>
+                <TextContent>
+                  <strong>Traffic Violation</strong>
+                  <Text component={TextVariants.small}>Deployed</Text>
+                </TextContent>
+              </SplitItem>
+            </Split>
+          </FlexItem>
+          {/*<FlexItem grow={{ default: "grow" }}>*/}
+          {/*  <TextContent>*/}
+          {/*    <strong>5</strong>*/}
+          {/*    <Text component={TextVariants.small}>Version</Text>*/}
+          {/*  </TextContent>*/}
+          {/*</FlexItem>*/}
+          {/*<FlexItem grow={{ default: "grow" }}>*/}
+          {/*  <TextContent>*/}
+          {/*    <span>02/16/2021 10:11</span>*/}
+          {/*    <Text component={TextVariants.small}>Deployed at</Text>*/}
+          {/*  </TextContent>*/}
+          {/*</FlexItem>*/}
+        </Flex>
+        {/*<Title headingLevel="h3" size="lg" className="test-and-deploy__title">*/}
+        {/*  Details*/}
+        {/*</Title>*/}
+        <DescriptionList columnModifier={{ lg: "3Col" }}>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Description</DescriptionListTerm>
+            <DescriptionListDescription>Added some new rules and fixed others</DescriptionListDescription>
+          </DescriptionListGroup>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Url</DescriptionListTerm>
+            <DescriptionListDescription>
+              <ClipboardCopy isReadOnly={true}>Some url</ClipboardCopy>
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Version</DescriptionListTerm>
+            <DescriptionListDescription>v5</DescriptionListDescription>
+          </DescriptionListGroup>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Deployed at</DescriptionListTerm>
+            <DescriptionListDescription>02/16/2021 10:11</DescriptionListDescription>
+          </DescriptionListGroup>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Kafka source</DescriptionListTerm>
+            <DescriptionListDescription>
+              <span>endpoint 1</span>
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+          <DescriptionListGroup>
+            <DescriptionListTerm>Kafka sink</DescriptionListTerm>
+            <DescriptionListDescription>
+              <span>endpoint 2</span>
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+        </DescriptionList>
+      </section>
+      <Form readOnly={true} style={{ display: "none" }}>
         <Flex spaceItems={{ default: "spaceItemsXl" }}>
           <FlexItem>
             <FormGroup label="Version" fieldId="a">
@@ -138,7 +225,7 @@ const DeploymentConsole = () => {
       </Form>
       <Divider className="test-and-deploy__divider" />
       <Title headingLevel="h3" size="xl" className="test-and-deploy__title">
-        Version History
+        Deployment History
       </Title>
       <DecisionVersions />
     </section>
