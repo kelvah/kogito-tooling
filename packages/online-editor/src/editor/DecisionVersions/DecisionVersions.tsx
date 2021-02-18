@@ -77,7 +77,7 @@ const DecisionVersions = () => {
         "source endpoint",
         "sink endpoint",
         {
-          title: <RollbackButton />
+          title: ""
         }
       ]
     },

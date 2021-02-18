@@ -17,11 +17,14 @@
 import * as React from "react";
 import {
   Button,
+  ClipboardCopy,
+  CardBody,
+  Card,
+  CardTitle,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
-  Divider,
   Form,
   FormGroup,
   FormSelect,
@@ -30,23 +33,22 @@ import {
   Split,
   SplitItem,
   TextInput,
-  Title,
   FlexItem,
   Flex,
   Text,
   TextContent,
   TextVariants,
-  ClipboardCopy
+  Tooltip
 } from "@patternfly/react-core";
 import { useState } from "react";
-import { CheckCircleIcon, ExternalLinkAltIcon } from "@patternfly/react-icons";
+import { CheckCircleIcon, ExternalLinkAltIcon, HelpIcon } from "@patternfly/react-icons";
 import DecisionVersions from "../DecisionVersions/DecisionVersions";
 import "./DeploymentConsole.scss";
 
 const DeploymentConsole = () => {
   const [description, setDescription] = useState("");
-  const [kafkaSource, setKafkaSource] = useState<string>("endpoint 1");
-  const [kafkaSink, setKafkaSink] = useState<string>("endpoint 2");
+  const [kafkaSource, setKafkaSource] = useState<string>("");
+  const [kafkaSink, setKafkaSink] = useState<string>("");
 
   const kafkaOptions = ["endpoint 1", "endpoint 2", "endpoint 3", "endpoint 4"];
 
@@ -64,131 +66,174 @@ const DeploymentConsole = () => {
 
   return (
     <section className="test-and-deploy__deployment">
-      <Title headingLevel="h2" size="xl" className="test-and-deploy__title">
-        Deployment
-      </Title>
-      <Form>
-        <Split hasGutter={true}>
-          <SplitItem isFilled={true}>
-            <FormGroup label="Description" fieldId="description">
-              <TextInput type="text" value={description} onChange={onDescriptionChange} />
-            </FormGroup>
-          </SplitItem>
-          <SplitItem style={{ minWidth: "15em" }}>
-            <FormGroup label="Kafka source" fieldId="kafka-source">
-              <FormSelect
-                id="kafka-source"
-                value={kafkaSource}
-                onChange={onKafkaSourceChange}
-                aria-label="Kafka source"
-              >
-                {kafkaOptions.map((option, index) => (
-                  <FormSelectOption key={index} value={option} label={option} />
-                ))}
-              </FormSelect>
-            </FormGroup>
-          </SplitItem>
-          <SplitItem style={{ minWidth: "15em" }}>
-            <FormGroup label="Kafka sink" fieldId="kafka-sink">
-              <FormSelect id="kafka-sink" value={kafkaSink} onChange={onKafkaSinkChange} aria-label="Kafka sink">
-                {kafkaOptions.map((option, index) => (
-                  <FormSelectOption key={index} value={option} label={option} />
-                ))}
-              </FormSelect>
-            </FormGroup>
-          </SplitItem>
-          <SplitItem style={{ paddingTop: 32 }}>
-            <Button variant="primary">Deploy</Button>
-          </SplitItem>
-        </Split>
-      </Form>
-      <Divider className="test-and-deploy__divider" />
-      <Title headingLevel="h2" size="xl" className="test-and-deploy__title">
-        Status
-      </Title>
-      <section>
-        <Flex
-          direction={{ default: "row" }}
-          alignItems={{ default: "alignItemsStretch" }}
-          justifyContent={{ default: "justifyContentFlexStart" }}
-          className="test-and-deploy__deployment__status-bar"
-        >
-          <FlexItem grow={{ default: "grow" }}>
+      <Card isFlat={true}>
+        <CardTitle>Deployment</CardTitle>
+        <CardBody>
+          <Form>
             <Split hasGutter={true}>
-              <SplitItem>
-                <Flex
-                  direction={{ default: "column" }}
-                  alignSelf={{ default: "alignSelfCenter" }}
-                  justifyContent={{ default: "justifyContentCenter" }}
-                  style={{ height: "100%" }}
-                >
-                  <FlexItem>
-                    <CheckCircleIcon
-                      style={{
-                        fontSize: "var(--pf-global--icon--FontSize--lg)",
-                        color: "var(--pf-global--success-color--100)"
-                      }}
-                    />
-                  </FlexItem>
-                </Flex>
+              <SplitItem isFilled={true}>
+                <FormGroup label="Description" fieldId="description">
+                  <TextInput type="text" value={description} onChange={onDescriptionChange} />
+                </FormGroup>
               </SplitItem>
-              <SplitItem>
-                <TextContent>
-                  <strong>Traffic Violation</strong>
-                  <Text component={TextVariants.small}>Deployed</Text>
-                </TextContent>
+              <SplitItem style={{ minWidth: "15em" }}>
+                <FormGroup
+                  label="Kafka source"
+                  fieldId="kafka-source"
+                  labelIcon={
+                    <Tooltip content="Kafka source is optional. If provided, a Kafka sink must be provided too.">
+                      <button
+                        aria-label="More information for Kafka source"
+                        onClick={e => e.preventDefault()}
+                        className="pf-c-form__group-label-help"
+                      >
+                        <HelpIcon
+                          noVerticalAlign={true}
+                          color={"var(--pf-global--info-color--100)"}
+                          style={{ verticalAlign: "unset" }}
+                        />
+                      </button>
+                    </Tooltip>
+                  }
+                >
+                  <FormSelect
+                    id="kafka-source"
+                    value={kafkaSource}
+                    onChange={onKafkaSourceChange}
+                    aria-label="Kafka source"
+                  >
+                    <FormSelectOption key="none" value="" label="" />
+                    {kafkaOptions.map((option, index) => (
+                      <FormSelectOption key={index} value={option} label={option} />
+                    ))}
+                  </FormSelect>
+                </FormGroup>
+              </SplitItem>
+              <SplitItem style={{ minWidth: "15em" }}>
+                <FormGroup
+                  label="Kafka sink"
+                  fieldId="kafka-sink"
+                  labelIcon={
+                    <Tooltip content="Kafka sink is optional. If provided, a Kafka source must be provided too.">
+                      <button
+                        aria-label="More information for Kafka sink"
+                        onClick={e => e.preventDefault()}
+                        className="pf-c-form__group-label-help"
+                      >
+                        <HelpIcon
+                          noVerticalAlign={true}
+                          color={"var(--pf-global--info-color--100)"}
+                          style={{ verticalAlign: "unset" }}
+                        />
+                      </button>
+                    </Tooltip>
+                  }
+                >
+                  <FormSelect id="kafka-sink" value={kafkaSink} onChange={onKafkaSinkChange} aria-label="Kafka sink">
+                    <FormSelectOption key="none" value="" label="" />
+                    {kafkaOptions.map((option, index) => (
+                      <FormSelectOption key={index} value={option} label={option} />
+                    ))}
+                  </FormSelect>
+                </FormGroup>
+              </SplitItem>
+              <SplitItem style={{ paddingTop: 32 }}>
+                <Button variant="primary">Deploy</Button>
               </SplitItem>
             </Split>
-          </FlexItem>
-          {/*<FlexItem grow={{ default: "grow" }}>*/}
-          {/*  <TextContent>*/}
-          {/*    <strong>5</strong>*/}
-          {/*    <Text component={TextVariants.small}>Version</Text>*/}
-          {/*  </TextContent>*/}
-          {/*</FlexItem>*/}
-          {/*<FlexItem grow={{ default: "grow" }}>*/}
-          {/*  <TextContent>*/}
-          {/*    <span>02/16/2021 10:11</span>*/}
-          {/*    <Text component={TextVariants.small}>Deployed at</Text>*/}
-          {/*  </TextContent>*/}
-          {/*</FlexItem>*/}
-        </Flex>
-        {/*<Title headingLevel="h3" size="lg" className="test-and-deploy__title">*/}
-        {/*  Details*/}
-        {/*</Title>*/}
-        <DescriptionList columnModifier={{ lg: "3Col" }}>
-          <DescriptionListGroup>
-            <DescriptionListTerm>Description</DescriptionListTerm>
-            <DescriptionListDescription>Added some new rules and fixed others</DescriptionListDescription>
-          </DescriptionListGroup>
-          <DescriptionListGroup>
-            <DescriptionListTerm>Url</DescriptionListTerm>
-            <DescriptionListDescription>
-              <ClipboardCopy isReadOnly={true}>Some url</ClipboardCopy>
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-          <DescriptionListGroup>
-            <DescriptionListTerm>Version</DescriptionListTerm>
-            <DescriptionListDescription>v5</DescriptionListDescription>
-          </DescriptionListGroup>
-          <DescriptionListGroup>
-            <DescriptionListTerm>Deployed at</DescriptionListTerm>
-            <DescriptionListDescription>02/16/2021 10:11</DescriptionListDescription>
-          </DescriptionListGroup>
-          <DescriptionListGroup>
-            <DescriptionListTerm>Kafka source</DescriptionListTerm>
-            <DescriptionListDescription>
-              <span>endpoint 1</span>
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-          <DescriptionListGroup>
-            <DescriptionListTerm>Kafka sink</DescriptionListTerm>
-            <DescriptionListDescription>
-              <span>endpoint 2</span>
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-        </DescriptionList>
-      </section>
+          </Form>
+        </CardBody>
+      </Card>
+      <br />
+      <Card isFlat={true}>
+        <CardTitle>Status</CardTitle>
+        <CardBody>
+          <section>
+            <Flex
+              direction={{ default: "row" }}
+              alignItems={{ default: "alignItemsStretch" }}
+              justifyContent={{ default: "justifyContentFlexStart" }}
+              className="test-and-deploy__deployment__status-bar"
+            >
+              <FlexItem grow={{ default: "grow" }}>
+                <Split hasGutter={true}>
+                  <SplitItem>
+                    <Flex
+                      direction={{ default: "column" }}
+                      alignSelf={{ default: "alignSelfCenter" }}
+                      justifyContent={{ default: "justifyContentCenter" }}
+                      style={{ height: "100%" }}
+                    >
+                      <FlexItem>
+                        <CheckCircleIcon
+                          style={{
+                            fontSize: "var(--pf-global--icon--FontSize--lg)",
+                            color: "var(--pf-global--success-color--100)"
+                          }}
+                        />
+                      </FlexItem>
+                    </Flex>
+                  </SplitItem>
+                  <SplitItem>
+                    <TextContent>
+                      <strong>Traffic Violation</strong> v5
+                      <Text component={TextVariants.small}>Deployed</Text>
+                    </TextContent>
+                  </SplitItem>
+                </Split>
+              </FlexItem>
+              {/*<FlexItem grow={{ default: "grow" }}>*/}
+              {/*  <TextContent>*/}
+              {/*    <strong>5</strong>*/}
+              {/*    <Text component={TextVariants.small}>Version</Text>*/}
+              {/*  </TextContent>*/}
+              {/*</FlexItem>*/}
+              {/*<FlexItem grow={{ default: "grow" }}>*/}
+              {/*  <TextContent>*/}
+              {/*    <span>02/16/2021 10:11</span>*/}
+              {/*    <Text component={TextVariants.small}>Deployed at</Text>*/}
+              {/*  </TextContent>*/}
+              {/*</FlexItem>*/}
+            </Flex>
+            {/*<Title headingLevel="h3" size="lg" className="test-and-deploy__title">*/}
+            {/*  Details*/}
+            {/*</Title>*/}
+            <DescriptionList columnModifier={{ lg: "3Col" }}>
+              <DescriptionListGroup>
+                <DescriptionListTerm>Description</DescriptionListTerm>
+                <DescriptionListDescription>Added some new rules and fixed others</DescriptionListDescription>
+              </DescriptionListGroup>
+              <DescriptionListGroup>
+                <DescriptionListTerm>Url</DescriptionListTerm>
+                <DescriptionListDescription>
+                  <ClipboardCopy isReadOnly={true}>https://example.com/e8d6d5f5d83u8d8d83</ClipboardCopy>
+                </DescriptionListDescription>
+              </DescriptionListGroup>
+              <DescriptionListGroup>
+                <DescriptionListTerm>Version</DescriptionListTerm>
+                <DescriptionListDescription>v5</DescriptionListDescription>
+              </DescriptionListGroup>
+              <DescriptionListGroup>
+                <DescriptionListTerm>Deployed at</DescriptionListTerm>
+                <DescriptionListDescription>02/16/2021 10:11</DescriptionListDescription>
+              </DescriptionListGroup>
+              <DescriptionListGroup>
+                <DescriptionListTerm>Kafka source</DescriptionListTerm>
+                <DescriptionListDescription>
+                  <span>endpoint 1</span>
+                </DescriptionListDescription>
+              </DescriptionListGroup>
+              <DescriptionListGroup>
+                <DescriptionListTerm>Kafka sink</DescriptionListTerm>
+                <DescriptionListDescription>
+                  <span>endpoint 2</span>
+                </DescriptionListDescription>
+              </DescriptionListGroup>
+            </DescriptionList>
+          </section>
+        </CardBody>
+      </Card>
+
       <Form readOnly={true} style={{ display: "none" }}>
         <Flex spaceItems={{ default: "spaceItemsXl" }}>
           <FlexItem>
@@ -223,11 +268,13 @@ const DeploymentConsole = () => {
           </FlexItem>
         </Flex>
       </Form>
-      <Divider className="test-and-deploy__divider" />
-      <Title headingLevel="h3" size="xl" className="test-and-deploy__title">
-        Deployment History
-      </Title>
-      <DecisionVersions />
+      <br />
+      <Card isFlat={true}>
+        <CardTitle>Deployment History</CardTitle>
+        <CardBody>
+          <DecisionVersions />
+        </CardBody>
+      </Card>
     </section>
   );
 };
