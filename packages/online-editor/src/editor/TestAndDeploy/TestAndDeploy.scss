@@ -181,6 +181,7 @@ $mobileHeaderHeight: 108px;
   &__tabs-scroll {
     height: 100%;
     overflow-y: scroll;
+    background: white;
   }
 }
 
@@ -230,5 +231,5 @@ input:-webkit-autofill:active {
   }
 }
 .rotating {
-  animation: rotating 1.2s linear infinite;
+  animation: rotating 1.5s linear infinite;
 }

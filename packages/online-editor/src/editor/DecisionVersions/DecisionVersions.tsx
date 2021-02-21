@@ -15,17 +15,20 @@
  */
 
 import * as React from "react";
-import { nowrap, cellWidth, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
+import { useEffect, useState } from "react";
 import { Button, Label } from "@patternfly/react-core";
-import {
-  CheckCircleIcon,
-  ErrorCircleOIcon,
-  ExternalLinkAltIcon,
-  RedoAltIcon,
-  StopCircleIcon
-} from "@patternfly/react-icons";
+import { nowrap, cellWidth, IRow, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
+import { ExternalLinkAltIcon, HistoryIcon } from "@patternfly/react-icons";
+import { AxiosError } from "axios";
+import { Decision } from "../DeploymentConsole/useDecisionStatus";
+import { RemoteData } from "../ModelTester/ModelTester";
+import DeploymentStatusLabel from "../DeploymentStatusLabel/DeploymentStatusLabel";
 
-const DecisionVersions = () => {
+interface DecisionVersionsProps {
+  data: RemoteData<AxiosError, Decision[]>;
+}
+
+const DecisionVersions = ({ data }: DecisionVersionsProps) => {
   const columns = [
     { title: "Version", transforms: [nowrap] },
     { title: "Status" },
@@ -36,129 +39,78 @@ const DecisionVersions = () => {
     { title: "Sink" },
     { title: "" }
   ];
-  const rows = [
-    {
-      cells: [
-        "v5",
-        {
-          title: (
-            <Label color={"green"} icon={<CheckCircleIcon />}>
-              Deployed
-            </Label>
-          )
-        },
-        "02/25/2021",
-        { title: <span>Added some new rules and fixed others</span> },
-        {
-          title: (
-            <Label color="blue" href="https://www.redhat.com" icon={<ExternalLinkAltIcon />} target="_blank">
-              Link
-            </Label>
-          )
-        },
-        "source endpoint",
-        "sink endpoint",
-        { title: "" }
-      ]
-    },
-    {
-      cells: [
-        "v4",
-        {
-          title: (
-            <Label color="red" icon={<ErrorCircleOIcon />}>
-              Failed
-            </Label>
-          )
-        },
-        "02/10/2021",
-        { title: "Updated some rule" },
-        "url",
-        "source endpoint",
-        "sink endpoint",
-        {
-          title: ""
-        }
-      ]
-    },
-    {
-      cells: [
-        "v3",
-        {
-          title: (
-            <Label color="grey" icon={<StopCircleIcon />}>
-              Ready
-            </Label>
-          )
-        },
-        "02/09/2021",
-        { title: "Fixed some issue" },
-        "url",
-        "source endpoint",
-        "sink endpoint",
-        {
-          title: <RollbackButton />
-        }
-      ]
-    },
-    {
-      cells: [
-        "v2",
-        {
-          title: (
-            <Label color="grey" icon={<StopCircleIcon />}>
-              Ready
-            </Label>
-          )
-        },
-        "02/09/2021",
-        { title: "Fixed some issue" },
-        "url",
-        "source endpoint",
-        "sink endpoint",
-        {
-          title: <RollbackButton />
-        }
-      ]
-    },
-    {
-      cells: [
-        "v1",
-        {
-          title: (
-            <Label color="grey" icon={<StopCircleIcon />}>
-              Ready
-            </Label>
-          )
-        },
-        "02/09/2021",
-        { title: "Fixed some issue" },
-        "url",
-        "source endpoint",
-        "sink endpoint",
-        {
-          title: <RollbackButton />
-        }
-      ]
-    }
-  ];
+  const [rows, setRows] = useState<IRow[]>(prepareRows(columns.length, data));
+
+  useEffect(() => {
+    setRows(prepareRows(columns.length, data));
+  }, [data.status]);
 
   return (
-    <div>
-      <Table aria-label="Versions List" variant="compact" cells={columns} rows={rows}>
-        <TableHeader />
-        <TableBody />
-      </Table>
-    </div>
+    <Table aria-label="Versions List" variant="compact" cells={columns} rows={rows}>
+      <TableHeader />
+      <TableBody />
+    </Table>
   );
 };
 
 export default DecisionVersions;
 
+const prepareRows = (columnsNumber: number, data: RemoteData<AxiosError, Decision[]>) => {
+  let rows;
+  switch (data.status) {
+    case "NOT_ASKED":
+    case "LOADING":
+      // rows = skeletonRows(columnsNumber, 10, "executionKey");
+      rows = [{ cells: ["", "", "", "", "", "", "", ""] }];
+      break;
+    case "SUCCESS":
+      if (data.data.length > 0) {
+        rows = prepareVersionsRows(data.data);
+      } else {
+        // rows = noVersions(columnsNumber);
+        rows = [{ cells: ["", "", "", "", "", "", "", ""] }];
+      }
+      break;
+    case "FAILURE":
+      // rows = loadingError(columnsNumber);
+      rows = [{ cells: ["", "", "", "", "", "", "", ""] }];
+      break;
+  }
+  return rows;
+};
+
+const prepareVersionsRows = (rowData: Decision[]) => {
+  return rowData.map(item => ({
+    cells: [
+      `v${item.version}`,
+      {
+        title: <DeploymentStatusLabel status={item.status} />
+      },
+      item.submitted_at,
+      { title: <span>{item.description}</span> },
+      {
+        title:
+          item.status === "CURRENT" ? (
+            <Label color="blue" href={item.url} icon={<ExternalLinkAltIcon />} target="_blank">
+              Link
+            </Label>
+          ) : (
+            <span>-</span>
+          )
+      },
+      item.eventing?.kafka?.source ?? "-",
+      item.eventing?.kafka?.sink ?? "-",
+      {
+        title: item.status === "READY" ? <RollbackButton /> : <></>
+      }
+    ]
+  }));
+};
+
 const RollbackButton = () => {
   return (
     <div className={"pf-u-text-align-right"}>
-      <Button key={"rollback"} variant="control" isSmall={true} icon={<RedoAltIcon />} iconPosition="left">
+      <Button key={"rollback"} variant="secondary" isSmall={true} icon={<HistoryIcon />} iconPosition="left">
         Rollback
       </Button>
     </div>

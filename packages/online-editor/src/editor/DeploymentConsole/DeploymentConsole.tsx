@@ -53,6 +53,7 @@ import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { AxiosRequestConfig } from "axios";
 import { axiosClient } from "../../common/axiosClient";
 import useBuildingDecision from "./useBuildingDecision";
+import useDecisionVersions from "./useDecisionVersions";
 
 interface DeploymentConsoleProps {
   editor?: EmbeddedEditorRef;
@@ -72,6 +73,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     isValid: true,
     messages: {}
   });
+  const { decisionVersions } = useDecisionVersions(modelName);
 
   const onDescriptionChange = (value: string) => {
     setDescription(value);
@@ -364,7 +366,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                 <DescriptionListGroup>
                   <DescriptionListTerm>Url</DescriptionListTerm>
                   <DescriptionListDescription>
-                    <ClipboardCopy isReadOnly={true}>{decision.url}</ClipboardCopy>
+                    {decision.url ? <ClipboardCopy isReadOnly={true}>{decision.url}</ClipboardCopy> : <em>n.a.</em>}
                   </DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
@@ -372,19 +374,21 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                   <DescriptionListDescription>v{decision.version}</DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
-                  <DescriptionListTerm>Deployed at</DescriptionListTerm>
-                  <DescriptionListDescription>{decision.published_at}</DescriptionListDescription>
+                  <DescriptionListTerm>{decision.published_at ? "Deployed at" : "Submitted at"}</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {decision.published_at ?? decision.submitted_at}
+                  </DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
                   <DescriptionListTerm>Kafka source</DescriptionListTerm>
                   <DescriptionListDescription>
-                    <span>{decision.eventing?.kafka?.source ?? <em>Not present</em>}</span>
+                    <span>{decision.eventing?.kafka?.source ?? <em>n.a.</em>}</span>
                   </DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
                   <DescriptionListTerm>Kafka sink</DescriptionListTerm>
                   <DescriptionListDescription>
-                    <span>{decision.eventing?.kafka?.sink ?? <em>Not present</em>}</span>
+                    <span>{decision.eventing?.kafka?.sink ?? <em>n.a.</em>}</span>
                   </DescriptionListDescription>
                 </DescriptionListGroup>
               </DescriptionList>
@@ -396,7 +400,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
       <Card isFlat={true}>
         <CardTitle>Deployment History</CardTitle>
         <CardBody>
-          <DecisionVersions />
+          <DecisionVersions data={decisionVersions} />
         </CardBody>
       </Card>
     </section>
