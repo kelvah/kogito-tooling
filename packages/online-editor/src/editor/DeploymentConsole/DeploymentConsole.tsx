@@ -38,20 +38,38 @@ import {
   Text,
   TextContent,
   TextVariants,
-  Tooltip
+  Tooltip,
+  EmptyState,
+  EmptyStateIcon,
+  Title
 } from "@patternfly/react-core";
-import { useState } from "react";
-import { CheckCircleIcon, ExternalLinkAltIcon, HelpIcon } from "@patternfly/react-icons";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { HelpIcon, ServerIcon } from "@patternfly/react-icons";
 import DecisionVersions from "../DecisionVersions/DecisionVersions";
 import "./DeploymentConsole.scss";
+import { GlobalContext } from "../../common/GlobalContext";
+import useDecisionStatus, { Decision } from "./useDecisionStatus";
+import DeploymentStatusIcon from "../DeploymentStatusIcon/DeploymentStatusIcon";
+import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
+import { Environment } from "../TestAndDeploy/TestAndDeploy";
+import { AxiosRequestConfig } from "axios";
+import { axiosClient } from "../../common/axiosClient";
 
-const DeploymentConsole = () => {
+interface DeploymentConsoleProps {
+  editor?: EmbeddedEditorRef;
+}
+
+const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
+  const context = useContext(GlobalContext);
+  const modelName = context.file.fileName;
   const [description, setDescription] = useState("");
   const [kafkaSource, setKafkaSource] = useState<string>("");
   const [kafkaSink, setKafkaSink] = useState<string>("");
-
   const kafkaOptions = ["endpoint 1", "endpoint 2", "endpoint 3", "endpoint 4"];
+  const { decisionStatus, loadDecisionStatus } = useDecisionStatus(modelName);
+  const [decision, setDecision] = useState<Decision>();
 
+  // console.log(decisionStatus);
   const onDescriptionChange = (value: string) => {
     setDescription(value);
   };
@@ -64,6 +82,77 @@ const DeploymentConsole = () => {
     setKafkaSink(value);
   };
 
+  const deploy = useCallback(async () => {
+    try {
+      const modelContent = await editor?.getContent();
+      const requestConfig: AxiosRequestConfig = {
+        url: "/decisions",
+        method: "post",
+        data: {
+          kind: "Decision",
+          name: modelName,
+          description: description,
+          model: {
+            dmn: modelContent
+          }
+        }
+      };
+      if (kafkaSource && kafkaSink) {
+        requestConfig.data.eventing = {
+          kafka: {
+            source: kafkaSource,
+            sink: kafkaSink
+          }
+        };
+      }
+      axiosClient(requestConfig)
+        .then(response => {
+          console.log(response);
+          loadDecisionStatus();
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  }, [editor, description, modelName, kafkaSource, kafkaSink]);
+
+  useEffect(() => {
+    if (decisionStatus.status === "SUCCESS") {
+      setDecision(decisionStatus.data);
+    }
+  }, [decisionStatus]);
+
+  const interval = useRef<number | undefined>();
+
+  useEffect(() => {
+    let isMounted = true;
+    if (
+      isMounted &&
+      decisionStatus.status === "SUCCESS" &&
+      decisionStatus.data.status === "BUILDING" &&
+      !interval.current
+    ) {
+      console.log("starting interval");
+      interval.current = window.setInterval(loadDecisionStatus, 5000);
+    }
+    if (isMounted && decisionStatus.status === "SUCCESS" && decisionStatus.data.status !== "BUILDING") {
+      console.log("clearing interval");
+      window.clearInterval(interval.current);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [interval.current, decisionStatus]);
+
+  useEffect(() => {
+    return () => {
+      console.log("clearing interval because unmount");
+      window.clearInterval(interval.current);
+    };
+  }, []);
+
   return (
     <section className="test-and-deploy__deployment">
       <Card isFlat={true}>
@@ -73,7 +162,7 @@ const DeploymentConsole = () => {
             <Split hasGutter={true}>
               <SplitItem isFilled={true}>
                 <FormGroup label="Description" fieldId="description">
-                  <TextInput type="text" value={description} onChange={onDescriptionChange} />
+                  <TextInput id="description" type="text" value={description} onChange={onDescriptionChange} />
                 </FormGroup>
               </SplitItem>
               <SplitItem style={{ minWidth: "15em" }}>
@@ -138,7 +227,9 @@ const DeploymentConsole = () => {
                 </FormGroup>
               </SplitItem>
               <SplitItem style={{ paddingTop: 32 }}>
-                <Button variant="primary">Deploy</Button>
+                <Button variant="primary" onClick={deploy}>
+                  Deploy
+                </Button>
               </SplitItem>
             </Split>
           </Form>
@@ -148,126 +239,95 @@ const DeploymentConsole = () => {
       <Card isFlat={true}>
         <CardTitle>Status</CardTitle>
         <CardBody>
-          <section>
-            <Flex
-              direction={{ default: "row" }}
-              alignItems={{ default: "alignItemsStretch" }}
-              justifyContent={{ default: "justifyContentFlexStart" }}
-              className="test-and-deploy__deployment__status-bar"
-            >
-              <FlexItem grow={{ default: "grow" }}>
-                <Split hasGutter={true}>
-                  <SplitItem>
-                    <Flex
-                      direction={{ default: "column" }}
-                      alignSelf={{ default: "alignSelfCenter" }}
-                      justifyContent={{ default: "justifyContentCenter" }}
-                      style={{ height: "100%" }}
-                    >
-                      <FlexItem>
-                        <CheckCircleIcon
-                          style={{
-                            fontSize: "var(--pf-global--icon--FontSize--lg)",
-                            color: "var(--pf-global--success-color--100)"
-                          }}
-                        />
-                      </FlexItem>
-                    </Flex>
-                  </SplitItem>
-                  <SplitItem>
-                    <TextContent>
-                      <strong>Traffic Violation</strong> v5
-                      <Text component={TextVariants.small}>Deployed</Text>
-                    </TextContent>
-                  </SplitItem>
-                </Split>
-              </FlexItem>
-              {/*<FlexItem grow={{ default: "grow" }}>*/}
-              {/*  <TextContent>*/}
-              {/*    <strong>5</strong>*/}
-              {/*    <Text component={TextVariants.small}>Version</Text>*/}
-              {/*  </TextContent>*/}
-              {/*</FlexItem>*/}
-              {/*<FlexItem grow={{ default: "grow" }}>*/}
-              {/*  <TextContent>*/}
-              {/*    <span>02/16/2021 10:11</span>*/}
-              {/*    <Text component={TextVariants.small}>Deployed at</Text>*/}
-              {/*  </TextContent>*/}
-              {/*</FlexItem>*/}
-            </Flex>
-            {/*<Title headingLevel="h3" size="lg" className="test-and-deploy__title">*/}
-            {/*  Details*/}
-            {/*</Title>*/}
-            <DescriptionList columnModifier={{ lg: "3Col" }}>
-              <DescriptionListGroup>
-                <DescriptionListTerm>Description</DescriptionListTerm>
-                <DescriptionListDescription>Added some new rules and fixed others</DescriptionListDescription>
-              </DescriptionListGroup>
-              <DescriptionListGroup>
-                <DescriptionListTerm>Url</DescriptionListTerm>
-                <DescriptionListDescription>
-                  <ClipboardCopy isReadOnly={true}>https://example.com/e8d6d5f5d83u8d8d83</ClipboardCopy>
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-              <DescriptionListGroup>
-                <DescriptionListTerm>Version</DescriptionListTerm>
-                <DescriptionListDescription>v5</DescriptionListDescription>
-              </DescriptionListGroup>
-              <DescriptionListGroup>
-                <DescriptionListTerm>Deployed at</DescriptionListTerm>
-                <DescriptionListDescription>02/16/2021 10:11</DescriptionListDescription>
-              </DescriptionListGroup>
-              <DescriptionListGroup>
-                <DescriptionListTerm>Kafka source</DescriptionListTerm>
-                <DescriptionListDescription>
-                  <span>endpoint 1</span>
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-              <DescriptionListGroup>
-                <DescriptionListTerm>Kafka sink</DescriptionListTerm>
-                <DescriptionListDescription>
-                  <span>endpoint 2</span>
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            </DescriptionList>
-          </section>
+          {decisionStatus.status === "FAILURE" && decisionStatus.error.response?.status === 404 && (
+            <EmptyState variant={"xs"}>
+              <EmptyStateIcon icon={ServerIcon} />
+              <Title headingLevel="h3" size="lg">
+                Model not yet deployed
+              </Title>
+            </EmptyState>
+          )}
+          {decision && (
+            <section>
+              <Flex
+                direction={{ default: "row" }}
+                alignItems={{ default: "alignItemsStretch" }}
+                justifyContent={{ default: "justifyContentFlexStart" }}
+                className="test-and-deploy__deployment__status-bar"
+              >
+                <FlexItem grow={{ default: "grow" }}>
+                  <Split hasGutter={true}>
+                    <SplitItem>
+                      <Flex
+                        direction={{ default: "column" }}
+                        alignSelf={{ default: "alignSelfCenter" }}
+                        justifyContent={{ default: "justifyContentCenter" }}
+                        style={{ height: "100%" }}
+                      >
+                        <FlexItem>
+                          <DeploymentStatusIcon status={decision.status} />
+                        </FlexItem>
+                      </Flex>
+                    </SplitItem>
+                    <SplitItem>
+                      <TextContent>
+                        <strong>{decision.name}</strong> v{decision.version}
+                        <Text component={TextVariants.small} style={{ textTransform: "capitalize" }}>
+                          {decision.status.toLowerCase()}
+                        </Text>
+                      </TextContent>
+                    </SplitItem>
+                  </Split>
+                </FlexItem>
+                {/*<FlexItem grow={{ default: "grow" }}>*/}
+                {/*  <TextContent>*/}
+                {/*    <strong>5</strong>*/}
+                {/*    <Text component={TextVariants.small}>Version</Text>*/}
+                {/*  </TextContent>*/}
+                {/*</FlexItem>*/}
+                {/*<FlexItem grow={{ default: "grow" }}>*/}
+                {/*  <TextContent>*/}
+                {/*    <span>02/16/2021 10:11</span>*/}
+                {/*    <Text component={TextVariants.small}>Deployed at</Text>*/}
+                {/*  </TextContent>*/}
+                {/*</FlexItem>*/}
+              </Flex>
+              <DescriptionList columnModifier={{ lg: "3Col" }}>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Description</DescriptionListTerm>
+                  <DescriptionListDescription>{decision.description}</DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Url</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    <ClipboardCopy isReadOnly={true}>{decision.url}</ClipboardCopy>
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Version</DescriptionListTerm>
+                  <DescriptionListDescription>v{decision.version}</DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Deployed at</DescriptionListTerm>
+                  <DescriptionListDescription>{decision.published_at}</DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Kafka source</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    <span>{decision.eventing?.kafka?.source ?? <em>Not present</em>}</span>
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Kafka sink</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    <span>{decision.eventing?.kafka?.sink ?? <em>Not present</em>}</span>
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+            </section>
+          )}
         </CardBody>
       </Card>
-
-      <Form readOnly={true} style={{ display: "none" }}>
-        <Flex spaceItems={{ default: "spaceItemsXl" }}>
-          <FlexItem>
-            <FormGroup label="Version" fieldId="a">
-              <section style={{ marginTop: 6 }}>
-                <strong>v5</strong>
-                &nbsp;
-                <Label color={"green"} icon={<CheckCircleIcon />}>
-                  Current
-                </Label>
-              </section>
-            </FormGroup>
-          </FlexItem>
-          <FlexItem style={{ maxWidth: "25em" }}>
-            <FormGroup label="Description" fieldId="d">
-              <section style={{ marginTop: 6 }}>Added some new rules and fixed others</section>
-            </FormGroup>
-          </FlexItem>
-          <FlexItem>
-            <FormGroup label="Url" fieldId="b">
-              <section style={{ marginTop: 6 }}>
-                <Label color="blue" href="https://www.redhat.com" icon={<ExternalLinkAltIcon />} target="_blank">
-                  Link
-                </Label>
-              </section>
-            </FormGroup>
-          </FlexItem>
-          <FlexItem>
-            <FormGroup label="Created on" fieldId="c">
-              <section style={{ marginTop: 6 }}>02/25/2021</section>
-            </FormGroup>
-          </FlexItem>
-        </Flex>
-      </Form>
       <br />
       <Card isFlat={true}>
         <CardTitle>Deployment History</CardTitle>

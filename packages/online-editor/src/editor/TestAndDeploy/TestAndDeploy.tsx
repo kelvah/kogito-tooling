@@ -72,8 +72,8 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const getSchema = useCallback(
     async (environment: Environment) => {
       const modelContent = await getModel();
-      console.log("model content");
-      console.log(modelContent);
+      // console.log("model content");
+      // console.log(modelContent);
       const endpoint = environment === "DEV" ? openApiDevUrl : openApiProdUrl;
       const requestParams = {
         headers: {
@@ -88,8 +88,8 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
         const modelSchema = await fetch(endpoint, requestParams).then(response => {
           return response.json();
         });
-        console.log("model schema");
-        console.log(modelSchema);
+        // console.log("model schema");
+        // console.log(modelSchema);
         setSchema(modelSchema);
       } catch (err) {
         console.error(err);
@@ -238,7 +238,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                     hidden={true}
                   >
                     <PageSection variant={"light"} isFilled={true}>
-                      <DeploymentConsole />
+                      <DeploymentConsole editor={editor} />
                       {/*<Flex>*/}
                       {/*  <FlexItem>*/}
                       {/*    <span style={{ fontWeight: 700 }}>Status</span>*/}
@@ -278,29 +278,6 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                       {/*    </Button>*/}
                       {/*  </FlexItem>*/}
                       {/*</Flex>*/}
-                      {false && !modelDeploy.deployed && !modelDeploy.waiting && prodSchemas === null && (
-                        <EmptyState variant={"small"}>
-                          <EmptyStateIcon icon={ServerIcon} />
-                          <Title headingLevel="h3" size="lg">
-                            Model not deployed
-                          </Title>
-                          <EmptyStateBody>You need to deploy the model to be able to execute it</EmptyStateBody>
-                        </EmptyState>
-                      )}
-                      {false && modelDeploy.waiting && prodSchemas === null && (
-                        <EmptyState variant={"small"}>
-                          <EmptyStateIcon icon={ServerIcon} />
-                          <Title headingLevel="h3" size="lg">
-                            Model not ready
-                          </Title>
-                          <EmptyStateBody>
-                            You will be able to execute the model when the deployment will be complete.
-                          </EmptyStateBody>
-                        </EmptyState>
-                      )}
-                      {/*{prodSchemas !== null && prodSchemas.length > 0 && (*/}
-                      {/*  <ModelTester schemas={prodSchemas} baseUrl={prodUrl} environment="PROD" />*/}
-                      {/*)}*/}
                       {prodSchemas !== null && prodSchemas.length === 0 && modelDeploy.deployed && (
                         <EmptyModelMessage />
                       )}

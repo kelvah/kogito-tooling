@@ -14,20 +14,11 @@
  *  limitations under the License.
  */
 
-export const config = {
-  openApi: {
-    url: "http://localhost:8080",
-    specPath: "/jitdmn/schema/form",
-    runModel: "/jitdmn/evaluateAndExplain"
-  },
-  explainability: {
-    serviceUrl: "http://localhost:8081/explanations/saliencies",
-    auditUIUrl: "http://someurl.com"
-  },
-  publish: {
-    url: "http://el-daas-workflow-kiegroup.apps-crc.testing",
-    appName: "dmn-quarkus-example",
-    envName: "kiegroup"
-  },
-  baseUrl: "https://master-cp-baaas-cp-demo.apps.kogito-cloud.automation.rhmw.io"
-};
+import axios from "axios";
+import { config } from "../config";
+
+export const axiosClient = axios.create({
+  baseURL: config.baseUrl || process.env.BAAAS_BASE_URL,
+  timeout: 5000,
+  headers: {}
+});
