@@ -29,7 +29,6 @@ import {
   FormGroup,
   FormSelect,
   FormSelectOption,
-  Label,
   Split,
   SplitItem,
   TextInput,
@@ -43,7 +42,7 @@ import {
   EmptyStateIcon,
   Title
 } from "@patternfly/react-core";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { HelpIcon, ServerIcon } from "@patternfly/react-icons";
 import DecisionVersions from "../DecisionVersions/DecisionVersions";
 import "./DeploymentConsole.scss";
@@ -51,7 +50,6 @@ import { GlobalContext } from "../../common/GlobalContext";
 import useDecisionStatus, { Decision } from "./useDecisionStatus";
 import DeploymentStatusIcon from "../DeploymentStatusIcon/DeploymentStatusIcon";
 import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
-import { Environment } from "../TestAndDeploy/TestAndDeploy";
 import { AxiosRequestConfig } from "axios";
 import { axiosClient } from "../../common/axiosClient";
 
@@ -68,53 +66,90 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   const kafkaOptions = ["endpoint 1", "endpoint 2", "endpoint 3", "endpoint 4"];
   const { decisionStatus, loadDecisionStatus } = useDecisionStatus(modelName);
   const [decision, setDecision] = useState<Decision>();
+  const [deployFormValidation, setDeployFormValidation] = useState<DeployFormValidation>({
+    isValid: true,
+    messages: {}
+  });
 
   // console.log(decisionStatus);
   const onDescriptionChange = (value: string) => {
     setDescription(value);
+    validateDeployForm(value, kafkaSource, kafkaSink);
   };
 
   const onKafkaSourceChange = (value: string) => {
     setKafkaSource(value);
+    validateDeployForm(description, value, kafkaSink);
   };
 
   const onKafkaSinkChange = (value: string) => {
     setKafkaSink(value);
+    validateDeployForm(description, kafkaSource, value);
   };
 
+  const validateDeployForm = useCallback((descriptionValue: string, sourceValue: string, sinkValue: string) => {
+    const validation: DeployFormValidation = {
+      isValid: true,
+      messages: {}
+    };
+    if (descriptionValue.trim() === "") {
+      validation.isValid = false;
+      validation.messages.description = "Please provide a description";
+    } else {
+      delete validation.messages.description;
+    }
+    if (sourceValue !== "" && sinkValue === "") {
+      validation.isValid = false;
+      validation.messages.kafkaSink = "Please select a Kafka sink Endpoint";
+    } else {
+      delete validation.messages.kafkaSink;
+    }
+    if (sinkValue !== "" && sourceValue === "") {
+      validation.isValid = false;
+      validation.messages.kafkaSource = "Please select a Kafka source Endpoint";
+    } else {
+      delete validation.messages.kafkaSource;
+    }
+    setDeployFormValidation(validation);
+    return validation;
+  }, []);
+
   const deploy = useCallback(async () => {
-    try {
-      const modelContent = await editor?.getContent();
-      const requestConfig: AxiosRequestConfig = {
-        url: "/decisions",
-        method: "post",
-        data: {
-          kind: "Decision",
-          name: modelName,
-          description: description,
-          model: {
-            dmn: modelContent
-          }
-        }
-      };
-      if (kafkaSource && kafkaSink) {
-        requestConfig.data.eventing = {
-          kafka: {
-            source: kafkaSource,
-            sink: kafkaSink
+    const validation = validateDeployForm(description, kafkaSource, kafkaSink);
+    if (validation.isValid) {
+      try {
+        const modelContent = await editor?.getContent();
+        const requestConfig: AxiosRequestConfig = {
+          url: "/decisions",
+          method: "post",
+          data: {
+            kind: "Decision",
+            name: modelName,
+            description: description,
+            model: {
+              dmn: modelContent
+            }
           }
         };
+        if (kafkaSource && kafkaSink) {
+          requestConfig.data.eventing = {
+            kafka: {
+              source: kafkaSource,
+              sink: kafkaSink
+            }
+          };
+        }
+        axiosClient(requestConfig)
+          .then(response => {
+            console.log(response);
+            loadDecisionStatus();
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      } catch (error) {
+        console.log(error);
       }
-      axiosClient(requestConfig)
-        .then(response => {
-          console.log(response);
-          loadDecisionStatus();
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    } catch (error) {
-      console.log(error);
     }
   }, [editor, description, modelName, kafkaSource, kafkaSink]);
 
@@ -161,16 +196,32 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
           <Form>
             <Split hasGutter={true}>
               <SplitItem isFilled={true}>
-                <FormGroup label="Description" fieldId="description">
-                  <TextInput id="description" type="text" value={description} onChange={onDescriptionChange} />
+                <FormGroup
+                  label="Description"
+                  fieldId="description"
+                  validated={deployFormValidation.messages.description ? "error" : "default"}
+                  helperTextInvalid={deployFormValidation.messages.description}
+                >
+                  <TextInput
+                    id="description"
+                    type="text"
+                    value={description}
+                    onChange={onDescriptionChange}
+                    onBlur={() => {
+                      validateDeployForm(description, kafkaSource, kafkaSink);
+                    }}
+                    validated={deployFormValidation.messages.description ? "error" : "default"}
+                  />
                 </FormGroup>
               </SplitItem>
               <SplitItem style={{ minWidth: "15em" }}>
                 <FormGroup
                   label="Kafka source"
                   fieldId="kafka-source"
+                  validated={deployFormValidation.messages.kafkaSource ? "error" : "default"}
+                  helperTextInvalid={deployFormValidation.messages.kafkaSource}
                   labelIcon={
-                    <Tooltip content="Kafka source is optional. If provided, a Kafka sink must be provided too.">
+                    <Tooltip content="Kafka source is mandatory if a Kafka sink endpoint has been provided.">
                       <button
                         aria-label="More information for Kafka source"
                         onClick={e => e.preventDefault()}
@@ -190,6 +241,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                     value={kafkaSource}
                     onChange={onKafkaSourceChange}
                     aria-label="Kafka source"
+                    validated={deployFormValidation.messages.kafkaSource ? "error" : "default"}
                   >
                     <FormSelectOption key="none" value="" label="" />
                     {kafkaOptions.map((option, index) => (
@@ -202,8 +254,10 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                 <FormGroup
                   label="Kafka sink"
                   fieldId="kafka-sink"
+                  validated={deployFormValidation.messages.kafkaSink ? "error" : "default"}
+                  helperTextInvalid={deployFormValidation.messages.kafkaSink}
                   labelIcon={
-                    <Tooltip content="Kafka sink is optional. If provided, a Kafka source must be provided too.">
+                    <Tooltip content="Kafka sink is mandatory if a Kafka source endpoint has been provided.">
                       <button
                         aria-label="More information for Kafka sink"
                         onClick={e => e.preventDefault()}
@@ -218,7 +272,13 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                     </Tooltip>
                   }
                 >
-                  <FormSelect id="kafka-sink" value={kafkaSink} onChange={onKafkaSinkChange} aria-label="Kafka sink">
+                  <FormSelect
+                    id="kafka-sink"
+                    value={kafkaSink}
+                    onChange={onKafkaSinkChange}
+                    aria-label="Kafka sink"
+                    validated={deployFormValidation.messages.kafkaSink ? "error" : "default"}
+                  >
                     <FormSelectOption key="none" value="" label="" />
                     {kafkaOptions.map((option, index) => (
                       <FormSelectOption key={index} value={option} label={option} />
@@ -227,7 +287,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                 </FormGroup>
               </SplitItem>
               <SplitItem style={{ paddingTop: 32 }}>
-                <Button variant="primary" onClick={deploy}>
+                <Button variant="primary" onClick={deploy} type={"button"}>
                   Deploy
                 </Button>
               </SplitItem>
@@ -340,3 +400,12 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
 };
 
 export default DeploymentConsole;
+
+interface DeployFormValidation {
+  isValid: boolean;
+  messages: {
+    description?: string;
+    kafkaSource?: string;
+    kafkaSink?: string;
+  };
+}
