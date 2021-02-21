@@ -16,13 +16,7 @@
 
 import * as React from "react";
 import { decisionDeployStatusStrings } from "../DeploymentConsole/useDecisionStatus";
-import {
-  CheckCircleIcon,
-  ErrorCircleOIcon,
-  HourglassHalfIcon,
-  StopCircleIcon,
-  TrashAltIcon
-} from "@patternfly/react-icons";
+import { CheckCircleIcon, ErrorCircleOIcon, StopCircleIcon, SyncAltIcon, TrashAltIcon } from "@patternfly/react-icons";
 
 interface DeploymentStatusIconProps {
   status: decisionDeployStatusStrings;
@@ -43,11 +37,12 @@ const DeploymentStatusIcon = ({ status }: DeploymentStatusIconProps) => {
       );
     case "BUILDING":
       return (
-        <HourglassHalfIcon
+        <SyncAltIcon
           style={{
             fontSize,
             color: "var(--pf-global--primary-color--100)"
           }}
+          className="rotating"
         />
       );
     case "FAILED":

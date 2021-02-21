@@ -52,6 +52,7 @@ import DeploymentStatusIcon from "../DeploymentStatusIcon/DeploymentStatusIcon";
 import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { AxiosRequestConfig } from "axios";
 import { axiosClient } from "../../common/axiosClient";
+import useBuildingDecision from "./useBuildingDecision";
 
 interface DeploymentConsoleProps {
   editor?: EmbeddedEditorRef;
@@ -65,13 +66,13 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   const [kafkaSink, setKafkaSink] = useState<string>("");
   const kafkaOptions = ["endpoint 1", "endpoint 2", "endpoint 3", "endpoint 4"];
   const { decisionStatus, loadDecisionStatus } = useDecisionStatus(modelName);
+  const { buildingDecision, loadBuildingDecision } = useBuildingDecision(modelName);
   const [decision, setDecision] = useState<Decision>();
   const [deployFormValidation, setDeployFormValidation] = useState<DeployFormValidation>({
     isValid: true,
     messages: {}
   });
 
-  // console.log(decisionStatus);
   const onDescriptionChange = (value: string) => {
     setDescription(value);
     validateDeployForm(value, kafkaSource, kafkaSink);
@@ -142,7 +143,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
         axiosClient(requestConfig)
           .then(response => {
             console.log(response);
-            loadDecisionStatus();
+            loadBuildingDecision();
           })
           .catch(error => {
             console.log(error);
@@ -154,6 +155,14 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   }, [editor, description, modelName, kafkaSource, kafkaSink]);
 
   useEffect(() => {
+    if (buildingDecision.status === "FAILURE") {
+      loadDecisionStatus();
+    } else if (buildingDecision.status === "SUCCESS") {
+      setDecision(buildingDecision.data);
+    }
+  }, [buildingDecision]);
+
+  useEffect(() => {
     if (decisionStatus.status === "SUCCESS") {
       setDecision(decisionStatus.data);
     }
@@ -163,23 +172,18 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
 
   useEffect(() => {
     let isMounted = true;
-    if (
-      isMounted &&
-      decisionStatus.status === "SUCCESS" &&
-      decisionStatus.data.status === "BUILDING" &&
-      !interval.current
-    ) {
+    if (isMounted && decision?.status === "BUILDING" && !interval.current) {
       console.log("starting interval");
-      interval.current = window.setInterval(loadDecisionStatus, 5000);
+      interval.current = window.setInterval(loadBuildingDecision, 5000);
     }
-    if (isMounted && decisionStatus.status === "SUCCESS" && decisionStatus.data.status !== "BUILDING") {
+    if (isMounted && decision?.status !== "BUILDING" && interval.current) {
       console.log("clearing interval");
       window.clearInterval(interval.current);
     }
     return () => {
       isMounted = false;
     };
-  }, [interval.current, decisionStatus]);
+  }, [interval.current, decision]);
 
   useEffect(() => {
     return () => {
