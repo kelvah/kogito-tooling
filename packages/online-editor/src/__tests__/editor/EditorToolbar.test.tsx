@@ -32,6 +32,8 @@ const requestPreview = jest.fn(() => null);
 const requestGistIt = jest.fn(() => null);
 const requestSetGitHubToken = jest.fn(() => null);
 const requestEmbed = jest.fn(() => null);
+const editorReady = true;
+const requestTestDeploy = jest.fn(() => null);
 
 function mockFunctions() {
   const original = require.requireActual("../../common/Hooks");
@@ -77,6 +79,8 @@ describe("EditorToolbar", () => {
               onGistIt={requestGistIt}
               onEmbed={requestEmbed}
               isEdited={isEdited}
+              isEditorReady={editorReady}
+              onTestDeploy={requestTestDeploy}
             />
           ).wrapper
         ).wrapper
@@ -105,6 +109,8 @@ describe("EditorToolbar", () => {
               onGistIt={requestGistIt}
               onEmbed={requestEmbed}
               isEdited={isEdited}
+              isEditorReady={editorReady}
+              onTestDeploy={requestTestDeploy}
             />
           ).wrapper
         ).wrapper
@@ -135,6 +141,8 @@ describe("EditorToolbar", () => {
               onGistIt={requestGistIt}
               onEmbed={requestEmbed}
               isEdited={false}
+              isEditorReady={editorReady}
+              onTestDeploy={requestTestDeploy}
             />,
             { githubService }
           ).wrapper

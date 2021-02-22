@@ -18,7 +18,7 @@ import axios from "axios";
 import { config } from "../config";
 
 export const axiosClient = axios.create({
-  baseURL: config.baseUrl || process.env.BAAAS_BASE_URL,
+  baseURL: config.baseUrl,
   timeout: 5000,
   headers: {}
 });

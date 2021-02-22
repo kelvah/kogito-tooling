@@ -55,6 +55,7 @@ import useDecisionStatus, { Decision } from "./useDecisionStatus";
 import useBuildingDecision from "./useBuildingDecision";
 import useDecisionVersions from "./useDecisionVersions";
 import "./DeploymentConsole.scss";
+import { config } from "../../config";
 
 interface DeploymentConsoleProps {
   editor?: EmbeddedEditorRef;
@@ -66,7 +67,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   const [description, setDescription] = useState("");
   const [kafkaSource, setKafkaSource] = useState<string>("");
   const [kafkaSink, setKafkaSink] = useState<string>("");
-  const kafkaOptions = ["endpoint 1", "endpoint 2", "endpoint 3", "endpoint 4"];
+  const kafkaOptions = config.kafkaOptions || [];
   const { decisionStatus, loadDecisionStatus } = useDecisionStatus(modelName);
   const { buildingDecision, loadBuildingDecision } = useBuildingDecision(modelName);
   const [decision, setDecision] = useState<Decision>();
@@ -328,7 +329,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
       <Card isFlat={true}>
         <CardTitle>Status</CardTitle>
         <CardBody>
-          {decisionStatus.status === "FAILURE" && decisionStatus.error.response?.status === 404 && (
+          {!decision && (
             <EmptyState variant={"xs"}>
               <EmptyStateIcon icon={ServerIcon} />
               <Title headingLevel="h3" size="lg">

@@ -14,20 +14,8 @@
  *  limitations under the License.
  */
 
+// @ts-nocheck
 export const config = {
-  openApi: {
-    url: "http://localhost:8080",
-    specPath: "/jitdmn/schema/form",
-    runModel: "/jitdmn/evaluateAndExplain"
-  },
-  explainability: {
-    serviceUrl: "http://localhost:8081/explanations/saliencies",
-    auditUIUrl: "http://someurl.com"
-  },
-  publish: {
-    url: "http://el-daas-workflow-kiegroup.apps-crc.testing",
-    appName: "dmn-quarkus-example",
-    envName: "kiegroup"
-  },
-  baseUrl: "https://master-cp-baaas-cp-demo.apps.kogito-cloud.automation.rhmw.io"
+  baseUrl: window.BAAAS_BASE_URL || process.env.BAAAS_BASE_URL,
+  kafkaOptions: (window.BAAAS_KAFKA_OPTIONS || process.env.BAAAS_KAFKA_OPTIONS) as string[]
 };
