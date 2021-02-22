@@ -1,69 +1,30 @@
 import * as React from "react";
-import { Environment, Schema } from "../TestAndDeploy/TestAndDeploy";
 import { useEffect, useState } from "react";
 import Form from "@rjsf/bootstrap-4";
-import {
-  Alert,
-  Grid,
-  GridItem,
-  EmptyState,
-  EmptyStateIcon,
-  Title,
-  Select,
-  SelectOption,
-  SelectVariant,
-  SelectDirection
-} from "@patternfly/react-core";
+import { Alert, Grid, GridItem, EmptyState, EmptyStateIcon, Title } from "@patternfly/react-core";
 import { EnvelopeIcon } from "@patternfly/react-icons";
 import OutputViewer from "../OutputViewer/OutputViewer";
-// import useSaliencies from "../TestAndDeploy/useSaliencies";
 import SkeletonCard from "../Skeletons/SkeletonCard/SkeletonCard";
 import SkeletonStripe from "../Skeletons/SkeletonStripe/SkeletonStripe";
-import { config } from "../../config";
+import { AxiosRequestConfig } from "axios";
+import { axiosClient } from "../../common/axiosClient";
 
 interface ModelTesterProps {
   schema: {};
   getModel: () => Promise<string | undefined>;
-  baseUrl: string;
-  environment: Environment;
+  baseUrl: string | undefined;
 }
 
 const ModelTester = (props: ModelTesterProps) => {
-  const { schema, getModel, baseUrl, environment } = props;
-  const [selectedEndpoint, setSelectedEndpoint] = useState<string>();
-  const [isEndpointSelectOpen, setIsEndpointSelectOpen] = useState(false);
-  const [selectedSchema, setSelectedSchema] = useState<{}>();
+  const { schema, getModel, baseUrl } = props;
   const [requestPayload, setRequestPayload] = useState({});
   const [responsePayload, setResponsePayload] = useState<RemoteData<Error, EvaluateAndExplainResponse>>({
     status: "NOT_ASKED"
   });
-  // const saliencies = useSaliencies(responsePayload, baseUrl);
-
-  const onEndpointSelectToggle = (openStatus: boolean) => {
-    setIsEndpointSelectOpen(openStatus);
-  };
-
-  const onEndpointSelect = (event: React.MouseEvent | React.ChangeEvent, selection: string) => {
-    setIsEndpointSelectOpen(false);
-    if (selection !== selectedEndpoint) {
-      setSelectedEndpoint(selection);
-      setResponsePayload({ status: "NOT_ASKED" });
-    }
-  };
 
   useEffect(() => {
-    // if (schemas.length > 0) {
-    //   setSelectedEndpoint(schemas[0].url);
-    // }
     setResponsePayload({ status: "NOT_ASKED" });
   }, []);
-
-  // useEffect(() => {
-  //   if (selectedEndpoint) {
-  //     const schema = schemas?.filter(item => item.url === selectedEndpoint)[0];
-  //     setSelectedSchema(schema?.schema);
-  //   }
-  // }, [schemas, selectedEndpoint]);
 
   const handleForm = async (form: { formData: any }) => {
     const formData = form.formData;
@@ -71,82 +32,25 @@ const ModelTester = (props: ModelTesterProps) => {
 
     setResponsePayload({ status: "LOADING" });
     const model = await getModel();
-    const requestParams = {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json, text/plain"
-      },
-      body: JSON.stringify({ model, context: formData }),
-      method: "POST",
-      mode: "cors" as RequestMode
+    const requestConfig: AxiosRequestConfig = {
+      baseURL: baseUrl,
+      url: "/evaluateAndExplain",
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      responseType: "json",
+      data: JSON.stringify({ model, context: formData })
     };
-    fetch(config.openApi.url + config.openApi.runModel, requestParams)
+    axiosClient(requestConfig)
       .then(response => {
-        return response.json().then(text => ({
-          json: text,
-          meta: response
-        }));
+        setResponsePayload({ status: "SUCCESS", data: response.data });
       })
-      .then(data => {
-        if (data.meta.ok) {
-          setResponsePayload({ status: "SUCCESS", data: data.json });
-        } else {
-          setResponsePayload({ status: "FAILURE", error: data.json?.details });
-        }
+      .catch(error => {
+        setResponsePayload({ status: "FAILURE", error: error.response.data.details });
       });
-    // if (selectedEndpoint) {
-    //   setResponsePayload({ status: "LOADING" });
-    //   fetch(baseUrl + selectedEndpoint, {
-    //     headers: {
-    //       Accept: "application/json, text/plain",
-    //       "Content-Type": "application/json"
-    //     },
-    //     body: JSON.stringify(formData),
-    //     method: "POST",
-    //     mode: "cors"
-    //   })
-    //     .then(response => {
-    //       return response.json().then(text => ({
-    //         json: text,
-    //         meta: response
-    //       }));
-    //     })
-    //     .then(data => {
-    //       if (data.meta.ok) {
-    //         setResponsePayload({ status: "SUCCESS", data: data.json });
-    //       } else {
-    //         setResponsePayload({ status: "FAILURE", error: data.json?.details });
-    //       }
-    //     });
-    // }
   };
 
   return (
     <section>
-      {/*<div className="test-and-deploy__endpoint-selection">*/}
-      {/*  <Title headingLevel="h3" className="test-and-deploy__title">*/}
-      {/*    Endpoint Selection*/}
-      {/*  </Title>*/}
-      {/*  <Select*/}
-      {/*    id="endpoint-selection"*/}
-      {/*    variant={SelectVariant.single}*/}
-      {/*    aria-label="Select Input"*/}
-      {/*    onToggle={onEndpointSelectToggle}*/}
-      {/*    onSelect={onEndpointSelect}*/}
-      {/*    selections={selectedEndpoint}*/}
-      {/*    isOpen={isEndpointSelectOpen}*/}
-      {/*    isDisabled={schemas.length === 0}*/}
-      {/*    aria-labelledby={"test-endpoints"}*/}
-      {/*    direction={SelectDirection.down}*/}
-      {/*  >*/}
-      {/*    {schemas &&*/}
-      {/*      schemas.map((schema, index) => (*/}
-      {/*        <SelectOption key={index} value={schema.url}>*/}
-      {/*          {schema.label}*/}
-      {/*        </SelectOption>*/}
-      {/*      ))}*/}
-      {/*  </Select>*/}
-      {/*</div>*/}
       <Grid hasGutter={false}>
         <GridItem span={6}>
           {schema && (
@@ -181,7 +85,6 @@ const ModelTester = (props: ModelTesterProps) => {
               <OutputViewer
                 responsePayload={responsePayload.data.dmnResult}
                 saliencies={responsePayload.data.saliencies}
-                environment={environment}
               />
             )}
             {responsePayload.status === "FAILURE" && (

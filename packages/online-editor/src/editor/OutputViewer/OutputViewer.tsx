@@ -34,7 +34,6 @@ import {
   CheckCircleIcon,
   EnvelopeIcon,
   ErrorCircleOIcon,
-  ExternalLinkSquareAltIcon,
   FastForwardIcon,
   HourglassHalfIcon,
   MinusCircleIcon,
@@ -45,16 +44,13 @@ import "./OutputViewer.scss";
 import FeaturesScoreChart from "../FeaturesScoreChart/FeaturesScoreChart";
 import FeaturesScoreTable from "../FeaturesScoreTable/FeaturesScoreTable";
 import useFeaturesScores from "./useFeaturesScores";
-import { Environment } from "../TestAndDeploy/TestAndDeploy";
-import { config } from "../../config";
 
 interface OutputViewerProps {
   responsePayload: DmnResult;
   saliencies: Saliencies;
-  environment: Environment;
 }
 
-const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewerProps) => {
+const OutputViewer = ({ responsePayload, saliencies }: OutputViewerProps) => {
   const [viewSection, setViewSection] = useState(1);
   const [decisionDetail, setDecisionDetail] = useState<DecisionResult | null>(null);
   const { featuresScores, topFeaturesScores } = useFeaturesScores(saliencies, decisionDetail?.decisionName);
@@ -183,78 +179,59 @@ const OutputViewer = ({ responsePayload, saliencies, environment }: OutputViewer
                     <Title headingLevel="h4" className="output-viewer__section__title">
                       Explanation
                     </Title>
-                    {environment === "DEV" && (
-                      <Stack hasGutter={true}>
-                        {saliencies.status === "SUCCEEDED" && (
-                          <>
-                            <StackItem>
-                              <Card isCompact={true} isFlat={true}>
-                                <CardTitle>
-                                  Features Scores Chart{" "}
-                                  <Tooltip
-                                    position="top"
-                                    content={
-                                      <div>
-                                        The explanation chart displays each input influencing the decision result, with
-                                        a positive or negative score.
-                                      </div>
-                                    }
-                                  >
-                                    <OutlinedQuestionCircleIcon
-                                      style={{ color: "var(--pf-global--primary-color--100)" }}
-                                    />
-                                  </Tooltip>
-                                </CardTitle>
-                                <FeaturesScoreChart
+                    <Stack hasGutter={true}>
+                      {saliencies.status === "SUCCEEDED" && (
+                        <>
+                          <StackItem>
+                            <Card isCompact={true} isFlat={true}>
+                              <CardTitle>
+                                Features Scores Chart{" "}
+                                <Tooltip
+                                  position="top"
+                                  content={
+                                    <div>
+                                      The explanation chart displays each input influencing the decision result, with a
+                                      positive or negative score.
+                                    </div>
+                                  }
+                                >
+                                  <OutlinedQuestionCircleIcon
+                                    style={{ color: "var(--pf-global--primary-color--100)" }}
+                                  />
+                                </Tooltip>
+                              </CardTitle>
+                              <FeaturesScoreChart
+                                featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
+                              />
+                            </Card>
+                          </StackItem>
+                          <StackItem>
+                            <Card isCompact={true} isFlat={true}>
+                              <CardTitle>Features Scores List</CardTitle>
+                              <CardBody>
+                                <FeaturesScoreTable
                                   featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
                                 />
-                              </Card>
-                            </StackItem>
-                            <StackItem>
-                              <Card isCompact={true} isFlat={true}>
-                                <CardTitle>Features Scores List</CardTitle>
-                                <CardBody>
-                                  <FeaturesScoreTable
-                                    featuresScore={topFeaturesScores.length > 0 ? topFeaturesScores : featuresScores}
-                                  />
-                                </CardBody>
-                              </Card>
-                            </StackItem>
-                          </>
-                        )}
-                        {saliencies.status === "FAILED" && (
-                          <StackItem>
-                            <Alert isInline={true} variant="warning" title="Explanation Error">
-                              <p>There was an error calculating explanation information for this request.</p>
-                              {saliencies.statusDetails && (
-                                <p>
-                                  Error Message:
-                                  <br />
-                                  <span className="explanation-error-detail">{saliencies.statusDetails}</span>
-                                </p>
-                              )}
-                            </Alert>
+                              </CardBody>
+                            </Card>
                           </StackItem>
-                        )}
-                      </Stack>
-                    )}
-                    {environment === "PROD" && (
-                      <p>
-                        Visit the{" "}
-                        <Button
-                          variant="link"
-                          icon={<ExternalLinkSquareAltIcon />}
-                          iconPosition="right"
-                          isInline={true}
-                          component="a"
-                          href={config.explainability.auditUIUrl}
-                          target="_blank"
-                        >
-                          Audit Investigation Console
-                        </Button>{" "}
-                        to retrieve explanations for model executions.
-                      </p>
-                    )}
+                        </>
+                      )}
+                      {saliencies.status === "FAILED" && (
+                        <StackItem>
+                          <Alert isInline={true} variant="warning" title="Explanation Error">
+                            <p>There was an error calculating explanation information for this request.</p>
+                            {saliencies.statusDetails && (
+                              <p>
+                                Error Message:
+                                <br />
+                                <span className="explanation-error-detail">{saliencies.statusDetails}</span>
+                              </p>
+                            )}
+                          </Alert>
+                        </StackItem>
+                      )}
+                    </Stack>
                   </div>
                 </>
               )}
