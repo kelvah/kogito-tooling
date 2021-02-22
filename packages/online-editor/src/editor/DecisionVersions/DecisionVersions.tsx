@@ -27,7 +27,7 @@ import {
   Title
 } from "@patternfly/react-core";
 import { nowrap, cellWidth, IRow, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
-import { ExclamationCircleIcon, ExternalLinkAltIcon, HistoryIcon, ServerIcon } from "@patternfly/react-icons";
+import { ExclamationCircleIcon, ExternalLinkAltIcon, HistoryIcon } from "@patternfly/react-icons";
 import { AxiosError } from "axios";
 import { Decision } from "../DeploymentConsole/useDecisionStatus";
 import { RemoteData } from "../ModelTester/ModelTester";
@@ -85,7 +85,11 @@ const prepareRows = (
       }
       break;
     case "FAILURE":
-      rows = loadingError(columnsNumber);
+      if (data.error.response?.status === 404) {
+        rows = noVersions(columnsNumber);
+      } else {
+        rows = loadingError(columnsNumber);
+      }
       break;
   }
   return rows;
@@ -170,9 +174,9 @@ const noVersions = (colSpan: number) => {
           title: (
             <Bullseye>
               <EmptyState>
-                <EmptyStateIcon icon={ServerIcon} />
+                <EmptyStateIcon icon={HistoryIcon} />
                 <Title headingLevel="h5" size="lg">
-                  The history is empty
+                  Developmennt History is empty
                 </Title>
                 <EmptyStateBody>It looks like this model was never deployed in the past.</EmptyStateBody>
               </EmptyState>

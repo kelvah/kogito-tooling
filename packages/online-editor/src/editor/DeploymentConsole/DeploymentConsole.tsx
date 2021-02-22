@@ -227,6 +227,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                 <FormGroup
                   label="Description"
                   fieldId="description"
+                  isRequired={true}
                   validated={deployFormValidation.messages.description ? "error" : "default"}
                   helperTextInvalid={deployFormValidation.messages.description}
                 >
