@@ -16,9 +16,18 @@
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Button, Label } from "@patternfly/react-core";
+import {
+  Bullseye,
+  Button,
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateIcon,
+  Label,
+  Skeleton,
+  Title
+} from "@patternfly/react-core";
 import { nowrap, cellWidth, IRow, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
-import { ExternalLinkAltIcon, HistoryIcon } from "@patternfly/react-icons";
+import { ExclamationCircleIcon, ExternalLinkAltIcon, HistoryIcon, ServerIcon } from "@patternfly/react-icons";
 import { AxiosError } from "axios";
 import { Decision } from "../DeploymentConsole/useDecisionStatus";
 import { RemoteData } from "../ModelTester/ModelTester";
@@ -26,9 +35,11 @@ import DeploymentStatusLabel from "../DeploymentStatusLabel/DeploymentStatusLabe
 
 interface DecisionVersionsProps {
   data: RemoteData<AxiosError, Decision[]>;
+  onRollback: (versionNumber: number) => void;
 }
 
-const DecisionVersions = ({ data }: DecisionVersionsProps) => {
+const DecisionVersions = (props: DecisionVersionsProps) => {
+  const { data, onRollback } = props;
   const columns = [
     { title: "Version", transforms: [nowrap] },
     { title: "Status" },
@@ -39,10 +50,10 @@ const DecisionVersions = ({ data }: DecisionVersionsProps) => {
     { title: "Sink" },
     { title: "" }
   ];
-  const [rows, setRows] = useState<IRow[]>(prepareRows(columns.length, data));
+  const [rows, setRows] = useState<IRow[]>(prepareRows(columns.length, data, onRollback));
 
   useEffect(() => {
-    setRows(prepareRows(columns.length, data));
+    setRows(prepareRows(columns.length, data, onRollback));
   }, [data.status]);
 
   return (
@@ -55,31 +66,32 @@ const DecisionVersions = ({ data }: DecisionVersionsProps) => {
 
 export default DecisionVersions;
 
-const prepareRows = (columnsNumber: number, data: RemoteData<AxiosError, Decision[]>) => {
+const prepareRows = (
+  columnsNumber: number,
+  data: RemoteData<AxiosError, Decision[]>,
+  onRollback: DecisionVersionsProps["onRollback"]
+) => {
   let rows;
   switch (data.status) {
     case "NOT_ASKED":
     case "LOADING":
-      // rows = skeletonRows(columnsNumber, 10, "executionKey");
-      rows = [{ cells: ["", "", "", "", "", "", "", ""] }];
+      rows = skeletonRows(columnsNumber, 5);
       break;
     case "SUCCESS":
       if (data.data.length > 0) {
-        rows = prepareVersionsRows(data.data);
+        rows = prepareVersionsRows(data.data, onRollback);
       } else {
-        // rows = noVersions(columnsNumber);
-        rows = [{ cells: ["", "", "", "", "", "", "", ""] }];
+        rows = noVersions(columnsNumber);
       }
       break;
     case "FAILURE":
-      // rows = loadingError(columnsNumber);
-      rows = [{ cells: ["", "", "", "", "", "", "", ""] }];
+      rows = loadingError(columnsNumber);
       break;
   }
   return rows;
 };
 
-const prepareVersionsRows = (rowData: Decision[]) => {
+const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsProps["onRollback"]) => {
   return rowData.map(item => ({
     cells: [
       `v${item.version}`,
@@ -101,18 +113,97 @@ const prepareVersionsRows = (rowData: Decision[]) => {
       item.eventing?.kafka?.source ?? "-",
       item.eventing?.kafka?.sink ?? "-",
       {
-        title: item.status === "READY" ? <RollbackButton /> : <></>
+        title: item.status === "READY" ? <RollbackButton versionNumber={item.version} onRollback={onRollback} /> : <></>
       }
     ]
   }));
 };
 
-const RollbackButton = () => {
+interface RollbackButtonProps {
+  versionNumber: number;
+  onRollback: DecisionVersionsProps["onRollback"];
+}
+
+const RollbackButton = (props: RollbackButtonProps) => {
+  const { versionNumber, onRollback } = props;
   return (
     <div className={"pf-u-text-align-right"}>
-      <Button key={"rollback"} variant="secondary" isSmall={true} icon={<HistoryIcon />} iconPosition="left">
+      <Button
+        key={"rollback"}
+        variant="secondary"
+        isSmall={true}
+        icon={<HistoryIcon />}
+        iconPosition="left"
+        onClick={() => onRollback(versionNumber)}
+      >
         Rollback
       </Button>
     </div>
   );
+};
+
+const skeletonRows = (colsCount: number, rowsCount: number) => {
+  const skeletons = [];
+  for (let j = 0; j < rowsCount; j++) {
+    const cells = [];
+    for (let i = 0; i < colsCount; i++) {
+      const size = (i + j) % 2 ? "100%" : "60%";
+      cells.push({
+        title: <Skeleton width={size} />
+      });
+    }
+    const skeletonRow: IRow = {
+      cells
+    };
+    skeletons.push(skeletonRow);
+  }
+  return skeletons;
+};
+
+const noVersions = (colSpan: number) => {
+  return [
+    {
+      heightAuto: true,
+      cells: [
+        {
+          props: { colSpan },
+          title: (
+            <Bullseye>
+              <EmptyState>
+                <EmptyStateIcon icon={ServerIcon} />
+                <Title headingLevel="h5" size="lg">
+                  The history is empty
+                </Title>
+                <EmptyStateBody>It looks like this model was never deployed in the past.</EmptyStateBody>
+              </EmptyState>
+            </Bullseye>
+          )
+        }
+      ]
+    }
+  ];
+};
+
+const loadingError = (colSpan: number) => {
+  return [
+    {
+      heightAuto: true,
+      cells: [
+        {
+          props: { colSpan },
+          title: (
+            <Bullseye>
+              <EmptyState>
+                <EmptyStateIcon icon={ExclamationCircleIcon} color="#C9190B" />
+                <Title headingLevel="h5" size="lg">
+                  Loading Error
+                </Title>
+                <EmptyStateBody>We are unable to retrieve the deployment history right now.</EmptyStateBody>
+              </EmptyState>
+            </Bullseye>
+          )
+        }
+      ]
+    }
+  ];
 };

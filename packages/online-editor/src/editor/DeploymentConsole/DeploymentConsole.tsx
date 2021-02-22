@@ -44,16 +44,17 @@ import {
 } from "@patternfly/react-core";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { HelpIcon, ServerIcon } from "@patternfly/react-icons";
-import DecisionVersions from "../DecisionVersions/DecisionVersions";
-import "./DeploymentConsole.scss";
-import { GlobalContext } from "../../common/GlobalContext";
-import useDecisionStatus, { Decision } from "./useDecisionStatus";
-import DeploymentStatusIcon from "../DeploymentStatusIcon/DeploymentStatusIcon";
-import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { AxiosRequestConfig } from "axios";
+import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
+import { isEqual } from "lodash";
+import { GlobalContext } from "../../common/GlobalContext";
 import { axiosClient } from "../../common/axiosClient";
+import DecisionVersions from "../DecisionVersions/DecisionVersions";
+import DeploymentStatusIcon from "../DeploymentStatusIcon/DeploymentStatusIcon";
+import useDecisionStatus, { Decision } from "./useDecisionStatus";
 import useBuildingDecision from "./useBuildingDecision";
 import useDecisionVersions from "./useDecisionVersions";
+import "./DeploymentConsole.scss";
 
 interface DeploymentConsoleProps {
   editor?: EmbeddedEditorRef;
@@ -73,7 +74,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     isValid: true,
     messages: {}
   });
-  const { decisionVersions } = useDecisionVersions(modelName);
+  const { decisionVersions, loadDecisionVersions } = useDecisionVersions(modelName);
 
   const onDescriptionChange = (value: string) => {
     setDescription(value);
@@ -156,17 +157,38 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     }
   }, [editor, description, modelName, kafkaSource, kafkaSink]);
 
+  const rollback = useCallback(
+    (versionNumber: number) => {
+      console.log("rollback to version " + versionNumber);
+      const requestConfig: AxiosRequestConfig = {
+        url: `/decisions${modelName}/versions/${versionNumber}`,
+        method: "put"
+      };
+      axiosClient(requestConfig)
+        .then(response => {
+          console.log(response);
+          loadBuildingDecision();
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    [modelName]
+  );
+
   useEffect(() => {
     if (buildingDecision.status === "FAILURE") {
       loadDecisionStatus();
-    } else if (buildingDecision.status === "SUCCESS") {
+    } else if (buildingDecision.status === "SUCCESS" && !isEqual(buildingDecision.data, decision)) {
       setDecision(buildingDecision.data);
+      loadDecisionVersions();
     }
   }, [buildingDecision]);
 
   useEffect(() => {
     if (decisionStatus.status === "SUCCESS") {
       setDecision(decisionStatus.data);
+      loadDecisionVersions();
     }
   }, [decisionStatus]);
 
@@ -400,7 +422,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
       <Card isFlat={true}>
         <CardTitle>Deployment History</CardTitle>
         <CardBody>
-          <DecisionVersions data={decisionVersions} />
+          <DecisionVersions data={decisionVersions} onRollback={rollback} />
         </CardBody>
       </Card>
     </section>
