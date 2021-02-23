@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Page, PageSection, Tooltip, Tab, TabContent, Tabs, TabTitleText } from "@patternfly/react-core";
-import { ExclamationTriangleIcon } from "@patternfly/react-icons";
+import { Page, PageSection, Tab, TabContent, Tabs, TabTitleText } from "@patternfly/react-core";
 import "bootstrap/dist/css/bootstrap.css";
 import { AxiosRequestConfig } from "axios";
 import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
@@ -14,12 +13,10 @@ interface TestAndDeployProps {
   editor?: EmbeddedEditorRef;
   isEditorReady: boolean;
   showPanel: boolean;
-  lastSave: Date | null;
-  isModelDirty: boolean;
 }
 
 const TestAndDeploy = (props: TestAndDeployProps) => {
-  const { editor, isEditorReady, showPanel, lastSave, isModelDirty } = props;
+  const { editor, isEditorReady, showPanel } = props;
   const [activeTab, setActiveTab] = useState<React.ReactText>(0);
   const [schema, setSchema] = useState<{}>();
   const [jitdmnPath, setJitdmnPath] = useState();
@@ -78,10 +75,10 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   }, [editor, jitdmnPath]);
 
   useEffect(() => {
-    if (lastSave) {
+    if (showPanel) {
       getSchema();
     }
-  }, [lastSave]);
+  }, [showPanel]);
 
   const handleTabClick = (event: React.MouseEvent<HTMLElement, MouseEvent>, tabIndex: React.ReactText) => {
     setActiveTab(tabIndex);
@@ -104,25 +101,7 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
                   id="test-tab"
                   title={
                     <TabTitleText>
-                      {isModelDirty && (
-                        <Tooltip
-                          position="bottom"
-                          content={
-                            <div>
-                              The model has unsaved changes.
-                              <br />
-                              Save it to test the latest version.
-                            </div>
-                          }
-                        >
-                          <>
-                            <ExclamationTriangleIcon className="test-and-deploy__warn-icon" />
-                            &nbsp;
-                            <span>Test Development Environment</span>
-                          </>
-                        </Tooltip>
-                      )}
-                      {!isModelDirty && <span>Test Development Environment</span>}
+                      <span>Test Development Environment</span>
                     </TabTitleText>
                   }
                   tabContentRef={testTab}

@@ -66,7 +66,6 @@ export function EditorPage(props: Props) {
   const [modal, setModal] = useState(Modal.NONE);
   const isDirty = useDirtyState(editor);
   const { locale, i18n } = useOnlineI18n();
-  const [lastSave, setLastSave] = useState<Date | null>(null);
 
   const [showTestPanel, setShowTestPanel] = useState(false);
 
@@ -105,7 +104,6 @@ export function EditorPage(props: Props) {
     editor?.getStateControl().setSavedCommand();
     setAlert(Alerts.NONE);
     editor?.getContent().then(content => {
-      setLastSave(new Date());
       if (downloadRef.current) {
         const fileBlob = new Blob([content], { type: "text/plain" });
         downloadRef.current.href = URL.createObjectURL(fileBlob);
@@ -291,13 +289,7 @@ export function EditorPage(props: Props) {
       }
     >
       <PageSection isFilled={true} style={{ padding: 0 }}>
-        <TestAndDeploy
-          editor={editor}
-          isEditorReady={isEditorReady}
-          showPanel={showTestPanel}
-          lastSave={lastSave}
-          isModelDirty={isDirty}
-        />
+        <TestAndDeploy editor={editor} isEditorReady={isEditorReady} showPanel={showTestPanel} />
       </PageSection>
       <PageSection isFilled={true} padding={{ default: "noPadding" }} style={{ flexBasis: "100%" }}>
         {!fullscreen && alert === Alerts.COPY && (
