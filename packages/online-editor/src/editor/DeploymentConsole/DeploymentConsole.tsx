@@ -29,6 +29,7 @@ import {
   FormGroup,
   FormSelect,
   FormSelectOption,
+  Popover,
   Split,
   SplitItem,
   TextInput,
@@ -56,6 +57,7 @@ import useBuildingDecision from "./useBuildingDecision";
 import useDecisionVersions from "./useDecisionVersions";
 import "./DeploymentConsole.scss";
 import { config } from "../../config";
+import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessage";
 
 interface DeploymentConsoleProps {
   editor?: EmbeddedEditorRef;
@@ -75,6 +77,8 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     isValid: true,
     messages: {}
   });
+  const [deployLoading, setDeployLoading] = useState(false);
+  const [deployWarningVisible, setDeployWarningVisible] = useState(false);
   const { decisionVersions, loadDecisionVersions } = useDecisionVersions(modelName);
 
   const onDescriptionChange = (value: string) => {
@@ -122,6 +126,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   const deploy = useCallback(async () => {
     const validation = validateDeployForm(description, kafkaSource, kafkaSink);
     if (validation.isValid) {
+      setDeployLoading(true);
       try {
         const modelContent = await editor?.getContent();
         const requestConfig: AxiosRequestConfig = {
@@ -145,15 +150,21 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
           };
         }
         axiosClient(requestConfig)
-          .then(response => {
-            console.log(response);
+          .then(() => {
             loadBuildingDecision();
           })
           .catch(error => {
             console.log(error);
+            showDeployWarning();
+          })
+          .finally(() => {
+            setDeployLoading(false);
           });
       } catch (error) {
         console.log(error);
+        if (deployLoading) {
+          setDeployLoading(false);
+        }
       }
     }
   }, [editor, description, modelName, kafkaSource, kafkaSink]);
@@ -216,6 +227,13 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
       window.clearInterval(interval.current);
     };
   }, []);
+
+  const showDeployWarning = () => {
+    setDeployWarningVisible(true);
+    setTimeout(() => {
+      setDeployWarningVisible(false);
+    }, 4000);
+  };
 
   return (
     <section className="test-and-deploy__deployment">
@@ -317,9 +335,25 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                 </FormGroup>
               </SplitItem>
               <SplitItem style={{ paddingTop: 32 }}>
-                <Button variant="primary" onClick={deploy} type={"button"}>
+                <Button
+                  variant="primary"
+                  onClick={deploy}
+                  type={"button"}
+                  isLoading={deployLoading}
+                  spinnerAriaValueText={deployLoading ? "loading" : ""}
+                  id="test-and-deploy__deployment__deploy"
+                >
                   Deploy
                 </Button>
+                <Popover
+                  aria-label="Deploy information"
+                  headerContent={<div>The system is busy</div>}
+                  bodyContent={<div>A deploy is already in progress</div>}
+                  reference={() => document.getElementById("test-and-deploy__deployment__deploy") as HTMLElement}
+                  isVisible={deployWarningVisible}
+                  shouldClose={() => setDeployWarningVisible(false)}
+                  position={"bottom"}
+                />
               </SplitItem>
             </Split>
           </Form>
@@ -387,12 +421,22 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                   <DescriptionListTerm>Description</DescriptionListTerm>
                   <DescriptionListDescription>{decision.description}</DescriptionListDescription>
                 </DescriptionListGroup>
-                <DescriptionListGroup>
-                  <DescriptionListTerm>Url</DescriptionListTerm>
-                  <DescriptionListDescription>
-                    {decision.url ? <ClipboardCopy isReadOnly={true}>{decision.url}</ClipboardCopy> : <em>n.a.</em>}
-                  </DescriptionListDescription>
-                </DescriptionListGroup>
+                {decision.status !== "FAILED" && (
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>Url</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      {decision.url ? <ClipboardCopy isReadOnly={true}>{decision.url}</ClipboardCopy> : <em>n.a.</em>}
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                )}
+                {decision.status === "FAILED" && (
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>Status Message</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      {decision.status_message ? <DecisionStatusMessage message={decision.status_message} /> : "n.a."}
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                )}
                 <DescriptionListGroup>
                   <DescriptionListTerm>Version</DescriptionListTerm>
                   <DescriptionListDescription>v{decision.version}</DescriptionListDescription>

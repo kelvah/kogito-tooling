@@ -27,11 +27,12 @@ import {
   Title
 } from "@patternfly/react-core";
 import { nowrap, cellWidth, IRow, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
-import { ExclamationCircleIcon, ExternalLinkAltIcon, HistoryIcon } from "@patternfly/react-icons";
+import { ExternalLinkAltIcon, HistoryIcon, WarningTriangleIcon } from "@patternfly/react-icons";
 import { AxiosError } from "axios";
 import { Decision } from "../DeploymentConsole/useDecisionStatus";
 import { RemoteData } from "../ModelTester/ModelTester";
 import DeploymentStatusLabel from "../DeploymentStatusLabel/DeploymentStatusLabel";
+import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessage";
 
 interface DecisionVersionsProps {
   data: RemoteData<AxiosError, Decision[]>;
@@ -75,7 +76,7 @@ const prepareRows = (
   switch (data.status) {
     case "NOT_ASKED":
     case "LOADING":
-      rows = skeletonRows(columnsNumber, 5);
+      rows = skeletonRows(columnsNumber, 4);
       break;
     case "SUCCESS":
       if (data.data.length > 0) {
@@ -100,7 +101,17 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
     cells: [
       `v${item.version}`,
       {
-        title: <DeploymentStatusLabel status={item.status} />
+        title: (
+          <>
+            {item.status === "FAILED" && item.status_message ? (
+              <DecisionStatusMessage message={item.status_message}>
+                <DeploymentStatusLabel status={item.status} />
+              </DecisionStatusMessage>
+            ) : (
+              <DeploymentStatusLabel status={item.status} />
+            )}
+          </>
+        )
       },
       item.submitted_at,
       { title: <span>{item.description}</span> },
@@ -150,12 +161,15 @@ const skeletonRows = (colsCount: number, rowsCount: number) => {
   const skeletons = [];
   for (let j = 0; j < rowsCount; j++) {
     const cells = [];
-    for (let i = 0; i < colsCount; i++) {
+    for (let i = 0; i < colsCount - 1; i++) {
       const size = (i + j) % 2 ? "100%" : "60%";
       cells.push({
         title: <Skeleton width={size} />
       });
     }
+    cells.push({
+      title: <span style={{ width: 20 }}>&nbsp;</span>
+    });
     const skeletonRow: IRow = {
       cells
     };
@@ -198,7 +212,7 @@ const loadingError = (colSpan: number) => {
           title: (
             <Bullseye>
               <EmptyState>
-                <EmptyStateIcon icon={ExclamationCircleIcon} color="#C9190B" />
+                <EmptyStateIcon icon={WarningTriangleIcon} />
                 <Title headingLevel="h5" size="lg">
                   Loading Error
                 </Title>
