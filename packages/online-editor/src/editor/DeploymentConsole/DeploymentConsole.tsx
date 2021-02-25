@@ -17,14 +17,9 @@
 import * as React from "react";
 import {
   Button,
-  ClipboardCopy,
   CardBody,
   Card,
   CardTitle,
-  DescriptionList,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  DescriptionListDescription,
   Form,
   FormGroup,
   FormSelect,
@@ -33,31 +28,22 @@ import {
   Split,
   SplitItem,
   TextInput,
-  FlexItem,
-  Flex,
-  Text,
-  TextContent,
-  TextVariants,
-  Tooltip,
-  EmptyState,
-  EmptyStateIcon,
-  Title
+  Tooltip
 } from "@patternfly/react-core";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { HelpIcon, ServerIcon } from "@patternfly/react-icons";
+import { HelpIcon } from "@patternfly/react-icons";
 import { AxiosRequestConfig } from "axios";
 import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import { isEqual } from "lodash";
 import { GlobalContext } from "../../common/GlobalContext";
 import { axiosClient } from "../../common/axiosClient";
 import DecisionVersions from "../DecisionVersions/DecisionVersions";
-import DeploymentStatusIcon from "../DeploymentStatusIcon/DeploymentStatusIcon";
 import useDecisionStatus, { Decision } from "./useDecisionStatus";
 import useBuildingDecision from "./useBuildingDecision";
 import useDecisionVersions from "./useDecisionVersions";
+import DecisionStatus from "../DecisionStatus/DecisionStatus";
 import "./DeploymentConsole.scss";
 import { config } from "../../config";
-import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessage";
 
 interface DeploymentConsoleProps {
   editor?: EmbeddedEditorRef;
@@ -124,6 +110,9 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   }, []);
 
   const deploy = useCallback(async () => {
+    if (deployLoading) {
+      return;
+    }
     const validation = validateDeployForm(description, kafkaSource, kafkaSink);
     if (validation.isValid) {
       setDeployLoading(true);
@@ -167,16 +156,15 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
         }
       }
     }
-  }, [editor, description, modelName, kafkaSource, kafkaSink]);
+  }, [editor, description, modelName, kafkaSource, kafkaSink, deployLoading]);
 
   const rollback = useCallback(
     (versionNumber: number) => {
-      console.log("rollback to version " + versionNumber);
       const requestConfig: AxiosRequestConfig = {
-        url: `/decisions${modelName}/versions/${versionNumber}`,
+        url: `/decisions/${modelName}/versions/${versionNumber}`,
         method: "put"
       };
-      axiosClient(requestConfig)
+      return axiosClient(requestConfig)
         .then(response => {
           console.log(response);
           loadBuildingDecision();
@@ -210,7 +198,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     let isMounted = true;
     if (isMounted && decision?.status === "BUILDING" && !interval.current) {
       console.log("starting interval");
-      interval.current = window.setInterval(loadBuildingDecision, 5000);
+      interval.current = window.setInterval(loadBuildingDecision, 10000);
     }
     if (isMounted && decision?.status !== "BUILDING" && interval.current) {
       console.log("clearing interval");
@@ -363,105 +351,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
       <Card isFlat={true}>
         <CardTitle>Status</CardTitle>
         <CardBody>
-          {!decision && (
-            <EmptyState variant={"xs"}>
-              <EmptyStateIcon icon={ServerIcon} />
-              <Title headingLevel="h3" size="lg">
-                Model not yet deployed
-              </Title>
-            </EmptyState>
-          )}
-          {decision && (
-            <section>
-              <Flex
-                direction={{ default: "row" }}
-                alignItems={{ default: "alignItemsStretch" }}
-                justifyContent={{ default: "justifyContentFlexStart" }}
-                className="test-and-deploy__deployment__status-bar"
-              >
-                <FlexItem grow={{ default: "grow" }}>
-                  <Split hasGutter={true}>
-                    <SplitItem>
-                      <Flex
-                        direction={{ default: "column" }}
-                        alignSelf={{ default: "alignSelfCenter" }}
-                        justifyContent={{ default: "justifyContentCenter" }}
-                        style={{ height: "100%" }}
-                      >
-                        <FlexItem>
-                          <DeploymentStatusIcon status={decision.status} />
-                        </FlexItem>
-                      </Flex>
-                    </SplitItem>
-                    <SplitItem>
-                      <TextContent>
-                        <strong>{decision.name}</strong> v{decision.version}
-                        <Text component={TextVariants.small} style={{ textTransform: "capitalize" }}>
-                          {decision.status.toLowerCase()}
-                        </Text>
-                      </TextContent>
-                    </SplitItem>
-                  </Split>
-                </FlexItem>
-                {/*<FlexItem grow={{ default: "grow" }}>*/}
-                {/*  <TextContent>*/}
-                {/*    <strong>5</strong>*/}
-                {/*    <Text component={TextVariants.small}>Version</Text>*/}
-                {/*  </TextContent>*/}
-                {/*</FlexItem>*/}
-                {/*<FlexItem grow={{ default: "grow" }}>*/}
-                {/*  <TextContent>*/}
-                {/*    <span>02/16/2021 10:11</span>*/}
-                {/*    <Text component={TextVariants.small}>Deployed at</Text>*/}
-                {/*  </TextContent>*/}
-                {/*</FlexItem>*/}
-              </Flex>
-              <DescriptionList columnModifier={{ lg: "3Col" }}>
-                <DescriptionListGroup>
-                  <DescriptionListTerm>Description</DescriptionListTerm>
-                  <DescriptionListDescription>{decision.description}</DescriptionListDescription>
-                </DescriptionListGroup>
-                {decision.status !== "FAILED" && (
-                  <DescriptionListGroup>
-                    <DescriptionListTerm>Url</DescriptionListTerm>
-                    <DescriptionListDescription>
-                      {decision.url ? <ClipboardCopy isReadOnly={true}>{decision.url}</ClipboardCopy> : <em>n.a.</em>}
-                    </DescriptionListDescription>
-                  </DescriptionListGroup>
-                )}
-                {decision.status === "FAILED" && (
-                  <DescriptionListGroup>
-                    <DescriptionListTerm>Status Message</DescriptionListTerm>
-                    <DescriptionListDescription>
-                      {decision.status_message ? <DecisionStatusMessage message={decision.status_message} /> : "n.a."}
-                    </DescriptionListDescription>
-                  </DescriptionListGroup>
-                )}
-                <DescriptionListGroup>
-                  <DescriptionListTerm>Version</DescriptionListTerm>
-                  <DescriptionListDescription>v{decision.version}</DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
-                  <DescriptionListTerm>{decision.published_at ? "Deployed at" : "Submitted at"}</DescriptionListTerm>
-                  <DescriptionListDescription>
-                    {decision.published_at ?? decision.submitted_at}
-                  </DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
-                  <DescriptionListTerm>Kafka source</DescriptionListTerm>
-                  <DescriptionListDescription>
-                    <span>{decision.eventing?.kafka?.source ?? <em>n.a.</em>}</span>
-                  </DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
-                  <DescriptionListTerm>Kafka sink</DescriptionListTerm>
-                  <DescriptionListDescription>
-                    <span>{decision.eventing?.kafka?.sink ?? <em>n.a.</em>}</span>
-                  </DescriptionListDescription>
-                </DescriptionListGroup>
-              </DescriptionList>
-            </section>
-          )}
+          <DecisionStatus decision={decision} />
         </CardBody>
       </Card>
       <br />

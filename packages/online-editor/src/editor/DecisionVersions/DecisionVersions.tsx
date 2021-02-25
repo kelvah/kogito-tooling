@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bullseye,
   Button,
@@ -24,7 +24,8 @@ import {
   EmptyStateIcon,
   Label,
   Skeleton,
-  Title
+  Title,
+  Tooltip
 } from "@patternfly/react-core";
 import { nowrap, cellWidth, IRow, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
 import { ExternalLinkAltIcon, HistoryIcon, WarningTriangleIcon } from "@patternfly/react-icons";
@@ -36,7 +37,7 @@ import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessag
 
 interface DecisionVersionsProps {
   data: RemoteData<AxiosError, Decision[]>;
-  onRollback: (versionNumber: number) => void;
+  onRollback: (versionNumber: number) => Promise<any>;
 }
 
 const DecisionVersions = (props: DecisionVersionsProps) => {
@@ -45,7 +46,7 @@ const DecisionVersions = (props: DecisionVersionsProps) => {
     { title: "Version", transforms: [nowrap] },
     { title: "Status" },
     { title: "Created on" },
-    { title: "Description", transforms: [cellWidth(20)], cellTransforms: [truncate] },
+    { title: "Description", transforms: [cellWidth(30)], cellTransforms: [truncate] },
     { title: "Url" },
     { title: "Source" },
     { title: "Sink" },
@@ -114,7 +115,13 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
         )
       },
       item.submitted_at,
-      { title: <span>{item.description}</span> },
+      {
+        title: (
+          <Tooltip content={<div>{item.description}</div>}>
+            <span>{item.description}</span>
+          </Tooltip>
+        )
+      },
       {
         title:
           item.status === "CURRENT" ? (
@@ -129,6 +136,7 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
       item.eventing?.kafka?.sink ?? "-",
       {
         title: item.status === "READY" ? <RollbackButton versionNumber={item.version} onRollback={onRollback} /> : <></>
+        // title: <RollbackButton versionNumber={item.version} onRollback={onRollback} />
       }
     ]
   }));
@@ -141,6 +149,16 @@ interface RollbackButtonProps {
 
 const RollbackButton = (props: RollbackButtonProps) => {
   const { versionNumber, onRollback } = props;
+  const [loading, setLoading] = useState(false);
+
+  const rollback = useCallback(() => {
+    if (loading) {
+      return;
+    }
+    setLoading(true);
+    onRollback(versionNumber).finally(() => setLoading(false));
+  }, [versionNumber, loading, onRollback]);
+
   return (
     <div className={"pf-u-text-align-right"}>
       <Button
@@ -149,7 +167,9 @@ const RollbackButton = (props: RollbackButtonProps) => {
         isSmall={true}
         icon={<HistoryIcon />}
         iconPosition="left"
-        onClick={() => onRollback(versionNumber)}
+        onClick={rollback}
+        isLoading={loading}
+        spinnerAriaValueText={loading ? "loading" : ""}
       >
         Rollback
       </Button>
