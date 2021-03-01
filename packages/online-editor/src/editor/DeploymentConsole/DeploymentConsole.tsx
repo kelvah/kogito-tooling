@@ -192,7 +192,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     }
   }, [decisionStatus]);
 
-  const interval = useRef<number | undefined>();
+  const interval = useRef<number | null | undefined>();
 
   useEffect(() => {
     let isMounted = true;
@@ -203,6 +203,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     if (isMounted && decision?.status !== "BUILDING" && interval.current) {
       console.log("clearing interval");
       window.clearInterval(interval.current);
+      interval.current = null;
     }
     return () => {
       isMounted = false;
@@ -212,7 +213,9 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   useEffect(() => {
     return () => {
       console.log("clearing interval because unmount");
-      window.clearInterval(interval.current);
+      if (interval.current) {
+        window.clearInterval(interval.current);
+      }
     };
   }, []);
 
