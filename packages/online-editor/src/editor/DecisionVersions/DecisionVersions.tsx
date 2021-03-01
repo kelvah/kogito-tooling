@@ -45,7 +45,7 @@ const DecisionVersions = (props: DecisionVersionsProps) => {
   const columns = [
     { title: "Version", transforms: [nowrap] },
     { title: "Status" },
-    { title: "Created on" },
+    { title: "Created at" },
     { title: "Description", transforms: [cellWidth(30)], cellTransforms: [truncate] },
     { title: "Url" },
     { title: "Source" },
@@ -114,7 +114,25 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
           </>
         )
       },
-      item.submitted_at,
+      {
+        title: (
+          <Tooltip
+            content={
+              <div>
+                <span>Submitted at: {item.submitted_at}</span>
+                {item.published_at && (
+                  <>
+                    <br />
+                    <span>Deployed at: {item.published_at}</span>
+                  </>
+                )}
+              </div>
+            }
+          >
+            <span>{item.published_at ?? item.published_at}</span>
+          </Tooltip>
+        )
+      },
       {
         title: (
           <Tooltip content={<div>{item.description}</div>}>
@@ -165,7 +183,6 @@ const RollbackButton = (props: RollbackButtonProps) => {
         key={"rollback"}
         variant="secondary"
         isSmall={true}
-        icon={<HistoryIcon />}
         iconPosition="left"
         onClick={rollback}
         isLoading={loading}
