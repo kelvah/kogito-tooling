@@ -208,6 +208,7 @@ export function EditorToolbar(props: Props) {
                 onClick={props.onDownload}
                 aria-label={"Save and Download button"}
                 className={"kogito--editor__toolbar button"}
+                isDisabled={!props.isEditorReady}
               >
                 {i18n.editorToolbar.saveAndDownload}
               </Button>
@@ -253,12 +254,13 @@ export function EditorToolbar(props: Props) {
                     id={"share-id-lg"}
                     data-testid={"share-menu"}
                     onToggle={isOpen => setShareMenuOpen(isOpen)}
+                    isDisabled={!props.isEditorReady}
                   >
                     {i18n.editorToolbar.share}
                   </DropdownToggle>
                 }
                 isPlain={true}
-                className={"kogito--editor__toolbar dropdown"}
+                className={`kogito--editor__toolbar dropdown ${!props.isEditorReady ? "disabled" : ""}`}
                 isOpen={isShareMenuOpen}
                 dropdownItems={shareItems("lg")}
                 position={DropdownPosition.right}
@@ -285,6 +287,7 @@ export function EditorToolbar(props: Props) {
                     id={"view-id-lg"}
                     toggleIndicator={null}
                     onToggle={isOpen => setViewKebabOpen(isOpen)}
+                    isDisabled={!props.isEditorReady}
                   >
                     <EllipsisVIcon />
                   </DropdownToggle>
@@ -314,6 +317,7 @@ export function EditorToolbar(props: Props) {
                     id={"kebab-id-sm"}
                     toggleIndicator={null}
                     onToggle={isOpen => setKebabOpen(isOpen)}
+                    isDisabled={!props.isEditorReady}
                   >
                     <EllipsisVIcon />
                   </DropdownToggle>

@@ -146,7 +146,7 @@
   --pf-c-button--FontSize: var(--pf-global--icon--FontSize--md);
 }
 
-.kogito--editor__toolbar.button {
+.kogito--editor__toolbar.button:not(:disabled) {
   background-color: var(--pf-global--palette--blue-400);
   color: var(--pf-global--palette--white);
   padding-top: var(--pf-global--spacer--form-element);
@@ -192,6 +192,15 @@
 .kogito--editor__toolbar.dropdown:active::before {
   border-bottom: solid var(--pf-global--palette--blue-300) 2px;
   padding-bottom: 0;
+}
+
+.kogito--editor__toolbar.dropdown.disabled {
+  background-color: var(--pf-global--disabled-color--200);
+  border-radius: var(--pf-global--BorderRadius--sm);
+}
+
+.kogito--editor__toolbar.dropdown.disabled button {
+  color: var(--pf-global--disabled-color--100);
 }
 
 .kogito--editor__toolbar-share {
