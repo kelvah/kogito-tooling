@@ -34,6 +34,7 @@ import { Decision } from "../DeploymentConsole/useDecisionStatus";
 import { RemoteData } from "../ModelTester/ModelTester";
 import DeploymentStatusLabel from "../DeploymentStatusLabel/DeploymentStatusLabel";
 import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessage";
+import useLoading from "../DeploymentConsole/useLoading";
 
 interface DecisionVersionsProps {
   data: RemoteData<AxiosError, Decision[]>;
@@ -129,7 +130,7 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
               </div>
             }
           >
-            <span>{item.published_at ?? item.published_at}</span>
+            <span>{item.published_at ?? item.submitted_at}</span>
           </Tooltip>
         )
       },
@@ -154,7 +155,6 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
       item.eventing?.kafka?.sink ?? "-",
       {
         title: item.status === "READY" ? <RollbackButton versionNumber={item.version} onRollback={onRollback} /> : <></>
-        // title: <RollbackButton versionNumber={item.version} onRollback={onRollback} />
       }
     ]
   }));
@@ -167,7 +167,7 @@ interface RollbackButtonProps {
 
 const RollbackButton = (props: RollbackButtonProps) => {
   const { versionNumber, onRollback } = props;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useLoading();
 
   const rollback = useCallback(() => {
     if (loading) {

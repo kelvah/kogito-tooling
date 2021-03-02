@@ -19,6 +19,6 @@ import { config } from "../config";
 
 export const axiosClient = axios.create({
   baseURL: config.baseUrl,
-  timeout: 5000,
+  timeout: 20000,
   headers: {}
 });

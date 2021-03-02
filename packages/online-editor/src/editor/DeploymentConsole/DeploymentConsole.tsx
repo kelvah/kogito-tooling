@@ -44,6 +44,7 @@ import useDecisionVersions from "./useDecisionVersions";
 import DecisionStatus from "../DecisionStatus/DecisionStatus";
 import "./DeploymentConsole.scss";
 import { config } from "../../config";
+import useLoading from "./useLoading";
 
 interface DeploymentConsoleProps {
   editor?: EmbeddedEditorRef;
@@ -63,7 +64,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     isValid: true,
     messages: {}
   });
-  const [deployLoading, setDeployLoading] = useState(false);
+  const [deployLoading, setDeployLoading] = useLoading();
   const [deployWarningVisible, setDeployWarningVisible] = useState(false);
   const { decisionVersions, loadDecisionVersions } = useDecisionVersions(modelName);
 
@@ -140,6 +141,9 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
         }
         axiosClient(requestConfig)
           .then(() => {
+            setDescription("");
+            setKafkaSource("");
+            setKafkaSink("");
             loadBuildingDecision();
           })
           .catch(error => {
