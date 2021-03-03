@@ -227,7 +227,7 @@ const noVersions = (colSpan: number) => {
               <EmptyState>
                 <EmptyStateIcon icon={HistoryIcon} />
                 <Title headingLevel="h5" size="lg">
-                  Developmennt History is empty
+                  Deployment History is empty
                 </Title>
                 <EmptyStateBody>It looks like this model was never deployed in the past.</EmptyStateBody>
               </EmptyState>
