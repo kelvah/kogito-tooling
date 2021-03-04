@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { RemoteData } from "../ModelTester/ModelTester";
 import { AxiosError, AxiosRequestConfig } from "axios";
 import { axiosClient } from "../../common/axiosClient";
@@ -46,10 +46,6 @@ const useDecisionVersions = (modelName: string) => {
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  useEffect(() => {
-    loadDecisionVersions();
   }, [modelName]);
 
   return { loadDecisionVersions, decisionVersions };

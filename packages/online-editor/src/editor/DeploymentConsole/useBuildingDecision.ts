@@ -46,7 +46,7 @@ const useBuildingDecision = (modelName: string) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [modelName]);
 
   useEffect(() => {
     loadBuildingDecision();

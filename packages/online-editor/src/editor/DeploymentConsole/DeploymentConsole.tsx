@@ -59,7 +59,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   const kafkaOptions = config.kafkaOptions || [];
   const { decisionStatus, loadDecisionStatus } = useDecisionStatus(modelName);
   const { buildingDecision, loadBuildingDecision } = useBuildingDecision(modelName);
-  const [decision, setDecision] = useState<Decision>();
+  const [decision, setDecision] = useState<Decision | undefined>();
   const [deployFormValidation, setDeployFormValidation] = useState<DeployFormValidation>({
     isValid: true,
     messages: {}
@@ -181,7 +181,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   );
 
   useEffect(() => {
-    if (buildingDecision.status === "FAILURE") {
+    if (buildingDecision.status === "FAILURE" && buildingDecision.error?.response?.status === 404) {
       loadDecisionStatus();
     } else if (buildingDecision.status === "SUCCESS" && !isEqual(buildingDecision.data, decision)) {
       setDecision(buildingDecision.data);
@@ -192,6 +192,10 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   useEffect(() => {
     if (decisionStatus.status === "SUCCESS") {
       setDecision(decisionStatus.data);
+      loadDecisionVersions();
+    }
+    if (decisionStatus.status === "FAILURE") {
+      setDecision(undefined);
       loadDecisionVersions();
     }
   }, [decisionStatus]);
