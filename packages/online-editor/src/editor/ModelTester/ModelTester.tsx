@@ -1,8 +1,11 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Form from "@rjsf/bootstrap-4";
 import { Alert, Grid, GridItem, EmptyState, EmptyStateIcon, Title } from "@patternfly/react-core";
 import { EnvelopeIcon } from "@patternfly/react-icons";
+import { JSONSchemaBridge } from "uniforms-bridge-json-schema";
+import Ajv from "ajv";
+import { AutoForm } from "uniforms-patternfly";
 import OutputViewer from "../OutputViewer/OutputViewer";
 import SkeletonCard from "../Skeletons/SkeletonCard/SkeletonCard";
 import SkeletonStripe from "../Skeletons/SkeletonStripe/SkeletonStripe";
@@ -22,31 +25,51 @@ const ModelTester = (props: ModelTesterProps) => {
     status: "NOT_ASKED"
   });
 
+  const ajv = new Ajv({ allErrors: true, useDefaults: true });
+
+  const createValidator = (jsonSchema: object) => {
+    const validator = ajv.compile(jsonSchema);
+
+    return (model: object) => {
+      validator(model);
+      return validator.errors?.length ? { details: validator.errors } : null;
+    };
+  };
+
   useEffect(() => {
     setResponsePayload({ status: "NOT_ASKED" });
   }, []);
 
-  const handleForm = async (form: { formData: any }) => {
-    const formData = form.formData;
-    setRequestPayload(formData);
+  const formSchema = useMemo(() => {
+    if (schema) {
+      const schemaValidator = createValidator(schema as object);
+      return new JSONSchemaBridge(schema, schemaValidator);
+    }
+  }, [schema]);
 
-    setResponsePayload({ status: "LOADING" });
-    const model = await getModel();
-    const requestConfig: AxiosRequestConfig = {
-      baseURL: baseUrl,
-      url: "/evaluateAndExplain",
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      responseType: "json",
-      data: JSON.stringify({ model, context: formData })
-    };
-    axiosClient(requestConfig)
-      .then(response => {
-        setResponsePayload({ status: "SUCCESS", data: response.data });
-      })
-      .catch(error => {
-        setResponsePayload({ status: "FAILURE", error: error.response.data.details });
-      });
+  const handleForm = async (form: any) => {
+    try {
+      setRequestPayload(form);
+      setResponsePayload({ status: "LOADING" });
+      const model = await getModel();
+      const requestConfig: AxiosRequestConfig = {
+        baseURL: baseUrl,
+        url: "/evaluateAndExplain",
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        responseType: "json",
+        data: JSON.stringify({ model, context: form })
+      };
+      axiosClient(requestConfig)
+        .then(response => {
+          setResponsePayload({ status: "SUCCESS", data: response.data });
+        })
+        .catch(error => {
+          setResponsePayload({ status: "FAILURE", error: error.response.data.details });
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -58,7 +81,8 @@ const ModelTester = (props: ModelTesterProps) => {
               <Title headingLevel="h3" className="test-and-deploy__title">
                 Request
               </Title>
-              <Form schema={schema} onSubmit={handleForm} formData={requestPayload} className="dynamic-form" />
+              {/*<Form schema={schema} onSubmit={handleForm} formData={requestPayload} className="dynamic-form" />*/}
+              <AutoForm schema={formSchema} onSubmit={handleForm} />
             </div>
           )}
         </GridItem>

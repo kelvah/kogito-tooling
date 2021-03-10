@@ -3208,6 +3208,16 @@ ajv@^6.7.0:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
+ajv@^7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-7.2.1.tgz#a5ac226171912447683524fa2f1248fcf8bac83d"
+  integrity sha512-+nu0HDv7kNSOua9apAVc979qd932rrZeb3WOvoiD31A/p1mIE5/9bN2027pE2rOPYEdS3UHzsvof4hY+lM9/WQ==
+  dependencies:
+    fast-deep-equal "^3.1.1"
+    json-schema-traverse "^1.0.0"
+    require-from-string "^2.0.2"
+    uri-js "^4.2.2"
+
 amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
@@ -9680,6 +9690,11 @@ json-schema-traverse@^0.4.1:
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz#69f6a87d9513ab8bb8fe63bdb0979c448e684660"
   integrity sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==
 
+json-schema-traverse@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz#ae7bcb3656ab77a73ba5c49bf654f38e6b6860e2"
+  integrity sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==
+
 json-schema@0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/json-schema/-/json-schema-0.2.3.tgz#b480c892e59a2f05954ce727bd3f2a4e882f9e13"
@@ -13114,6 +13129,11 @@ require-directory@^2.1.1:
   resolved "https://registry.yarnpkg.com/require-directory/-/require-directory-2.1.1.tgz#8c64ad5fd30dab1c976e2344ffe7f792a6a6df42"
   integrity sha1-jGStX9MNqxyXbiNE/+f3kqam30I=
 
+require-from-string@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/require-from-string/-/require-from-string-2.0.2.tgz#89a7fdd938261267318eafe14f9c32e598c36909"
+  integrity sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==
+
 require-main-filename@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-1.0.1.tgz#97f717b69d48784f5f526a6c5aa8ffdda055a4d1"
@@ -15068,10 +15088,28 @@ uniforms-bridge-json-schema@3.0.0:
     tslib "^1.10.0"
     uniforms "^3.0.0"
 
+uniforms-bridge-json-schema@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/uniforms-bridge-json-schema/-/uniforms-bridge-json-schema-3.2.0.tgz#3ca1f35c0eba88df77db46f05e0c09dbad7f860a"
+  integrity sha512-v9bcatR2bYVdryqxfJBPrPMk5rE+RcvSw/hAl+Gd3xOZ/kZx4WQnH8npEpGmFuDtXZdL2aL+751cun5Q/TQDXg==
+  dependencies:
+    invariant "^2.0.0"
+    lodash "^4.0.0"
+    tslib "^1.10.0"
+    uniforms "^3.2.0"
+
 uniforms-patternfly@4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/uniforms-patternfly/-/uniforms-patternfly-4.1.2.tgz#fd28c2fd53c1719d6406d385e71f83a48d02a58e"
   integrity sha512-/H8zH7Ijuprm/bgZTT7g9MhEGiFJgRK10tuBQpEyUNqCnZQKcTukRh83VSvy+h+pYUPpsBwzN5A1qP6flll2fg==
+  dependencies:
+    "@patternfly/react-core" "4.84.4"
+    "@patternfly/react-icons" "4.7.22"
+
+uniforms-patternfly@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/uniforms-patternfly/-/uniforms-patternfly-4.1.3.tgz#7401348703ab0785648ae0505f776a290e4a804d"
+  integrity sha512-2kUPetkzat5yBUjU+LHUJBne2KPHu5vIwu6wR99atRoK2gzi6cG8Pt9Gv9WGOCiMriHIzWq1g9b7UBxaSsRYDw==
   dependencies:
     "@patternfly/react-core" "4.84.4"
     "@patternfly/react-icons" "4.7.22"
@@ -15089,6 +15127,15 @@ uniforms@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/uniforms/-/uniforms-3.1.0.tgz#ba226b25f2b5405d7a0ae53cf9aa15cfcc4a5022"
   integrity sha512-ei3UjC3EcSraI5e+K+cKhUOHAQKZwx6owFVrwxNV3JlHaN4a6d/aivUxNAuW4clUohElT+yXl1QfaulxZPc+Rg==
+  dependencies:
+    invariant "^2.0.0"
+    lodash "^4.0.0"
+    tslib "^1.10.0"
+
+uniforms@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/uniforms/-/uniforms-3.2.0.tgz#e2ebf077768b40d7785789cc61840fe85fdfac05"
+  integrity sha512-pG2XcelaSjIPno96GqIxHMQsHFwCKYx4ap7wxjI4XrTEIgUNBl/bAxuSSL2YNTNwhObbeObx+DWRczzZy6MW4w==
   dependencies:
     invariant "^2.0.0"
     lodash "^4.0.0"

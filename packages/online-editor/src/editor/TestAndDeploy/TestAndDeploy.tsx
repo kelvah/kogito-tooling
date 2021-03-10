@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Page, PageSection, Tab, TabContent, Tabs, TabTitleText } from "@patternfly/react-core";
-import "bootstrap/dist/css/bootstrap.css";
+// import "bootstrap/dist/css/bootstrap.css";
 import { AxiosRequestConfig } from "axios";
 import { EmbeddedEditorRef } from "@kogito-tooling/editor/dist/embedded";
 import ModelTester from "../ModelTester/ModelTester";
