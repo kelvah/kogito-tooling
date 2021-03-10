@@ -15,7 +15,12 @@
  */
 
 // @ts-nocheck
+const jitDmnUrl = window.JITDMN_URL || process.env.JITDMN_URL;
+
+// @ts-nocheck
 export const config = {
-  baseUrl: window.BAAAS_BASE_URL || process.env.BAAAS_BASE_URL,
-  kafkaOptions: (window.BAAAS_KAFKA_OPTIONS || process.env.BAAAS_KAFKA_OPTIONS) as string[]
+  baaasBaseUrl: window.BAAAS_BASE_URL || process.env.BAAAS_BASE_URL,
+  kafkaOptions: (window.BAAAS_KAFKA_OPTIONS || process.env.BAAAS_KAFKA_OPTIONS) as string[],
+  jitDmnUrl,
+  testFeatureOnly: !!jitDmnUrl
 };

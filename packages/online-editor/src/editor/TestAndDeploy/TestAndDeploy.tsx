@@ -8,6 +8,7 @@ import ModelTester from "../ModelTester/ModelTester";
 import DeploymentConsole from "../DeploymentConsole/DeploymentConsole";
 import { axiosClient } from "../../common/axiosClient";
 import "./TestAndDeploy.scss";
+import { config } from "../../config";
 
 interface TestAndDeployProps {
   editor?: EmbeddedEditorRef;
@@ -22,22 +23,26 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
   const [jitdmnPath, setJitdmnPath] = useState();
 
   useEffect(() => {
-    const requestConfig: AxiosRequestConfig = {
-      url: "/decisions/jit",
-      method: "get"
-    };
-    axiosClient(requestConfig)
-      .then(response => {
-        if ((response.data as DecisionJitResponse).kind === "DMNJITList") {
-          const dmnjit = response.data.items.find((item: DmnJitItem) => item.kind === "DMNJIT");
-          if (dmnjit) {
-            setJitdmnPath(dmnjit.url);
+    if (config.testFeatureOnly) {
+      setJitdmnPath(config.jitDmnUrl);
+    } else {
+      const requestConfig: AxiosRequestConfig = {
+        url: "/decisions/jit",
+        method: "get"
+      };
+      axiosClient(requestConfig)
+        .then(response => {
+          if ((response.data as DecisionJitResponse).kind === "DMNJITList") {
+            const dmnjit = response.data.items.find((item: DmnJitItem) => item.kind === "DMNJIT");
+            if (dmnjit) {
+              setJitdmnPath(dmnjit.url);
+            }
           }
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
   }, []);
 
   useEffect(() => {
@@ -97,50 +102,59 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
     >
       <div className="side-panel__container">
         <div className="side-panel__content test-and-deploy">
-          <Page>
-            <PageSection>
-              <Tabs isFilled={true} activeKey={activeTab} onSelect={handleTabClick} isBox={true}>
-                <Tab
-                  eventKey={0}
-                  id="test-tab"
-                  title={
-                    <TabTitleText>
-                      <span>Test Development Environment</span>
-                    </TabTitleText>
-                  }
-                  tabContentRef={testTab}
-                  tabContentId="test-tab-content"
-                />
-                <Tab
-                  eventKey={1}
-                  id="deploy-tab"
-                  title={<TabTitleText>Deployment Console</TabTitleText>}
-                  tabContentRef={deployTab}
-                  tabContentId="deploy-tab-content"
-                />
-              </Tabs>
-              <div className="test-and-deploy__tabs-content">
-                <div className="test-and-deploy__tabs-scroll">
-                  <TabContent eventKey={0} id="test-tab-content" ref={testTab} aria-label="Test Tab Content">
-                    <PageSection variant={"light"} isFilled={true}>
-                      {schema && jitdmnPath && <ModelTester schema={schema} getModel={getModel} baseUrl={jitdmnPath} />}
-                    </PageSection>
-                  </TabContent>
-                  <TabContent
+          {!config.testFeatureOnly && (
+            <Page>
+              <PageSection>
+                <Tabs isFilled={true} activeKey={activeTab} onSelect={handleTabClick} isBox={true}>
+                  <Tab
+                    eventKey={0}
+                    id="test-tab"
+                    title={
+                      <TabTitleText>
+                        <span>Test Development Environment</span>
+                      </TabTitleText>
+                    }
+                    tabContentRef={testTab}
+                    tabContentId="test-tab-content"
+                  />
+                  <Tab
                     eventKey={1}
-                    id="deploy-tab-content"
-                    ref={deployTab}
-                    aria-label="Deploy Tab Content"
-                    hidden={true}
-                  >
-                    <PageSection variant={"light"} isFilled={true}>
-                      <DeploymentConsole editor={editor} />
-                    </PageSection>
-                  </TabContent>
+                    id="deploy-tab"
+                    title={<TabTitleText>Deployment Console</TabTitleText>}
+                    tabContentRef={deployTab}
+                    tabContentId="deploy-tab-content"
+                  />
+                </Tabs>
+                <div className="test-and-deploy__tabs-content">
+                  <div className="test-and-deploy__tabs-scroll">
+                    <TabContent eventKey={0} id="test-tab-content" ref={testTab} aria-label="Test Tab Content">
+                      <PageSection variant={"light"} isFilled={true}>
+                        {schema && jitdmnPath && (
+                          <ModelTester schema={schema} getModel={getModel} baseUrl={jitdmnPath} />
+                        )}
+                      </PageSection>
+                    </TabContent>
+                    <TabContent
+                      eventKey={1}
+                      id="deploy-tab-content"
+                      ref={deployTab}
+                      aria-label="Deploy Tab Content"
+                      hidden={true}
+                    >
+                      <PageSection variant={"light"} isFilled={true}>
+                        <DeploymentConsole editor={editor} />
+                      </PageSection>
+                    </TabContent>
+                  </div>
                 </div>
-              </div>
+              </PageSection>
+            </Page>
+          )}
+          {config.testFeatureOnly && (
+            <PageSection variant={"light"} isFilled={true}>
+              {schema && jitdmnPath && <ModelTester schema={schema} getModel={getModel} baseUrl={jitdmnPath} />}
             </PageSection>
-          </Page>
+          )}
         </div>
       </div>
     </div>

@@ -36,6 +36,7 @@ import { useCallback, useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../common/GlobalContext";
 import { useLocation } from "react-router";
 import { useOnlineI18n } from "../common/i18n";
+import { config } from "../config";
 
 interface Props {
   onFileNameChanged: (fileName: string, fileExtension: string) => void;
@@ -113,7 +114,7 @@ export function EditorToolbar(props: Props) {
         className={"pf-u-display-none-on-xl"}
         isDisabled={!props.isEditorReady}
       >
-        Test & Deploy
+        {config.testFeatureOnly ? "Test Model" : "Test & Deploy"}
       </DropdownItem>,
       <DropdownItem key={`dropdown-${dropdownId}-fullscreen`} component={"button"} onClick={props.onFullScreen}>
         {i18n.editorToolbar.enterFullScreenView}
@@ -228,10 +229,10 @@ export function EditorToolbar(props: Props) {
                 data-testid="test-deploy"
                 variant={"tertiary"}
                 onClick={props.onTestDeploy}
-                aria-label={"Test&Deploy button"}
+                aria-label={config.testFeatureOnly ? "Test Model button" : "Test & Deploy button"}
                 isDisabled={!props.isEditorReady}
               >
-                Test & Deploy
+                {config.testFeatureOnly ? "Test Model" : "Test & Deploy"}
               </Button>
             </PageHeaderToolsItem>
           </PageHeaderToolsGroup>
