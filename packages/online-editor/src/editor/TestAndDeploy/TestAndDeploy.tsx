@@ -63,7 +63,11 @@ const TestAndDeploy = (props: TestAndDeployProps) => {
       };
       axiosClient(requestConfig)
         .then(response => {
-          setSchema(response.data);
+          const versionedSchema = {
+            $schema: "http://json-schema.org/draft-04/schema#",
+            type: "object"
+          };
+          setSchema({ ...response.data, ...versionedSchema });
         })
         .catch(error => {
           console.log(error);

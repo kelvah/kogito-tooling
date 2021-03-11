@@ -8,6 +8,7 @@ import SkeletonCard from "../Skeletons/SkeletonCard/SkeletonCard";
 import SkeletonStripe from "../Skeletons/SkeletonStripe/SkeletonStripe";
 import { AxiosRequestConfig } from "axios";
 import { axiosClient } from "../../common/axiosClient";
+import * as metaSchemaDraft04 from "ajv/lib/refs/json-schema-draft-04.json";
 
 interface ModelTesterProps {
   schema: {};
@@ -21,6 +22,7 @@ const ModelTester = (props: ModelTesterProps) => {
   const [responsePayload, setResponsePayload] = useState<RemoteData<Error, EvaluateAndExplainResponse>>({
     status: "NOT_ASKED"
   });
+  const [liveValidate, setLiveValidate] = useState(false);
 
   useEffect(() => {
     setResponsePayload({ status: "NOT_ASKED" });
@@ -28,6 +30,7 @@ const ModelTester = (props: ModelTesterProps) => {
 
   const handleForm = async (form: { formData: any }) => {
     const formData = form.formData;
+    setLiveValidate(true);
     setRequestPayload(formData);
 
     setResponsePayload({ status: "LOADING" });
@@ -58,7 +61,19 @@ const ModelTester = (props: ModelTesterProps) => {
               <Title headingLevel="h3" className="test-and-deploy__title">
                 Request
               </Title>
-              <Form schema={schema} onSubmit={handleForm} formData={requestPayload} className="dynamic-form" />
+              <Form
+                className="dynamic-form"
+                schema={schema}
+                additionalMetaSchemas={[metaSchemaDraft04]}
+                showErrorList={false}
+                onSubmit={handleForm}
+                onError={() => setLiveValidate(true)}
+                onChange={event => {
+                  setRequestPayload(event.formData);
+                }}
+                formData={requestPayload}
+                liveValidate={liveValidate}
+              />
             </div>
           )}
         </GridItem>

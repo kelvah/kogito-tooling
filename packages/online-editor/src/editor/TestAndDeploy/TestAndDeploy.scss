@@ -209,6 +209,19 @@ $mobileHeaderHeight: 108px;
   textarea {
     border-radius: 0 !important;
   }
+  // validation overrides
+  .list-group-item {
+    background-color: transparent;
+    text-transform: capitalize;
+    color: var(--pf-global--danger-color--100);
+  }
+  .text-danger {
+    color: var(--pf-global--danger-color--100) !important;
+  }
+  .was-validated .form-control:invalid,
+  .form-control.is-invalid {
+    border-color: var(--pf-global--danger-color--100) !important;
+  }
 }
 
 // other bootstrap overrides
