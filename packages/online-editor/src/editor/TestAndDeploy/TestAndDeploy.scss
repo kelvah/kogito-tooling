@@ -222,6 +222,11 @@ $mobileHeaderHeight: 108px;
   .form-control.is-invalid {
     border-color: var(--pf-global--danger-color--100) !important;
   }
+  // disabling clicks on radio labels because of rjsf bug with bootstrap theme
+  // see https://github.com/rjsf-team/react-jsonschema-form/issues/2191
+  input[type="radio"] + label {
+    pointer-events: none;
+  }
 }
 
 // other bootstrap overrides

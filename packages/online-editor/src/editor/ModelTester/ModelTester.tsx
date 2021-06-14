@@ -9,6 +9,7 @@ import SkeletonStripe from "../Skeletons/SkeletonStripe/SkeletonStripe";
 import { AxiosRequestConfig } from "axios";
 import { axiosClient } from "../../common/axiosClient";
 import * as metaSchemaDraft04 from "ajv/lib/refs/json-schema-draft-04.json";
+import SchemaField, { SchemaFieldProps } from "@rjsf/core/lib/components/fields/SchemaField";
 
 interface ModelTesterProps {
   schema: {};
@@ -52,6 +53,8 @@ const ModelTester = (props: ModelTesterProps) => {
       });
   };
 
+  const fields = { SchemaField: SchemaFieldAlt };
+
   return (
     <section>
       <Grid hasGutter={false}>
@@ -71,8 +74,10 @@ const ModelTester = (props: ModelTesterProps) => {
                 onChange={event => {
                   setRequestPayload(event.formData);
                 }}
-                formData={requestPayload}
+                noHtml5Validate={true}
                 liveValidate={liveValidate}
+                formData={requestPayload}
+                fields={fields}
               />
             </div>
           )}
@@ -120,6 +125,13 @@ const ModelTester = (props: ModelTesterProps) => {
 };
 
 export default ModelTester;
+
+const SchemaFieldAlt = (schemaFieldProps: SchemaFieldProps) => {
+  if (schemaFieldProps.schema.type === "boolean") {
+    return <SchemaField {...schemaFieldProps} uiSchema={{ "ui:widget": "radio" }} />;
+  }
+  return <SchemaField {...schemaFieldProps} />;
+};
 
 export interface EvaluateAndExplainResponse {
   dmnResult: DmnResult;
