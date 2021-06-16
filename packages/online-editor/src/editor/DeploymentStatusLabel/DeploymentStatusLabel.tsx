@@ -16,7 +16,13 @@
 
 import * as React from "react";
 import { Label } from "@patternfly/react-core";
-import { CheckCircleIcon, ErrorCircleOIcon, StopCircleIcon, SyncAltIcon, TrashAltIcon } from "@patternfly/react-icons";
+import {
+  BanIcon,
+  CheckCircleIcon,
+  ErrorCircleOIcon,
+  OutlinedDotCircleIcon,
+  SyncAltIcon
+} from "@patternfly/react-icons";
 import { decisionDeployStatusStrings } from "../DeploymentConsole/useDecisionStatus";
 
 interface DeploymentStatusLabelProps {
@@ -45,13 +51,13 @@ const DeploymentStatusLabel = ({ status }: DeploymentStatusLabelProps) => {
       );
     case "READY":
       return (
-        <Label color="grey" icon={<StopCircleIcon />}>
+        <Label color="cyan" icon={<OutlinedDotCircleIcon />}>
           Ready
         </Label>
       );
     case "DELETED":
       return (
-        <Label color="red" icon={<TrashAltIcon />}>
+        <Label color="grey" icon={<BanIcon />}>
           Deleted
         </Label>
       );

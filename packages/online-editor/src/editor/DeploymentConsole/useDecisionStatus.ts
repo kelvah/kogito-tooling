@@ -71,7 +71,8 @@ export interface Decision {
   };
   configuration: {};
   tags: {};
-  url: string;
+  current_endpoint: string;
+  version_endpoint: string;
   status: decisionDeployStatusStrings;
   status_message: string;
   submitted_at: string;

@@ -36,6 +36,7 @@ import { ServerIcon } from "@patternfly/react-icons";
 import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessage";
 import DeploymentStatusIcon from "../DeploymentStatusIcon/DeploymentStatusIcon";
 import { Decision } from "../DeploymentConsole/useDecisionStatus";
+import FormattedDate from "../FormattedDate/FormattedDate";
 
 interface DecisionStatusProps {
   decision: Decision | undefined;
@@ -107,8 +108,8 @@ const DecisionStatus = (props: DecisionStatusProps) => {
               <DescriptionListGroup>
                 <DescriptionListTerm>Url</DescriptionListTerm>
                 <DescriptionListDescription>
-                  {decision.url ? (
-                    <ClipboardCopy isReadOnly={true}>{decision.url}</ClipboardCopy>
+                  {decision.current_endpoint ? (
+                    <ClipboardCopy isReadOnly={true}>{`http://${decision.current_endpoint}`}</ClipboardCopy>
                   ) : (
                     <em>Not yet ready</em>
                   )}
@@ -129,7 +130,9 @@ const DecisionStatus = (props: DecisionStatusProps) => {
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>{decision.published_at ? "Deployed at" : "Submitted at"}</DescriptionListTerm>
-              <DescriptionListDescription>{decision.published_at ?? decision.submitted_at}</DescriptionListDescription>
+              <DescriptionListDescription>
+                <FormattedDate date={decision.published_at ?? decision.submitted_at} />
+              </DescriptionListDescription>
             </DescriptionListGroup>
             {decision.eventing?.kafka?.source && (
               <DescriptionListGroup>

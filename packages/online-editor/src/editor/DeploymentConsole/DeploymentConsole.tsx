@@ -162,16 +162,15 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
     }
   }, [editor, description, modelName, kafkaSource, kafkaSink, deployLoading]);
 
-  const rollback = useCallback(
+  const deleteVersion = useCallback(
     (versionNumber: number) => {
       const requestConfig: AxiosRequestConfig = {
         url: `/decisions/${modelName}/versions/${versionNumber}`,
-        method: "put"
+        method: "delete"
       };
       return axiosClient(requestConfig)
-        .then(response => {
-          console.log(response);
-          loadBuildingDecision();
+        .then(() => {
+          loadDecisionVersions();
         })
         .catch(error => {
           console.log(error);
@@ -369,7 +368,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
       <Card isFlat={true}>
         <CardTitle>Deployment History</CardTitle>
         <CardBody>
-          <DecisionVersions data={decisionVersions} onRollback={rollback} />
+          <DecisionVersions data={decisionVersions} onDelete={deleteVersion} />
         </CardBody>
       </Card>
     </section>

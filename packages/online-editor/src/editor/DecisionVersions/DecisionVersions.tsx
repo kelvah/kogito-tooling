@@ -18,7 +18,6 @@ import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
 import {
   Bullseye,
-  Button,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
@@ -27,53 +26,108 @@ import {
   Title,
   Tooltip
 } from "@patternfly/react-core";
-import { nowrap, cellWidth, IRow, truncate, Table, TableHeader, TableBody } from "@patternfly/react-table";
+import {
+  nowrap,
+  cellWidth,
+  IRow,
+  truncate,
+  Table,
+  TableHeader,
+  TableBody,
+  IActions,
+  IRowData,
+  IExtraData
+} from "@patternfly/react-table";
 import { ExternalLinkAltIcon, HistoryIcon, WarningTriangleIcon } from "@patternfly/react-icons";
 import { AxiosError } from "axios";
 import { Decision } from "../DeploymentConsole/useDecisionStatus";
 import { RemoteData } from "../ModelTester/ModelTester";
 import DeploymentStatusLabel from "../DeploymentStatusLabel/DeploymentStatusLabel";
 import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessage";
-import useLoading from "../DeploymentConsole/useLoading";
+import FormattedDate from "../FormattedDate/FormattedDate";
+import DecisionDeleteConfirmation from "../DecisionDeleteConfirmation/DecisionDeleteConfirmation";
 
 interface DecisionVersionsProps {
   data: RemoteData<AxiosError, Decision[]>;
-  onRollback: (versionNumber: number) => Promise<any>;
+  onDelete: (versionNumber: number) => Promise<any>;
 }
 
 const DecisionVersions = (props: DecisionVersionsProps) => {
-  const { data, onRollback } = props;
+  const { data, onDelete } = props;
   const columns = [
     { title: "Version", transforms: [nowrap] },
     { title: "Status" },
-    { title: "Created at" },
+    { title: "Created on", transforms: [nowrap] },
     { title: "Description", transforms: [cellWidth(30)], cellTransforms: [truncate] },
     { title: "Url" },
     { title: "Source" },
     { title: "Sink" },
     { title: "" }
   ];
-  const [rows, setRows] = useState<IRow[]>(prepareRows(columns.length, data, onRollback));
+  const [rows, setRows] = useState<IRow[]>(prepareRows(columns.length, data));
+  const [deleteVersionConfirmation, setDeleteVersionConfirmation] = useState(-1);
+
+  const handleDelete = useCallback(
+    (event, rowId) => {
+      setDeleteVersionConfirmation(data.status === "SUCCESS" ? data.data[rowId].version : -1);
+    },
+    [data.status]
+  );
+
+  const handleDeleteCancel = () => {
+    setDeleteVersionConfirmation(-1);
+  };
+
+  const actions: IActions = [
+    {
+      title: "Delete",
+      onClick: handleDelete
+    }
+  ];
+
+  const actionResolver = () => {
+    return data.status !== "SUCCESS" ? [] : actions;
+  };
+
+  const areActionsDisabled = useCallback(
+    (rowData: IRowData, { rowIndex }: IExtraData) => {
+      if (data && data.status === "SUCCESS" && typeof rowIndex === "number" && rowIndex < data.data.length) {
+        return data.data[rowIndex].status !== "READY";
+      }
+      return true;
+    },
+    [data.status]
+  );
 
   useEffect(() => {
-    setRows(prepareRows(columns.length, data, onRollback));
+    setRows(prepareRows(columns.length, data));
   }, [data.status]);
 
   return (
-    <Table aria-label="Versions List" variant="compact" cells={columns} rows={rows}>
-      <TableHeader />
-      <TableBody />
-    </Table>
+    <>
+      <Table
+        aria-label="Versions List"
+        variant="compact"
+        cells={columns}
+        rows={rows}
+        actionResolver={actionResolver}
+        areActionsDisabled={areActionsDisabled}
+      >
+        <TableHeader />
+        <TableBody />
+      </Table>
+      <DecisionDeleteConfirmation
+        decisionVersion={deleteVersionConfirmation}
+        onDelete={onDelete}
+        onClose={handleDeleteCancel}
+      />
+    </>
   );
 };
 
 export default DecisionVersions;
 
-const prepareRows = (
-  columnsNumber: number,
-  data: RemoteData<AxiosError, Decision[]>,
-  onRollback: DecisionVersionsProps["onRollback"]
-) => {
+const prepareRows = (columnsNumber: number, data: RemoteData<AxiosError, Decision[]>) => {
   let rows;
   switch (data.status) {
     case "NOT_ASKED":
@@ -82,7 +136,7 @@ const prepareRows = (
       break;
     case "SUCCESS":
       if (data.data.length > 0) {
-        rows = prepareVersionsRows(data.data, onRollback);
+        rows = prepareVersionsRows(data.data);
       } else {
         rows = noVersions(columnsNumber);
       }
@@ -98,7 +152,7 @@ const prepareRows = (
   return rows;
 };
 
-const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsProps["onRollback"]) => {
+const prepareVersionsRows = (rowData: Decision[]) => {
   return rowData.map(item => ({
     cells: [
       `v${item.version}`,
@@ -120,17 +174,21 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
           <Tooltip
             content={
               <div>
-                <span>Submitted at: {item.submitted_at}</span>
+                <span>
+                  Submitted at: <FormattedDate date={item.submitted_at} />
+                </span>
                 {item.published_at && (
                   <>
                     <br />
-                    <span>Deployed at: {item.published_at}</span>
+                    <span>
+                      Deployed at: <FormattedDate date={item.published_at} />
+                    </span>
                   </>
                 )}
               </div>
             }
           >
-            <span>{item.published_at ?? item.submitted_at}</span>
+            <FormattedDate date={item.published_at ?? item.submitted_at} short={true} />
           </Tooltip>
         )
       },
@@ -142,56 +200,21 @@ const prepareVersionsRows = (rowData: Decision[], onRollback: DecisionVersionsPr
         )
       },
       {
-        title:
-          item.status === "CURRENT" ? (
-            <Label color="blue" href={item.url} icon={<ExternalLinkAltIcon />} target="_blank">
-              Link
-            </Label>
-          ) : (
-            <span>-</span>
-          )
+        title: (
+          <Label
+            color="blue"
+            href={`//${item.current_endpoint ?? item.version_endpoint}`}
+            icon={<ExternalLinkAltIcon />}
+            target="_blank"
+          >
+            Link
+          </Label>
+        )
       },
       item.eventing?.kafka?.source ?? "-",
-      item.eventing?.kafka?.sink ?? "-",
-      {
-        title: item.status === "READY" ? <RollbackButton versionNumber={item.version} onRollback={onRollback} /> : <></>
-      }
+      item.eventing?.kafka?.sink ?? "-"
     ]
   }));
-};
-
-interface RollbackButtonProps {
-  versionNumber: number;
-  onRollback: DecisionVersionsProps["onRollback"];
-}
-
-const RollbackButton = (props: RollbackButtonProps) => {
-  const { versionNumber, onRollback } = props;
-  const [loading, setLoading] = useLoading();
-
-  const rollback = useCallback(() => {
-    if (loading) {
-      return;
-    }
-    setLoading(true);
-    onRollback(versionNumber).finally(() => setLoading(false));
-  }, [versionNumber, loading, onRollback]);
-
-  return (
-    <div className={"pf-u-text-align-right"}>
-      <Button
-        key={"rollback"}
-        variant="secondary"
-        isSmall={true}
-        iconPosition="left"
-        onClick={rollback}
-        isLoading={loading}
-        spinnerAriaValueText={loading ? "loading" : ""}
-      >
-        Rollback
-      </Button>
-    </div>
-  );
 };
 
 const skeletonRows = (colsCount: number, rowsCount: number) => {
