@@ -109,7 +109,7 @@ const DecisionStatus = (props: DecisionStatusProps) => {
                 <DescriptionListTerm>Url</DescriptionListTerm>
                 <DescriptionListDescription>
                   {decision.current_endpoint ? (
-                    <ClipboardCopy isReadOnly={true}>{`http://${decision.current_endpoint}`}</ClipboardCopy>
+                    <ClipboardCopy isReadOnly={true}>{decision.current_endpoint}</ClipboardCopy>
                   ) : (
                     <em>Not yet ready</em>
                   )}

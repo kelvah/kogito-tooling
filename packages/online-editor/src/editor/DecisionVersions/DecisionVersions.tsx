@@ -203,7 +203,7 @@ const prepareVersionsRows = (rowData: Decision[]) => {
         title: (
           <Label
             color="blue"
-            href={`//${item.current_endpoint ?? item.version_endpoint}`}
+            href={item.current_endpoint ?? item.version_endpoint}
             icon={<ExternalLinkAltIcon />}
             target="_blank"
           >
