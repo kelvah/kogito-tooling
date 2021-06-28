@@ -32,6 +32,9 @@ import { EditorEnvelopeLocator } from "@kogito-tooling/editor/dist/api";
 import "../static/resources/style.css";
 import { I18n } from "@kogito-tooling/i18n/dist/core";
 import { OnlineI18n, onlineI18nDefaults, onlineI18nDictionaries } from "./common/i18n";
+import { authInit, UserProfile } from "./common/keycloak";
+import { config } from "./config";
+import loadScript from "./common/loadScript";
 
 const urlParams = new URLSearchParams(window.location.search);
 const githubService = new GithubService();
@@ -46,13 +49,24 @@ const editorEnvelopeLocator: EditorEnvelopeLocator = {
   ])
 };
 
-if (urlParams.has("ext")) {
-  waitForEventWithFileData();
-} else if (urlParams.has("file")) {
-  openFileByUrl();
-} else {
-  openDefaultOnlineEditor();
-}
+let userProfile: UserProfile;
+
+loadScript(config.keycloak.scriptUrl, "keycloak-script", () => {
+  authInit()
+    .then(profile => {
+      userProfile = profile;
+      if (urlParams.has("ext")) {
+        waitForEventWithFileData();
+      } else if (urlParams.has("file")) {
+        openFileByUrl();
+      } else {
+        openDefaultOnlineEditor();
+      }
+    })
+    .catch(() => {
+      window.location.reload();
+    });
+});
 
 function openDefaultOnlineEditor() {
   ReactDOM.render(
@@ -62,6 +76,7 @@ function openDefaultOnlineEditor() {
       external={false}
       githubService={githubService}
       editorEnvelopeLocator={editorEnvelopeLocator}
+      userProfile={userProfile}
     />,
     document.getElementById("app")!
   );
@@ -83,6 +98,7 @@ function waitForEventWithFileData() {
         senderTabId={e.detail.senderTabId}
         githubService={githubService}
         editorEnvelopeLocator={editorEnvelopeLocator}
+        userProfile={userProfile}
       />,
       document.getElementById("app")!
     );
@@ -141,6 +157,7 @@ function openFile(filePath: string, getFileContent: Promise<string>) {
       external={false}
       githubService={githubService}
       editorEnvelopeLocator={editorEnvelopeLocator}
+      userProfile={userProfile}
     />,
     document.getElementById("app")!
   );
@@ -196,6 +213,6 @@ function showFetchError(description: string) {
   );
 }
 
-function goToHomePage() {
+export function goToHomePage() {
   window.location.href = window.location.href.split("?")[0].split("#")[0];
 }

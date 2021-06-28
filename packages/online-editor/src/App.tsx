@@ -29,6 +29,7 @@ import { NoMatchPage } from "./NoMatchPage";
 import { EditorEnvelopeLocator } from "@kogito-tooling/editor/dist/api";
 import { I18nDictionariesProvider } from "@kogito-tooling/i18n/dist/react-components";
 import { OnlineI18nContext, onlineI18nDefaults, onlineI18nDictionaries } from "./common/i18n";
+import { UserProfile } from "./common/keycloak";
 
 interface Props {
   file: File;
@@ -37,6 +38,7 @@ interface Props {
   senderTabId?: string;
   githubService: GithubService;
   editorEnvelopeLocator: EditorEnvelopeLocator;
+  userProfile: UserProfile;
 }
 
 export function App(props: Props) {
@@ -74,7 +76,8 @@ export function App(props: Props) {
           readonly: props.readonly,
           external: props.external,
           senderTabId: props.senderTabId,
-          githubService: props.githubService
+          githubService: props.githubService,
+          userProfile: props.userProfile
         }}
       >
         <HashRouter>

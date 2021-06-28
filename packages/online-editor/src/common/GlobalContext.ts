@@ -19,6 +19,7 @@ import * as React from "react";
 import { GithubService } from "./GithubService";
 import { Routes } from "./Routes";
 import { EditorEnvelopeLocator } from "@kogito-tooling/editor/dist/api";
+import { UserProfile } from "./keycloak";
 
 export interface GlobalContextType {
   file: File;
@@ -28,6 +29,7 @@ export interface GlobalContextType {
   external: boolean;
   senderTabId?: string;
   githubService: GithubService;
+  userProfile: UserProfile;
 }
 
 export const GlobalContext = React.createContext<GlobalContextType>({} as any);

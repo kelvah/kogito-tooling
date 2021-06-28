@@ -17,7 +17,6 @@
 import { File as UploadFile, newFile } from "@kogito-tooling/editor/dist/channel";
 import {
   Brand,
-  Bullseye,
   Button,
   Card,
   CardBody,
@@ -38,19 +37,25 @@ import {
   TextInput,
   TextVariants,
   Title,
+  TitleSizes,
   PageHeaderTools,
   PageHeaderToolsGroup,
-  PageHeaderToolsItem
+  PageHeaderToolsItem,
+  StackItem,
+  Stack
 } from "@patternfly/react-core";
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
 import * as React from "react";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import { AnimatedTripleDotLabel } from "../common/AnimatedTripleDotLabel";
 import { GlobalContext } from "../common/GlobalContext";
 import { extractFileExtension, removeFileExtension } from "../common/utils";
 import { useOnlineI18n } from "../common/i18n";
+import UserMenu from "../editor/UserMenu/UserMenu";
+import DecisionsList from "../DecisionsList/DecisionsList";
+import { axiosClient } from "../common/axiosClient";
 
 interface Props {
   onFileOpened: (file: UploadFile) => void;
@@ -348,6 +353,26 @@ export function HomePage(props: Props) {
     [inputFileUrl]
   );
 
+  const openExistingDecision = useCallback((fileName: string, fileExtension: string, fileUrl: string) => {
+    axiosClient({
+      url: fileUrl,
+      baseURL: "",
+      method: "get"
+    })
+      .then(response => {
+        props.onFileOpened({
+          isReadOnly: false,
+          fileExtension: fileExtension,
+          fileName: removeFileExtension(fileName),
+          getFileContents: () => Promise.resolve(response.data)
+        });
+        history.replace(context.routes.editor.url({ type: fileExtension }));
+      })
+      .catch(error => {
+        console.error(error.toString());
+      });
+  }, []);
+
   const logoProps = {
     href: window.location.href.split("?")[0].split("#")[0]
   };
@@ -408,6 +433,9 @@ export function HomePage(props: Props) {
             dropdownItems={userDropdownItems}
           />
         </PageHeaderToolsItem>
+        <PageHeaderToolsItem>
+          <UserMenu userProfile={context.userProfile} />
+        </PageHeaderToolsItem>
       </PageHeaderToolsGroup>
     </PageHeaderTools>
   );
@@ -422,7 +450,7 @@ export function HomePage(props: Props) {
 
   return (
     <Page header={Header} className="kogito--editor-landing">
-      <PageSection variant="dark" className="kogito--editor-landing__title-section pf-u-p-2xl-on-lg">
+      <PageSection variant="dark" className="kogito--editor-landing__title-section pf-u-px-2xl-on-lg">
         <TextContent>
           <Title size="3xl" headingLevel="h1">
             {i18n.homePage.header.title}
@@ -439,100 +467,121 @@ export function HomePage(props: Props) {
         </TextContent>
       </PageSection>
       <PageSection className="pf-u-px-2xl-on-lg">
-        <Gallery hasGutter={true} className="kogito--editor-landing__gallery">
-          <Card>
-            <CardHeader>
-              <Title headingLevel="h2" size="2xl">
-                {i18n.homePage.dmnCard.title}
-              </Title>
-            </CardHeader>
-            <CardBody isFilled={false}>{i18n.homePage.dmnCard.explanation}</CardBody>
-            <CardBody isFilled={true}>
-              <Button variant="link" isInline={true} onClick={tryDmnSample} ouiaId="try-dmn-sample-button">
-                {i18n.homePage.trySample}
-              </Button>
-            </CardBody>
-            <CardFooter>
-              <Button variant="secondary" onClick={createEmptyDmnFile}>
-                {i18n.homePage.dmnCard.createNew}
-              </Button>
-            </CardFooter>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Title headingLevel="h2" size="2xl">
-                {i18n.homePage.uploadFile.header}
-              </Title>
-            </CardHeader>
-            <CardBody>{i18n.homePage.uploadFile.body}</CardBody>
-            <CardFooter>
-              <Form>
-                <FormGroup
-                  fieldId={"file-upload-field"}
-                  helperText={i18n.homePage.uploadFile.helperText}
-                  helperTextInvalid={i18n.homePage.uploadFile.helperInvalidText}
-                  validated={isUploadRejected ? "error" : "default"}
-                >
-                  <FileUpload
-                    id={"file-upload-field"}
-                    filenamePlaceholder={i18n.homePage.uploadFile.placeholder}
-                    filename={uploadedFileName}
-                    onChange={onFileUpload}
-                    dropzoneProps={{
-                      accept: [...context.editorEnvelopeLocator.mapping.keys()].map(ext => "." + ext).join(", "),
-                      onDropRejected
-                    }}
-                    validated={isUploadRejected ? "error" : "default"}
-                  />
-                </FormGroup>
-              </Form>
-            </CardFooter>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Title headingLevel="h2" size="2xl">
-                {i18n.homePage.openUrl.openFromSource}
-              </Title>
-            </CardHeader>
-            <CardBody isFilled={false}>{i18n.homePage.openUrl.description}</CardBody>
-            <CardBody isFilled={true}>
-              <Form onSubmit={externalFileFormSubmit} disabled={!isUrlInputTextValid} spellCheck={false}>
-                <FormGroup
-                  label="URL"
-                  fieldId="url-text-input"
-                  data-testid="url-form-input"
-                  validated={isUrlInputTextValid ? "default" : "error"}
-                  helperText={helperMessageForInputFileFromUrlState}
-                  helperTextInvalid={helperInvalidMessageForInputFileFromUrlState}
-                >
-                  <TextInput
-                    isRequired={true}
-                    onBlur={onInputFileFromUrlBlur}
-                    validated={isUrlInputTextValid ? "default" : "error"}
-                    autoComplete={"off"}
-                    value={inputFileUrl}
-                    onChange={inputFileFromUrlChanged}
-                    type="url"
-                    data-testid="url-text-input"
-                    id="url-text-input"
-                    name="urlText"
-                    aria-describedby="url-text-input-helper"
-                  />
-                </FormGroup>
-              </Form>
-            </CardBody>
-            <CardFooter>
-              <Button
-                variant="secondary"
-                onClick={openFileFromUrl}
-                isDisabled={!urlCanBeOpen}
-                data-testid="open-url-button"
-              >
-                {i18n.homePage.openUrl.openFromSource}
-              </Button>
-            </CardFooter>
-          </Card>
-        </Gallery>
+        <Stack hasGutter={true}>
+          <StackItem>
+            <Title headingLevel="h3" size={TitleSizes["2xl"]}>
+              New Decision
+            </Title>
+          </StackItem>
+          <StackItem>
+            <Gallery hasGutter={true} className="kogito--editor-landing__gallery">
+              <Card>
+                <CardHeader>
+                  <Title headingLevel="h2" size="2xl">
+                    {i18n.homePage.dmnCard.title}
+                  </Title>
+                </CardHeader>
+                <CardBody isFilled={false}>{i18n.homePage.dmnCard.explanation}</CardBody>
+                <CardBody isFilled={true}>
+                  <Button variant="link" isInline={true} onClick={tryDmnSample} ouiaId="try-dmn-sample-button">
+                    {i18n.homePage.trySample}
+                  </Button>
+                </CardBody>
+                <CardFooter>
+                  <Button variant="secondary" onClick={createEmptyDmnFile}>
+                    {i18n.homePage.dmnCard.createNew}
+                  </Button>
+                </CardFooter>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Title headingLevel="h2" size="2xl">
+                    {i18n.homePage.uploadFile.header}
+                  </Title>
+                </CardHeader>
+                <CardBody>{i18n.homePage.uploadFile.body}</CardBody>
+                <CardFooter>
+                  <Form>
+                    <FormGroup
+                      fieldId={"file-upload-field"}
+                      helperText={i18n.homePage.uploadFile.helperText}
+                      helperTextInvalid={i18n.homePage.uploadFile.helperInvalidText}
+                      validated={isUploadRejected ? "error" : "default"}
+                    >
+                      <FileUpload
+                        id={"file-upload-field"}
+                        filenamePlaceholder={i18n.homePage.uploadFile.placeholder}
+                        filename={uploadedFileName}
+                        onChange={onFileUpload}
+                        dropzoneProps={{
+                          accept: [...context.editorEnvelopeLocator.mapping.keys()].map(ext => "." + ext).join(", "),
+                          onDropRejected
+                        }}
+                        validated={isUploadRejected ? "error" : "default"}
+                      />
+                    </FormGroup>
+                  </Form>
+                </CardFooter>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Title headingLevel="h2" size="2xl">
+                    {i18n.homePage.openUrl.openFromSource}
+                  </Title>
+                </CardHeader>
+                <CardBody isFilled={false}>{i18n.homePage.openUrl.description}</CardBody>
+                <CardBody isFilled={true}>
+                  <Form onSubmit={externalFileFormSubmit} disabled={!isUrlInputTextValid} spellCheck={false}>
+                    <FormGroup
+                      label="URL"
+                      fieldId="url-text-input"
+                      data-testid="url-form-input"
+                      validated={isUrlInputTextValid ? "default" : "error"}
+                      helperText={helperMessageForInputFileFromUrlState}
+                      helperTextInvalid={helperInvalidMessageForInputFileFromUrlState}
+                    >
+                      <TextInput
+                        isRequired={true}
+                        onBlur={onInputFileFromUrlBlur}
+                        validated={isUrlInputTextValid ? "default" : "error"}
+                        autoComplete={"off"}
+                        value={inputFileUrl}
+                        onChange={inputFileFromUrlChanged}
+                        type="url"
+                        data-testid="url-text-input"
+                        id="url-text-input"
+                        name="urlText"
+                        aria-describedby="url-text-input-helper"
+                      />
+                    </FormGroup>
+                  </Form>
+                </CardBody>
+                <CardFooter>
+                  <Button
+                    variant="secondary"
+                    onClick={openFileFromUrl}
+                    isDisabled={!urlCanBeOpen}
+                    data-testid="open-url-button"
+                  >
+                    {i18n.homePage.openUrl.openFromSource}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </Gallery>
+          </StackItem>
+        </Stack>
+      </PageSection>
+      <PageSection className={"pf-u-px-2xl-on-lg"}>
+        <Stack hasGutter={true}>
+          <StackItem>
+            <Title headingLevel="h3" size={TitleSizes["2xl"]}>
+              My Decisions
+            </Title>
+          </StackItem>
+          <StackItem>
+            <DecisionsList onOpenDecision={openExistingDecision} />
+          </StackItem>
+        </Stack>
       </PageSection>
     </Page>
   );

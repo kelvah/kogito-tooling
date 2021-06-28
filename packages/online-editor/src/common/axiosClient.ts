@@ -16,9 +16,28 @@
 
 import axios from "axios";
 import { config } from "../config";
+import { getAuthToken } from "./keycloak";
+import { goToHomePage } from "../index";
 
 export const axiosClient = axios.create({
   baseURL: config.baseUrl,
   timeout: 20000,
   headers: {}
 });
+
+axiosClient.interceptors.request.use(
+  requestConfig =>
+    new Promise((resolve, reject) => {
+      getAuthToken().then(token => {
+        requestConfig.headers.Authorization = "Bearer " + token;
+        resolve(requestConfig);
+      }, reject);
+    }),
+  error => {
+    if (error.response?.status === 401) {
+      goToHomePage();
+    } else {
+      return Promise.reject(error);
+    }
+  }
+);

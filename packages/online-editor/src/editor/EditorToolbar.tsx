@@ -36,6 +36,7 @@ import { useCallback, useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../common/GlobalContext";
 import { useLocation } from "react-router";
 import { useOnlineI18n } from "../common/i18n";
+import UserMenu from "./UserMenu/UserMenu";
 
 interface Props {
   onFileNameChanged: (fileName: string, fileExtension: string) => void;
@@ -328,6 +329,9 @@ export function EditorToolbar(props: Props) {
                 ]}
                 position={DropdownPosition.right}
               />
+            </PageHeaderToolsItem>
+            <PageHeaderToolsItem>
+              <UserMenu userProfile={context.userProfile} />
             </PageHeaderToolsItem>
           </PageHeaderToolsGroup>
         </PageHeaderTools>
