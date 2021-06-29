@@ -22,14 +22,14 @@ export const config = {
     configuration: {
       url: "https://keycloak-baaas-cp-demo.apps.kogito-cloud.automation.rhmw.io/auth",
       realm: "baaas",
-      clientId: "baaas-fs",
+      clientId: "baaas-fm"
     },
-    scriptUrl: "https://keycloak-baaas-cp-demo.apps.kogito-cloud.automation.rhmw.io/auth/js/keycloak.js",
+    scriptUrl: "https://keycloak-baaas-cp-demo.apps.kogito-cloud.automation.rhmw.io/auth/js/keycloak.js"
     // configuration: {
     //   url: "https://sso.redhat.com/auth",
     //   realm: "redhat-external",
     //   clientId: "cloud-services"
     // }
     // scriptUrl: 'https://sso.redhat.com/auth/js/keycloak.js'
-  },
+  }
 };

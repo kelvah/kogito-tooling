@@ -44,6 +44,8 @@ function mockFunctions() {
 }
 jest.mock("../../common/Hooks", () => mockFunctions());
 
+jest.mock("../../editor/TestAndDeploy/TestAndDeploy");
+
 afterAll(() => {
   jest.resetAllMocks();
 });

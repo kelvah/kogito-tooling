@@ -30,6 +30,8 @@ function mockFunctions() {
 }
 jest.mock("@kogito-tooling/editor/dist/embedded", () => mockFunctions());
 
+jest.mock("../../editor/TestAndDeploy/TestAndDeploy");
+
 afterAll(() => {
   jest.resetAllMocks();
 });
