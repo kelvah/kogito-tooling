@@ -1,0 +1,1 @@
+{"version":3,"file":"EmptyState.d.ts","sourceRoot":"","sources":["../../src/showcase/EmptyState.tsx"],"names":[],"mappings":"AA6BA,UAAU,QAAQ;IAChB,UAAU,EAAE,MAAM,IAAI,CAAC;CACxB;AAED,UAAU,WAAW;IACnB,UAAU,EAAE,CAAC,IAAI,EAAE,MAAM,EAAE,GAAG,EAAE,MAAM,KAAK,IAAI,CAAC;CACjD;AAED,UAAU,QAAS,SAAQ,QAAQ,EAAE,WAAW;CAAG;AAEnD,eAAO,MAAM,cAAc,UAAW,QAAQ,gBAgB7C,CAAC"}

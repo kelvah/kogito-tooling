@@ -1,0 +1,1 @@
+{"version":3,"file":"ModelTitle.d.ts","sourceRoot":"","sources":["../../../../../src/editor/components/EditorCore/atoms/ModelTitle.tsx"],"names":[],"mappings":"AAsBA,OAAO,mBAAmB,CAAC;AAK3B,UAAU,eAAe;IACvB,SAAS,EAAE,MAAM,CAAC;IAClB,eAAe,CAAC,EAAE,CAAC,UAAU,EAAE,MAAM,KAAK,IAAI,CAAC;CAChD;AAED,eAAO,MAAM,kBAAkB,yBAAyB,CAAC;AAEzD,eAAO,MAAM,UAAU,UAAW,eAAe,gBAoHhD,CAAC"}

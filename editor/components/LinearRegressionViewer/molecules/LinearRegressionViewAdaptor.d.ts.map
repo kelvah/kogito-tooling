@@ -1,0 +1,1 @@
+{"version":3,"file":"LinearRegressionViewAdaptor.d.ts","sourceRoot":"","sources":["../../../../../src/editor/components/LinearRegressionViewer/molecules/LinearRegressionViewAdaptor.tsx"],"names":[],"mappings":"AAgBA,OAAO,EAUL,eAAe,EAEhB,MAAM,wCAAwC,CAAC;AAIhD,UAAU,gCAAgC;IACxC,KAAK,EAAE,eAAe,CAAC;CACxB;AAED,eAAO,MAAM,2BAA2B,UAAW,gCAAgC,gBA0ClF,CAAC"}

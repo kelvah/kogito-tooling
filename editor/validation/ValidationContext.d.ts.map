@@ -1,0 +1,1 @@
+{"version":3,"file":"ValidationContext.d.ts","sourceRoot":"","sources":["../../../src/editor/validation/ValidationContext.tsx"],"names":[],"mappings":"AAeA,OAAO,KAAK,KAAK,MAAM,OAAO,CAAC;AAC/B,OAAO,EAAE,kBAAkB,EAAE,MAAM,sBAAsB,CAAC;AAE1D,MAAM,WAAW,UAAU;IACzB,kBAAkB,EAAE,kBAAkB,CAAC;CACxC;AAED,eAAO,MAAM,iBAAiB,2BAE5B,CAAC;AAEH,wBAAgB,qBAAqB,eAEpC"}
