@@ -5,7 +5,7 @@ interface DataDictionaryContainerProps {
     onEdit: (index: number, originalName: string, field: DDDataField) => void;
     onDelete: (index: number) => void;
     onReorder: (oldIndex: number, newIndex: number) => void;
-    onBatchAdd: (fields: string[]) => void;
+    onBatchAdd: (fields: string[], index?: number) => void;
     onEditingPhaseChange: (status: boolean) => void;
 }
 declare const DataDictionaryContainer: (props: DataDictionaryContainerProps) => JSX.Element;
