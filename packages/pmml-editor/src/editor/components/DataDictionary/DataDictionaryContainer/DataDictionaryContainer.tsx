@@ -23,14 +23,14 @@ import { Alert } from "@patternfly/react-core/dist/js/components/Alert";
 import { SortIcon } from "@patternfly/react-icons/dist/js/icons/sort-icon";
 import { PlusIcon } from "@patternfly/react-icons/dist/js/icons/plus-icon";
 import { BoltIcon } from "@patternfly/react-icons/dist/js/icons/bolt-icon";
-import { Drawer, DrawerContent, DrawerContentBody, DrawerPanelContent, DrawerPanelBody } from "@patternfly/react-core";
+import { Drawer, DrawerContent, DrawerContentBody, DrawerPanelBody, DrawerPanelContent } from "@patternfly/react-core";
 import { OutlinedHandPointLeftIcon } from "@patternfly/react-icons";
 import MultipleDataTypeAdd from "../MultipleDataTypeAdd/MultipleDataTypeAdd";
 import DataTypesSort from "../DataTypesSort/DataTypesSort";
 import EmptyDataDictionary from "../EmptyDataDictionary/EmptyDataDictionary";
 import { findIncrementalName } from "../../../PMMLModelHelper";
 import DataDictionaryPropertiesEdit from "../DataDictionaryPropertiesEdit/DataDictionaryPropertiesEdit";
-import { isEqual, get } from "lodash";
+import { get, isEqual } from "lodash";
 import { useValidationRegistry } from "../../../validation";
 import { Builder } from "../../../paths";
 import "./DataDictionaryContainer.scss";
@@ -38,6 +38,7 @@ import DataTypeItemReloaded from "../DataTypeItem/DataTypeItemReloaded";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
 import { getChildPathString, getParentPathString, getPathsString } from "../dataDictionaryUtils";
 import DataDictionaryBreadcrumb from "../DataDictionaryBreadcrumb/DataDictionaryBreadcrumb";
+import { Interaction } from "../../../types";
 
 interface DataDictionaryContainerProps {
   dataDictionary: DDDataField[];
@@ -59,6 +60,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
   const [editingDataType, setEditingDataType] = useState<DDDataField>();
   const [sorting, setSorting] = useState(false);
   const [deleteStructure, setDeleteStructure] = useState<{ index: number; path: string | undefined } | undefined>();
+  const [dataTypeFocusIndex, setDataTypeFocusIndex] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     // undoing a recently created data field force to exit the editing mode for that field
@@ -137,7 +139,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
     //saveDataType(dataType, index);
   };
 
-  const handleDelete = (index: number) => {
+  const handleDelete = (index: number, interaction: Interaction) => {
     // deleting an element while editing it, so cleaning up editing states
     if (editingIndex === index) {
       setEditingIndex(undefined);
@@ -163,6 +165,20 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
       }
     } else {
       onDelete(index, editingPath.length ? getParentPathString(editingPath) : undefined);
+      if (interaction === "mouse") {
+        //If the DataTypeItem was deleted by clicking on the delete icon we need to blur
+        //the element otherwise the CSS :focus-within persists on the deleted element.
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement?.blur();
+        }
+      } else if (interaction === "keyboard") {
+        //If the DataTypeItem was deleted by pressing enter on the delete icon when focused
+        //we need to set the focus to the next DataTypeItem. The index of the _next_ item
+        //is identical to the index of the deleted item.
+        setDataTypeFocusIndex(index);
+      }
+      setEditingIndex(undefined);
+      onEditingPhaseChange(false);
     }
   };
 
@@ -269,6 +285,16 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
     }
   }, [dataDictionary, editingIndex]);
 
+  //Set the focus on a DataTypeItem as required
+  useEffect(() => {
+    if (dataTypeFocusIndex !== undefined) {
+      document.querySelector<HTMLElement>(`#data-type-item-n${dataTypeFocusIndex}`)?.focus();
+    }
+    return () => {
+      setDataTypeFocusIndex(undefined);
+    };
+  }, [dataDictionary, dataTypeFocusIndex]);
+
   return (
     <div className="data-dictionary">
       <>
@@ -332,7 +358,11 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                         />
                       ) : (
                         <section
-                          style={{ margin: "5em 0", textAlign: "center", color: "var(--pf-global--Color--200)" }}
+                          style={{
+                            margin: "5em 0",
+                            textAlign: "center",
+                            color: "var(--pf-global--Color--200)",
+                          }}
                         >
                           Click on a data type from the list to edit its properties
                           <br />
@@ -344,7 +374,10 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                 }
               >
                 <DrawerContentBody
-                  style={{ overflowX: "hidden", backgroundColor: "var(--pf-global--BackgroundColor--200)" }}
+                  style={{
+                    overflowX: "hidden",
+                    backgroundColor: "var(--pf-global--BackgroundColor--200)",
+                  }}
                 >
                   <SwitchTransition mode={"out-in"}>
                     <CSSTransition
