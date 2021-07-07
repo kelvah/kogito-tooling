@@ -127,6 +127,11 @@ const DataTypeItem = (props: DataTypeItemProps) => {
       id={`data-type-item-n${index}`}
       className={`editable-item ${editingIndex === index ? "editable-item--editing" : ""} data-type-item-n${index}`}
       tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          handleEditStatus(event);
+        }
+      }}
     >
       {editingIndex === index && (
         <section
