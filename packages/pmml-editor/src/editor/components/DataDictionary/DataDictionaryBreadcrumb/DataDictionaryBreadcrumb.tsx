@@ -36,9 +36,6 @@ const DataDictionaryBreadcrumb = (props: DataDictionaryBreadcrumbProps) => {
           variant="link"
           isInline={true}
           onClick={() => {
-            // setEditingIndex(undefined);
-            // setEditingDataType(undefined);
-            // setEditingPath([]);
             onNavigate([]);
           }}
         >
@@ -56,9 +53,6 @@ const DataDictionaryBreadcrumb = (props: DataDictionaryBreadcrumbProps) => {
                 variant="link"
                 isInline={true}
                 onClick={() => {
-                  // setEditingIndex(undefined);
-                  // setEditingDataType(undefined);
-                  // setEditingPath([]);
                   onNavigate(currentPath);
                 }}
               >

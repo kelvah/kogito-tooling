@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@patternfly/react-core/dist/js/components/Button";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { Bullseye } from "@patternfly/react-core/dist/js/layouts/Bullseye";
@@ -79,18 +79,14 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
       } else {
         setEditingDataType(get(dataDictionary, getChildPathString(editingPath, editingIndex)));
       }
-      // if (structureIndex !== undefined) {
-      //   if (editingIndex === -1) {
-      //     setEditingDataType(dataDictionary[structureIndex]);
-      //   } else {
-      //     setEditingDataType(dataDictionary[structureIndex].children?.[editingIndex]);
-      //   }
-      // } else {
-      //   setEditingDataType(dataDictionary[editingIndex]);
-      // }
     }
     setDataTypes(dataDictionary);
   }, [dataDictionary, dataTypesView, editingIndex, editingPath]);
+
+  const structureTypes = useMemo(
+    () => dataTypes.filter((item) => item.type === "structure").map((item) => item.name),
+    [dataTypes]
+  );
 
   useEffect(() => {
     const pathString = getPathsString(editingPath);
@@ -230,12 +226,11 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
 
   const handlePropertiesSave = (payload: Partial<DDDataField>) => {
     if (editingIndex !== undefined && editingDataType) {
-      // const dataType = dataTypes[editingIndex];
       const dataType = editingDataType;
       const existingPartial = {};
       Object.keys(payload).forEach((key) => Reflect.set(existingPartial, key, Reflect.get(dataType, key)));
       if (payload?.type && payload.type === "structure" && payload.type !== editingDataType.type) {
-        // setStructureIndex(editingIndex);
+        // when changing type to structure, navigate inside of it
         setEditingPath((prev) => [...prev, editingIndex]);
         setEditingIndex(-1);
       }
@@ -355,6 +350,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                           dataFieldIndex={editingIndex}
                           onClose={exitFromPropertiesEdit}
                           onSave={handlePropertiesSave}
+                          structureTypes={structureTypes}
                         />
                       ) : (
                         <section
@@ -429,7 +425,6 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                                     dataDictionary={dataTypes}
                                     paths={editingPath}
                                     onNavigate={(path) => {
-                                      console.log("breadcrumb navigation!");
                                       setEditingIndex(undefined);
                                       setEditingDataType(undefined);
                                       setEditingPath(path);
@@ -493,7 +488,8 @@ export default DataDictionaryContainer;
 
 export interface DDDataField {
   name: string;
-  type: "string" | "integer" | "float" | "double" | "boolean" | "structure";
+  type: "string" | "integer" | "float" | "double" | "boolean" | "structure" | "custom";
+  customType?: string;
   optype: "categorical" | "ordinal" | "continuous";
   constraints?: Constraints;
   displayName?: string;

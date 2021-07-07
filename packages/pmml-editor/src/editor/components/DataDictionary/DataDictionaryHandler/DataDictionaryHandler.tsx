@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { Split, SplitItem } from "@patternfly/react-core/dist/js/layouts/Split";
@@ -31,6 +31,33 @@ const DataDictionaryHandler = () => {
   //   setActiveOperation(Operation.NONE);
   //   setIsDataDictionaryOpen(!isDataDictionaryOpen);
   // };
+
+  // manually pushing some structured content for demo purposes
+  useEffect(() => {
+    if (dictionary.length) {
+      setDictionary((prev) => [
+        ...prev,
+        {
+          name: "Person",
+          type: "structure",
+          optype: "categorical",
+          children: [
+            { name: "Name", type: "string", optype: "categorical" },
+            { name: "Age", type: "integer", optype: "categorical" },
+            {
+              name: "Address",
+              type: "structure",
+              optype: "categorical",
+              children: [
+                { name: "Street", type: "string", optype: "categorical" },
+                { name: "Zip code", type: "integer", optype: "categorical" },
+              ],
+            },
+          ],
+        },
+      ]);
+    }
+  }, []);
 
   const addField = (name: string, type: DDDataField["type"], optype: DDDataField["optype"], pathString?: string) => {
     // dispatch({
@@ -134,6 +161,9 @@ const DataDictionaryHandler = () => {
     //     originalName: originalName as FieldName
     //   }
     // });
+    if (updatedField.type !== "custom" && updatedField.customType) {
+      delete updatedField.customType;
+    }
     const fieldToUpdate = get(dictionary, path, null);
     if (fieldToUpdate) {
       setDictionary((prevState) => [...set(prevState, path, updatedField)]);

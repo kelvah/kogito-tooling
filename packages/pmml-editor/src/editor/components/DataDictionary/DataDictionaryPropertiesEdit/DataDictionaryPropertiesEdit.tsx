@@ -16,37 +16,36 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@patternfly/react-core/dist/js/components/Button";
 import { TextInput } from "@patternfly/react-core/dist/js/components/TextInput";
-import { Stack, StackItem } from "@patternfly/react-core/dist/js/layouts/Stack";
-import { Split, SplitItem } from "@patternfly/react-core/dist/js/layouts/Split";
 import { Form, FormGroup } from "@patternfly/react-core/dist/js/components/Form";
 import { Alert } from "@patternfly/react-core/dist/js/components/Alert";
 import { Tooltip } from "@patternfly/react-core/dist/js/components/Tooltip";
 import { Radio } from "@patternfly/react-core/dist/js/components/Radio";
-import { Title, TitleSizes } from "@patternfly/react-core/dist/js/components/Title";
 import { HelpIcon } from "@patternfly/react-icons/dist/js/icons/help-icon";
-import { ArrowAltCircleLeftIcon } from "@patternfly/react-icons/dist/js/icons/arrow-alt-circle-left-icon";
 import { ConstraintType, DDDataField } from "../DataDictionaryContainer/DataDictionaryContainer";
 import ConstraintsEdit from "../ConstraintsEdit/ConstraintsEdit";
 import "./DataDictionaryPropertiesEdit.scss";
 import {
   Select,
+  SelectGroup,
   SelectOption,
   SelectOptionObject,
   SelectVariant,
 } from "@patternfly/react-core/dist/js/components/Select";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
+import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
+import { isStructureOrCustomType } from "../dataDictionaryUtils";
 
 interface DataDictionaryPropertiesEditProps {
   dataType: DDDataField;
   dataFieldIndex: number | undefined;
   onClose: () => void;
   onSave: (payload: Partial<DDDataField>) => void;
+  structureTypes: string[];
 }
 
 const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) => {
-  const { dataType, dataFieldIndex, onClose, onSave } = props;
+  const { dataType, dataFieldIndex, onClose, onSave, structureTypes } = props;
   const [name, setName] = useState(dataType.name ?? "");
   const [typeSelection, setTypeSelection] = useState<DDDataField["type"]>(dataType.type);
   const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
@@ -120,13 +119,53 @@ const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) 
     setIsTypeSelectOpen(isOpen);
   };
 
-  const typeSelect = (event: React.MouseEvent | React.ChangeEvent, value: string | SelectOptionObject) => {
+  const typeSelect = (event: React.MouseEvent | React.ChangeEvent, value: string) => {
     if (value !== typeSelection) {
       setTypeSelection(value as DDDataField["type"]);
       setIsTypeSelectOpen(false);
-      onSave({ type: value as DDDataField["type"] });
+      const payload = structureTypes.includes(value)
+        ? { type: "custom" as DDDataField["type"], customType: value }
+        : { type: value as DDDataField["type"] };
+      onSave(payload);
     }
   };
+
+  const defaultTypeOptions = useMemo(() => {
+    return typeOptions.map((item, index) => (
+      <SelectOption
+        key={index + typeOptions.length}
+        value={item.value}
+        className="ignore-onclickoutside data-type-item__type-select__option"
+      />
+    ));
+  }, [typeOptions]);
+
+  const customTypeOptions = useMemo(() => {
+    return structureTypes.map((item, index) => (
+      <SelectOption
+        key={index + typeOptions.length}
+        value={item}
+        className="ignore-onclickoutside data-type-item__type-select__option"
+      />
+    ));
+  }, [structureTypes, typeOptions]);
+
+  const typeSelectOptions = useMemo(() => {
+    const optionList = [
+      <SelectGroup key="group1" label="Regular Types" className="ignore-onclickoutside">
+        {defaultTypeOptions}
+      </SelectGroup>,
+    ];
+    if (structureTypes.length > 0) {
+      optionList.push(<Divider className="ignore-onclickoutside" key="divider" />);
+      optionList.push(
+        <SelectGroup key="group2" label="Custom types" className="ignore-onclickoutside">
+          {customTypeOptions}
+        </SelectGroup>
+      );
+    }
+    return optionList;
+  }, [customTypeOptions, defaultTypeOptions]);
 
   const optypeToggle = (isOpen: boolean) => {
     setIsOptypeSelectOpen(isOpen);
@@ -191,20 +230,16 @@ const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) 
                   selections={typeSelection}
                   isOpen={isTypeSelectOpen}
                   placeholder="Type"
-                  className="data-type-item__type-select"
-                  menuAppendTo={"parent"}
+                  className="data-type-item__type-select ignore-onclickoutside"
+                  menuAppendTo={() => document.body}
+                  isGrouped={true}
+                  width={200}
                 >
-                  {typeOptions.map((option, optionIndex) => (
-                    <SelectOption
-                      key={optionIndex}
-                      value={option.value}
-                      className="ignore-onclickoutside data-type-item__type-select__option"
-                    />
-                  ))}
+                  {typeSelectOptions}
                 </Select>
               </FormGroup>
             </FlexItem>
-            {!isStructure && (
+            {!isStructureOrCustomType(dataType.type) && (
               <FlexItem>
                 <FormGroup fieldId="optype" label="Op Type" isRequired={true}>
                   <Select
@@ -219,19 +254,13 @@ const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) 
                     className="data-type-item__type-select"
                     menuAppendTo={"parent"}
                   >
-                    {optypeOptions.map((option, optionIndex) => (
-                      <SelectOption
-                        key={optionIndex}
-                        value={option.value}
-                        className="ignore-onclickoutside data-type-item__type-select__option"
-                      />
-                    ))}
+                    {typeSelectOptions}
                   </Select>
                 </FormGroup>
               </FlexItem>
             )}
           </Flex>
-          {!isStructure && (
+          {!isStructureOrCustomType(dataType.type) && (
             <>
               <Flex className="data-dictionary__properties-edit__field-group">
                 <FlexItem>

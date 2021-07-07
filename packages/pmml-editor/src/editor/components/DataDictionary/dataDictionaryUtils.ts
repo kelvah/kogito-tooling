@@ -146,3 +146,7 @@ export const getParentPathString = (path: Array<number>): string => {
 export const getChildPathString = (path: Array<number>, childIndex: number): string => {
   return getPathsString(path) + `[${childIndex}]`;
 };
+
+export const isStructureOrCustomType = (type: DDDataField["type"]) => {
+  return type === "structure" || type === "custom";
+};

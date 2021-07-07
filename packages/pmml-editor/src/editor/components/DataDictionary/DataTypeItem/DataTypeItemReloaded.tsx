@@ -31,6 +31,8 @@ import { useValidationRegistry } from "../../../validation";
 import { Builder } from "../../../paths";
 import { ValidationIndicator } from "../../EditorCore/atoms";
 import "./DataTypeItem.scss";
+import TypeLabel from "../TypeLabel/TypeLabel";
+import { isStructureOrCustomType } from "../dataDictionaryUtils";
 
 interface DataTypeItemProps {
   dataType: DDDataField;
@@ -147,33 +149,27 @@ const DataTypeItem = (props: DataTypeItemProps) => {
             <SplitItem>
               <span className="data-type-item__name">{name}</span>
             </SplitItem>
-            {dataType.type !== "structure" ? (
-              <SplitItem isFilled={true}>
-                <Label color="blue" className="data-type-item__type-label">
-                  {typeSelection}
-                </Label>{" "}
-                <Label color="blue" className="data-type-item__type-label">
-                  {optypeSelection}
-                </Label>{" "}
-                <PropertiesLabels
-                  dataType={dataType}
-                  editingIndex={editingIndex}
-                  onPropertyDelete={handlePropertiesDelete}
-                />
-                <ConstraintsLabel
-                  dataType={dataType}
-                  dataTypeIndex={index}
-                  editMode={true}
-                  onConstraintsDelete={handleConstraintsDelete}
-                />
-              </SplitItem>
-            ) : (
-              <SplitItem isFilled={true}>
-                <Label color="purple" icon={<OutlinedListAltIcon />} className="data-type-item__type-label">
-                  {typeSelection}
-                </Label>
-              </SplitItem>
-            )}
+            <SplitItem isFilled={true}>
+              <TypeLabel dataType={dataType} />{" "}
+              {!isStructureOrCustomType(dataType.type) && (
+                <>
+                  <Label color="blue" className="data-type-item__type-label">
+                    {optypeSelection}
+                  </Label>{" "}
+                  <PropertiesLabels
+                    dataType={dataType}
+                    editingIndex={editingIndex}
+                    onPropertyDelete={handlePropertiesDelete}
+                  />
+                  <ConstraintsLabel
+                    dataType={dataType}
+                    dataTypeIndex={index}
+                    editMode={true}
+                    onConstraintsDelete={handleConstraintsDelete}
+                  />
+                </>
+              )}
+            </SplitItem>
             <SplitItem>
               <Button
                 variant="plain"
@@ -218,29 +214,19 @@ const DataTypeItem = (props: DataTypeItemProps) => {
             <SplitItem>
               <span className="data-type-item__name">{name}</span>
             </SplitItem>
-            {dataType.type !== "structure" ? (
-              <SplitItem isFilled={true}>
-                <Label color="blue" className="data-type-item__type-label">
-                  {typeSelection}
-                </Label>{" "}
-                <Label color="blue" className="data-type-item__type-label">
-                  {optypeSelection}
-                </Label>{" "}
-                <PropertiesLabels dataType={dataType} />
-                <ConstraintsLabel dataType={dataType} dataTypeIndex={index} />
-              </SplitItem>
-            ) : (
-              <SplitItem isFilled={true}>
-                <Label color="purple" icon={<OutlinedListAltIcon />} className="data-type-item__type-label">
-                  {typeSelection}
-                </Label>
-                {index !== -1 && dataType.children && dataType.children.length >= 0 && (
-                  <Label color="purple" className="data-type-item__type-label" style={{ marginLeft: 3 }}>
-                    {dataType.children?.map((child) => child.name).join(", ")}
-                  </Label>
-                )}
-              </SplitItem>
-            )}
+
+            <SplitItem isFilled={true}>
+              <TypeLabel dataType={dataType} showStructureDetail={index !== -1} />{" "}
+              {!isStructureOrCustomType(dataType.type) && (
+                <>
+                  <Label color="blue" className="data-type-item__type-label">
+                    {optypeSelection}
+                  </Label>{" "}
+                  <PropertiesLabels dataType={dataType} />
+                  <ConstraintsLabel dataType={dataType} dataTypeIndex={index} />
+                </>
+              )}
+            </SplitItem>
             <SplitItem>
               <Button
                 variant="plain"
