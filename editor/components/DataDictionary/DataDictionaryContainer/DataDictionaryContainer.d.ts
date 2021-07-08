@@ -1,18 +1,19 @@
 import "./DataDictionaryContainer.scss";
 interface DataDictionaryContainerProps {
     dataDictionary: DDDataField[];
-    onAdd: (name: string, type: DDDataField["type"], optype: DDDataField["optype"], index?: number) => void;
-    onEdit: (index: number, originalName: string, field: DDDataField) => void;
-    onDelete: (index: number) => void;
+    onAdd: (name: string, type: DDDataField["type"], optype: DDDataField["optype"], pathString?: string) => void;
+    onEdit: (pathString: string, field: DDDataField) => void;
+    onDelete: (index: number, pathString?: string) => void;
     onReorder: (oldIndex: number, newIndex: number) => void;
-    onBatchAdd: (fields: string[], index?: number) => void;
+    onBatchAdd: (fields: string[], pathString?: string) => void;
     onEditingPhaseChange: (status: boolean) => void;
 }
 declare const DataDictionaryContainer: (props: DataDictionaryContainerProps) => JSX.Element;
 export default DataDictionaryContainer;
 export interface DDDataField {
     name: string;
-    type: "string" | "integer" | "float" | "double" | "boolean" | "structure";
+    type: "string" | "integer" | "float" | "double" | "boolean" | "structure" | "custom";
+    customType?: string;
     optype: "categorical" | "ordinal" | "continuous";
     constraints?: Constraints;
     displayName?: string;

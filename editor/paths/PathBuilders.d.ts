@@ -21,9 +21,8 @@ declare class PMMLBuilder extends BaseBuilder {
     protected segment(): string;
 }
 declare class ModelBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly modelIndex?;
-    constructor(builders: Builders, modelIndex?: number | undefined);
+    constructor(builders: Builders, modelIndex?: number);
     forBaselineScore: () => BaselineScoreBuilder;
     forUseReasonCodes: () => UseReasonCodesBuilder;
     forCharacteristics: () => CharacteristicsBuilder;
@@ -32,102 +31,87 @@ declare class ModelBuilder extends BaseBuilder {
     protected segment(): string;
 }
 declare class HeaderBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class DataDictionaryBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     forDataField: (dataFieldIndex?: number | undefined) => DataFieldBuilder;
     protected segment(): string;
 }
 declare class DataFieldBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly dataFieldIndex?;
-    constructor(builders: Builders, dataFieldIndex?: number | undefined);
+    constructor(builders: Builders, dataFieldIndex?: number);
     forInterval: (intervalIndex?: number | undefined) => IntervalBuilder;
     forValue: (valueIndex?: number | undefined) => ValueBuilder;
     protected segment(): string;
 }
 declare class IntervalBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly intervalIndex?;
-    constructor(builders: Builders, intervalIndex?: number | undefined);
+    constructor(builders: Builders, intervalIndex?: number);
     protected segment(): string;
 }
 declare class ValueBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly valueIndex?;
-    constructor(builders: Builders, valueIndex?: number | undefined);
+    constructor(builders: Builders, valueIndex?: number);
     protected segment(): string;
 }
 declare class CharacteristicsBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     forCharacteristic: (characteristicIndex?: number | undefined) => CharacteristicBuilder;
     protected segment(): string;
 }
 declare class CharacteristicBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly characteristicIndex?;
-    constructor(builders: Builders, characteristicIndex?: number | undefined);
+    constructor(builders: Builders, characteristicIndex?: number);
     forReasonCode: () => ReasonCodeBuilder;
     forBaselineScore: () => BaselineScoreBuilder;
     forAttribute: (attributeIndex?: number | undefined) => AttributeBuilder;
     protected segment(): string;
 }
 declare class ReasonCodeBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class BaselineScoreBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class UseReasonCodesBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class AttributeBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly attributeIndex?;
-    constructor(builders: Builders, attributeIndex?: number | undefined);
+    constructor(builders: Builders, attributeIndex?: number);
     forPredicate: (predicateIndex?: number | undefined) => PredicateBuilder;
     forReasonCode: () => ReasonCodeBuilder;
     forPartialScore: () => PartialScoreBuilder;
     protected segment(): string;
 }
 declare class PartialScoreBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
-declare class PredicateBuilder extends BaseBuilder {
-    protected builders: Builders;
+export declare class PredicateBuilder extends BaseBuilder {
     private readonly predicateIndex?;
-    constructor(builders: Builders, predicateIndex?: number | undefined);
+    constructor(builders: Builders, predicateIndex?: number);
     forFieldName: () => FieldNameBuilder;
+    forPredicate: (predicateIndex?: number | undefined) => PredicateBuilder;
     protected segment(): string;
 }
 declare class FieldNameBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class MiningSchemaBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     forMiningField: (miningFieldIndex?: number | undefined) => MiningFieldBuilder;
     protected segment(): string;
 }
 declare class MiningFieldBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly miningFieldIndex?;
-    constructor(builders: Builders, miningFieldIndex?: number | undefined);
+    constructor(builders: Builders, miningFieldIndex?: number);
     forImportance: () => MiningFieldImportanceBuilder;
     forLowValue: () => MiningFieldLowValueBuilder;
     forHighValue: () => MiningFieldHighValueBuilder;
@@ -137,50 +121,41 @@ declare class MiningFieldBuilder extends BaseBuilder {
     protected segment(): string;
 }
 declare class MiningFieldImportanceBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class MiningFieldLowValueBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class MiningFieldHighValueBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class MiningFieldMissingValueReplacementBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class MiningFieldInvalidValueReplacementBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class MiningFieldDataFieldMissingBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }
 declare class OutputBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     forOutputField: (outputFieldIndex?: number | undefined) => OutputFieldBuilder;
     protected segment(): string;
 }
 declare class OutputFieldBuilder extends BaseBuilder {
-    protected builders: Builders;
     private readonly outputFieldIndex?;
-    constructor(builders: Builders, outputFieldIndex?: number | undefined);
+    constructor(builders: Builders, outputFieldIndex?: number);
     forTargetField: () => OutputFieldTargetFieldBuilder;
     protected segment(): string;
 }
 declare class OutputFieldTargetFieldBuilder extends BaseBuilder {
-    protected builders: Builders;
     constructor(builders: Builders);
     protected segment(): string;
 }

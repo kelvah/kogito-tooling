@@ -11,7 +11,6 @@ interface ScorecardPayload {
     };
     [Actions.Scorecard_SetCoreProperties]: {
         readonly modelIndex: number;
-        readonly modelName: string;
         readonly isScorable: boolean;
         readonly functionName: MiningFunction;
         readonly algorithmName: string;
