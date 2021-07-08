@@ -1,42 +1,49 @@
+/*
+ * Copyright 2021 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 import * as React from "react";
 import { BaseSyntheticEvent, useEffect, useMemo, useState } from "react";
 import useOnclickOutside from "react-cool-onclickoutside";
 import { Button } from "@patternfly/react-core/dist/js/components/Button";
-import { TextInput } from "@patternfly/react-core/dist/js/components/TextInput";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
-import { Stack, StackItem } from "@patternfly/react-core/dist/js/layouts/Stack";
 import { Split, SplitItem } from "@patternfly/react-core/dist/js/layouts/Split";
-import { Form, FormGroup } from "@patternfly/react-core/dist/js/components/Form";
-import {
-  Select,
-  SelectOption,
-  SelectOptionObject,
-  SelectVariant,
-} from "@patternfly/react-core/dist/js/components/Select";
 import { Label } from "@patternfly/react-core/dist/js/components/Label";
 import { TrashIcon } from "@patternfly/react-icons/dist/js/icons/trash-icon";
-import { ArrowAltCircleRightIcon } from "@patternfly/react-icons/dist/js/icons/arrow-alt-circle-right-icon";
-import { ExclamationCircleIcon } from "@patternfly/react-icons/dist/js/icons/exclamation-circle-icon";
 import { DDDataField } from "../DataDictionaryContainer/DataDictionaryContainer";
-import "./DataTypeItem.scss";
 import ConstraintsLabel from "../ConstraintsLabel/ConstraintsLabel";
-import { Validated } from "../../../types";
+import { Interaction, Validated } from "../../../types";
 import PropertiesLabels from "../PropertiesLabels/PropertiesLabels";
 import { useValidationRegistry } from "../../../validation";
 import { Builder } from "../../../paths";
 import { ValidationIndicator } from "../../EditorCore/atoms";
+import "./DataTypeItem.scss";
+import TypeLabel from "../TypeLabel/TypeLabel";
+import { isStructureOrCustomType } from "../dataDictionaryUtils";
 
 interface DataTypeItemProps {
   dataType: DDDataField;
   index: number;
   editingIndex: number | undefined;
   onSave: (dataType: DDDataField, index: number | null) => void;
-  onEdit?: (index: number) => void;
-  onDelete?: (index: number) => void;
-  onConstraintsEdit: (dataType: DDDataField) => void;
+  onEdit?: (index: number, path?: number) => void;
+  onDelete?: (index: number, interaction: Interaction) => void;
   onConstraintsSave: (dataType: DDDataField) => void;
   onValidate: (dataTypeName: string) => boolean;
   onOutsideClick: () => void;
+  getCustomTypeDefinition: (name: string) => DDDataField | undefined;
 }
 
 const DataTypeItem = (props: DataTypeItemProps) => {
@@ -47,24 +54,14 @@ const DataTypeItem = (props: DataTypeItemProps) => {
     onSave,
     onEdit,
     onDelete,
-    onConstraintsEdit,
     onConstraintsSave,
     onValidate,
     onOutsideClick,
+    getCustomTypeDefinition,
   } = props;
   const [name, setName] = useState(dataType.name);
   const [typeSelection, setTypeSelection] = useState<DDDataField["type"]>(dataType.type);
-  const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
-  const typeOptions = [
-    { value: "string" },
-    { value: "integer" },
-    { value: "float" },
-    { value: "double" },
-    { value: "boolean" },
-  ];
   const [optypeSelection, setOptypeSelection] = useState(dataType.optype);
-  const [isOptypeSelectOpen, setIsOptypeSelectOpen] = useState(false);
-  const optypeOptions = [{ value: "categorical" }, { value: "ordinal" }, { value: "continuous" }];
   const [validation, setValidation] = useState<Validated>("default");
 
   const ref = useOnclickOutside(
@@ -74,39 +71,10 @@ const DataTypeItem = (props: DataTypeItemProps) => {
     { eventTypes: ["click"], disabled: editingIndex !== index }
   );
 
-  const handleNameChange = (value: string) => {
-    setName(value);
-    setValidation(onValidate(value) ? "default" : "error");
-  };
-
-  const typeToggle = (isOpen: boolean) => {
-    setIsTypeSelectOpen(isOpen);
-  };
-
-  const typeSelect = (event: React.MouseEvent | React.ChangeEvent, value: string | SelectOptionObject) => {
-    if (value !== typeSelection) {
-      setTypeSelection(value as DDDataField["type"]);
-      setIsTypeSelectOpen(false);
-      onSave({ ...dataType, type: value as DDDataField["type"] }, index);
-    }
-  };
-
-  const optypeToggle = (isOpen: boolean) => {
-    setIsOptypeSelectOpen(isOpen);
-  };
-
-  const optypeSelect = (event: React.MouseEvent | React.ChangeEvent, value: string | SelectOptionObject) => {
-    if (value !== optypeSelection) {
-      setOptypeSelection(value as DDDataField["optype"]);
-      setIsOptypeSelectOpen(false);
-      onSave({ ...dataType, optype: value as DDDataField["optype"] }, index);
-    }
-  };
-
   const handleEditStatus = (event: BaseSyntheticEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    onEdit?.(index);
+    onEdit?.(index, dataType.type === "structure" ? index : undefined);
   };
 
   const handleSave = (event?: React.FormEvent<HTMLFormElement>) => {
@@ -123,16 +91,10 @@ const DataTypeItem = (props: DataTypeItemProps) => {
     }
   };
 
-  const handleDelete = (event: React.MouseEvent | React.KeyboardEvent) => {
+  const handleDelete = (event: React.MouseEvent | React.KeyboardEvent, interaction: Interaction) => {
     event.stopPropagation();
     event.preventDefault();
-    if (onDelete) {
-      onDelete(index);
-    }
-  };
-
-  const handleConstraints = () => {
-    onConstraintsEdit({ ...dataType, name, type: typeSelection });
+    onDelete?.(index, interaction);
   };
 
   const handleConstraintsDelete = () => {
@@ -147,7 +109,7 @@ const DataTypeItem = (props: DataTypeItemProps) => {
 
   useEffect(() => {
     if (editingIndex === index) {
-      const input = document.querySelector<HTMLInputElement>(`.data-type-item-n${index} #name`);
+      const input = document.querySelector<HTMLInputElement>(`.data-dictionary__properties-edit__form #name`);
       input?.focus();
       if (name.startsWith("New Data Type")) {
         input?.select();
@@ -164,7 +126,7 @@ const DataTypeItem = (props: DataTypeItemProps) => {
     setName(dataType.name);
     setTypeSelection(dataType.type);
     setOptypeSelection(dataType.optype);
-  }, [dataType]);
+  }, [dataType.name, dataType.type, dataType.optype]);
 
   const { validationRegistry } = useValidationRegistry();
   const validations = useMemo(
@@ -172,146 +134,81 @@ const DataTypeItem = (props: DataTypeItemProps) => {
     [index, dataType]
   );
 
+  const customTypeDefinition = useMemo(() => {
+    if (dataType.type === "custom" && dataType.customType !== undefined) {
+      return getCustomTypeDefinition(dataType.customType);
+    }
+  }, [dataType, getCustomTypeDefinition]);
+  console.log("custom type definition");
+  console.log(customTypeDefinition);
+
   return (
     <article
+      id={`data-type-item-n${index}`}
       className={`editable-item ${editingIndex === index ? "editable-item--editing" : ""} data-type-item-n${index}`}
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          handleEditStatus(event);
+        }
+      }}
     >
       {editingIndex === index && (
         <section
           className={"editable-item__inner"}
           ref={ref}
-          tabIndex={0}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               onOutsideClick();
             }
           }}
         >
-          <Form
-            onSubmit={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-          >
-            <Split hasGutter={true}>
-              <SplitItem>
-                <Stack hasGutter={true}>
-                  <StackItem>
-                    <Split hasGutter={true}>
-                      <SplitItem>
-                        <FormGroup
-                          fieldId="name"
-                          label="Name"
-                          helperTextInvalid="Name is mandatory and must be unique"
-                          helperTextInvalidIcon={<ExclamationCircleIcon />}
-                          validated={validation}
-                          style={{ width: 280 }}
-                          isRequired={true}
-                        >
-                          <TextInput
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={name}
-                            onChange={handleNameChange}
-                            placeholder="Name"
-                            validated={validation}
-                            onBlur={handleNameSave}
-                            autoComplete="off"
-                          />
-                        </FormGroup>
-                      </SplitItem>
-                      <SplitItem>
-                        <FormGroup fieldId="type" label="Type" isRequired={true}>
-                          <Select
-                            id="type"
-                            variant={SelectVariant.single}
-                            aria-label="Select Input Type"
-                            onToggle={typeToggle}
-                            onSelect={typeSelect}
-                            selections={typeSelection}
-                            isOpen={isTypeSelectOpen}
-                            placeholder="Type"
-                            className="data-type-item__type-select"
-                            menuAppendTo={"parent"}
-                          >
-                            {typeOptions.map((option, optionIndex) => (
-                              <SelectOption
-                                key={optionIndex}
-                                value={option.value}
-                                className="ignore-onclickoutside data-type-item__type-select__option"
-                              />
-                            ))}
-                          </Select>
-                        </FormGroup>
-                      </SplitItem>
-                      <SplitItem>
-                        <FormGroup fieldId="optype" label="Op Type" isRequired={true}>
-                          <Select
-                            id="optype"
-                            variant={SelectVariant.single}
-                            aria-label="Select Op Type"
-                            onToggle={optypeToggle}
-                            onSelect={optypeSelect}
-                            selections={optypeSelection}
-                            isOpen={isOptypeSelectOpen}
-                            placeholder="Op Type"
-                            className="data-type-item__type-select"
-                            menuAppendTo={"parent"}
-                          >
-                            {optypeOptions.map((option, optionIndex) => (
-                              <SelectOption
-                                key={optionIndex}
-                                value={option.value}
-                                className="ignore-onclickoutside data-type-item__type-select__option"
-                              />
-                            ))}
-                          </Select>
-                        </FormGroup>
-                      </SplitItem>
-                      <SplitItem isFilled={true}>&nbsp;</SplitItem>
-                    </Split>
-                  </StackItem>
-                  <StackItem>
-                    <Split hasGutter={true}>
-                      <SplitItem>
-                        <PropertiesLabels
-                          dataType={dataType}
-                          editingIndex={editingIndex}
-                          onPropertyDelete={handlePropertiesDelete}
-                        />
-                        <ConstraintsLabel
-                          dataType={dataType}
-                          dataTypeIndex={index}
-                          editMode={true}
-                          onConstraintsDelete={handleConstraintsDelete}
-                        />
-                        <Label
-                          variant="outline"
-                          color="cyan"
-                          href="#"
-                          icon={<ArrowAltCircleRightIcon />}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handleConstraints();
-                          }}
-                        >
-                          Edit Properties
-                        </Label>
-                      </SplitItem>
-                    </Split>
-                  </StackItem>
-                </Stack>
-              </SplitItem>
-            </Split>
-          </Form>
+          <Split hasGutter={true}>
+            <SplitItem>
+              <span className="data-type-item__name">{name}</span>
+            </SplitItem>
+            <SplitItem isFilled={true}>
+              <TypeLabel dataType={dataType} customType={customTypeDefinition} />{" "}
+              {!isStructureOrCustomType(dataType.type) && (
+                <>
+                  <Label color="blue" className="data-type-item__type-label">
+                    {optypeSelection}
+                  </Label>{" "}
+                  <PropertiesLabels
+                    dataType={dataType}
+                    editingIndex={editingIndex}
+                    onPropertyDelete={handlePropertiesDelete}
+                  />
+                  <ConstraintsLabel
+                    dataType={dataType}
+                    dataTypeIndex={index}
+                    editMode={true}
+                    onConstraintsDelete={handleConstraintsDelete}
+                  />
+                </>
+              )}
+            </SplitItem>
+            <SplitItem>
+              <Button
+                variant="plain"
+                className="editable-item__delete"
+                onClick={(event) => handleDelete(event, "mouse")}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleDelete(event, "keyboard");
+                  }
+                }}
+              >
+                <TrashIcon />
+              </Button>
+            </SplitItem>
+          </Split>
         </section>
       )}
       {editingIndex !== index && (
         <section
           className={"editable-item__inner"}
-          tabIndex={0}
-          onClick={handleEditStatus}
+          onClick={(event) => handleEditStatus(event)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               handleEditStatus(event);
@@ -335,18 +232,32 @@ const DataTypeItem = (props: DataTypeItemProps) => {
             <SplitItem>
               <span className="data-type-item__name">{name}</span>
             </SplitItem>
+
             <SplitItem isFilled={true}>
-              <Label color="blue" className="data-type-item__type-label">
-                {typeSelection}
-              </Label>{" "}
-              <Label color="blue" className="data-type-item__type-label">
-                {optypeSelection}
-              </Label>{" "}
-              <PropertiesLabels dataType={dataType} />
-              <ConstraintsLabel dataType={dataType} dataTypeIndex={index} />
+              <TypeLabel dataType={dataType} showStructureDetail={index !== -1} customType={customTypeDefinition} />{" "}
+              {!isStructureOrCustomType(dataType.type) && (
+                <>
+                  <Label color="blue" className="data-type-item__type-label">
+                    {optypeSelection}
+                  </Label>{" "}
+                  <PropertiesLabels dataType={dataType} />
+                  <ConstraintsLabel dataType={dataType} dataTypeIndex={index} />
+                </>
+              )}
             </SplitItem>
             <SplitItem>
-              <Button variant="plain" onClick={handleDelete}>
+              <Button
+                variant="plain"
+                className="editable-item__delete"
+                onClick={(event) => {
+                  handleDelete(event, "mouse");
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleDelete(event, "keyboard");
+                  }
+                }}
+              >
                 <TrashIcon />
               </Button>
             </SplitItem>

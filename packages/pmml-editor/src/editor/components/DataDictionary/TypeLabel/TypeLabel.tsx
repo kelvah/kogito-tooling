@@ -22,12 +22,16 @@ import { OutlinedListAltIcon } from "@patternfly/react-icons";
 import { Tooltip } from "@patternfly/react-core/dist/js/components/Tooltip";
 
 interface TypeLabelProps {
+  // the data type to display
   dataType: DDDataField;
+  // if a label with a list of children types should be added
   showStructureDetail?: boolean;
+  // if the dataType is of custom type, the referenced custom type
+  customType?: DDDataField;
 }
 
 const TypeLabel = (props: TypeLabelProps) => {
-  const { dataType, showStructureDetail = false } = props;
+  const { dataType, showStructureDetail = false, customType } = props;
   const color = dataType.type === "structure" || dataType.type === "custom" ? "purple" : "blue";
   const iconProp = dataType.type === "structure" ? { icon: <OutlinedListAltIcon /> } : {};
   const tooltipRef = useRef<HTMLSpanElement>(null);
@@ -37,22 +41,51 @@ const TypeLabel = (props: TypeLabelProps) => {
 
   return (
     <>
-      <Label color={color} {...iconProp} className="data-type-item__type-label" key="type">
-        {dataType.type === "custom" ? dataType.customType : dataType.type}
-      </Label>
-      {showStructureDetail && dataType.children && dataType.children.length >= 0 && (
+      {dataType.type !== "custom" && (
+        <>
+          <Label color={color} {...iconProp} className="data-type-item__type-label" key="type">
+            {dataType.type}
+          </Label>
+          {showStructureDetail && dataType.children && dataType.children.length >= 0 && (
+            <>
+              <span ref={tooltipRef} key="types list">
+                <Label
+                  color="purple"
+                  className="data-type-item__type-label"
+                  style={{ marginLeft: 3 }}
+                  isTruncated={false}
+                >
+                  {typesListTruncated}
+                </Label>
+              </span>
+              <Tooltip
+                isContentLeftAligned={true}
+                content={
+                  <div>
+                    <span>{dataType.name} Structure</span>
+                    {getStructureContent(dataType)}
+                  </div>
+                }
+                reference={tooltipRef}
+              />
+            </>
+          )}
+        </>
+      )}
+
+      {dataType.type === "custom" && customType && (
         <>
           <span ref={tooltipRef} key="types list">
-            <Label color="purple" className="data-type-item__type-label" style={{ marginLeft: 3 }} isTruncated={false}>
-              {typesListTruncated}
+            <Label color="purple" className="data-type-item__type-label">
+              {customType.name}
             </Label>
           </span>
           <Tooltip
             isContentLeftAligned={true}
             content={
               <div>
-                <span>{dataType.name} Structure</span>
-                {getStructureContent(dataType)}
+                <span>{customType.name} Structure</span>
+                {getStructureContent(customType)}
               </div>
             }
             reference={tooltipRef}
@@ -71,7 +104,7 @@ const getStructureContent = (dataType: DDDataField, parentIndex?: number) => {
       {dataType.children?.map((child, index) => (
         <li key={index} style={{ margin: "5px 0" }}>
           <span style={{ display: "block" }}>
-            {child.name} - <em>{child.type}</em>
+            {child.name} - <em>{child.type === "custom" ? child.customType : child.type}</em>
           </span>
           {child.children && child.children.length > 0 && getStructureContent(child, index)}
         </li>

@@ -35,6 +35,7 @@ import {
 import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { Divider } from "@patternfly/react-core/dist/js/components/Divider";
 import { isStructureOrCustomType } from "../dataDictionaryUtils";
+import { Button } from "@patternfly/react-core/dist/js/components/Button";
 
 interface DataDictionaryPropertiesEditProps {
   dataType: DDDataField;
@@ -42,12 +43,15 @@ interface DataDictionaryPropertiesEditProps {
   onClose: () => void;
   onSave: (payload: Partial<DDDataField>) => void;
   structureTypes: string[];
+  goToCustomType: (name: string) => void;
 }
 
 const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) => {
-  const { dataType, dataFieldIndex, onClose, onSave, structureTypes } = props;
+  const { dataType, dataFieldIndex, onClose, onSave, structureTypes, goToCustomType } = props;
   const [name, setName] = useState(dataType.name ?? "");
-  const [typeSelection, setTypeSelection] = useState<DDDataField["type"]>(dataType.type);
+  const [typeSelection, setTypeSelection] = useState<string>(
+    dataType.type !== "custom" ? dataType.type : dataType.customType!
+  );
   const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
   const [displayName, setDisplayName] = useState(dataType.displayName ?? "");
   const [isCyclic, setIsCyclic] = useState(dataType.isCyclic);
@@ -67,7 +71,7 @@ const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) 
 
   useEffect(() => {
     setName(dataType.name);
-    setTypeSelection(dataType.type);
+    setTypeSelection(dataType.type !== "custom" ? dataType.type : dataType.customType!);
     setOptypeSelection(dataType.optype);
     setDisplayName(dataType.displayName ?? "");
     setIsCyclic(dataType.isCyclic);
@@ -239,6 +243,18 @@ const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) 
                 </Select>
               </FormGroup>
             </FlexItem>
+            {dataType.type === "custom" && dataType.customType !== undefined && (
+              <FlexItem alignSelf={{ default: "alignSelfFlexEnd" }}>
+                <Button
+                  variant="secondary"
+                  isSmall={true}
+                  onClick={() => goToCustomType(dataType.customType!)}
+                  className="ignore-onclickoutside"
+                >
+                  Go To Custom Type Definition
+                </Button>
+              </FlexItem>
+            )}
             {!isStructureOrCustomType(dataType.type) && (
               <FlexItem>
                 <FormGroup fieldId="optype" label="Op Type" isRequired={true}>
@@ -254,7 +270,13 @@ const DataDictionaryPropertiesEdit = (props: DataDictionaryPropertiesEditProps) 
                     className="data-type-item__type-select"
                     menuAppendTo={"parent"}
                   >
-                    {typeSelectOptions}
+                    {optypeOptions.map((option, optionIndex) => (
+                      <SelectOption
+                        key={optionIndex}
+                        value={option.value}
+                        className="ignore-onclickoutside data-type-item__type-select__option"
+                      />
+                    ))}
                   </Select>
                 </FormGroup>
               </FlexItem>

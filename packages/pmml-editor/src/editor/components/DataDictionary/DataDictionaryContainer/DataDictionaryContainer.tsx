@@ -34,11 +34,11 @@ import { get, isEqual } from "lodash";
 import { useValidationRegistry } from "../../../validation";
 import { Builder } from "../../../paths";
 import "./DataDictionaryContainer.scss";
-import DataTypeItemReloaded from "../DataTypeItem/DataTypeItemReloaded";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
 import { getChildPathString, getParentPathString, getPathsString } from "../dataDictionaryUtils";
 import DataDictionaryBreadcrumb from "../DataDictionaryBreadcrumb/DataDictionaryBreadcrumb";
 import { Interaction } from "../../../types";
+import DataTypeItem from "../DataTypeItem/DataTypeItem";
 
 interface DataDictionaryContainerProps {
   dataDictionary: DDDataField[];
@@ -91,7 +91,8 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
   useEffect(() => {
     const pathString = getPathsString(editingPath);
     setDataTypesView(pathString.length ? get(dataTypes, pathString, []) : dataTypes);
-  }, [editingPath.length, dataTypes]);
+    // TODO: fix editingPath in dependecy list
+  }, [editingPath.length, editingPath, dataTypes]);
 
   useEffect(() => {
     if (deleteStructure) {
@@ -290,6 +291,18 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
     };
   }, [dataDictionary, dataTypeFocusIndex]);
 
+  const getCustomTypeDefinition = (name: string) => {
+    return dataDictionary.find((item) => item.name === name);
+  };
+
+  const goToCustomType = (name: string) => {
+    const index = dataTypes.findIndex((item) => item.name === name);
+    if (index > -1) {
+      setEditingPath([index]);
+      setEditingIndex(-1);
+    }
+  };
+
   return (
     <div className="data-dictionary">
       <>
@@ -351,6 +364,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                           onClose={exitFromPropertiesEdit}
                           onSave={handlePropertiesSave}
                           structureTypes={structureTypes}
+                          goToCustomType={goToCustomType}
                         />
                       ) : (
                         <section
@@ -401,7 +415,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                                 <section className="data-dictionary__types-list-wrapper">
                                   <section className="data-dictionary__types-list">
                                     {dataTypesView.map((item, index) => (
-                                      <DataTypeItemReloaded
+                                      <DataTypeItem
                                         dataType={item}
                                         editingIndex={editingIndex}
                                         index={index}
@@ -412,6 +426,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                                         onConstraintsSave={handleConstraintsSave}
                                         onValidate={dataTypeNameValidation}
                                         onOutsideClick={handleOutsideClick}
+                                        getCustomTypeDefinition={getCustomTypeDefinition}
                                       />
                                     ))}
                                   </section>
@@ -430,7 +445,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                                       setEditingPath(path);
                                     }}
                                   />
-                                  <DataTypeItemReloaded
+                                  <DataTypeItem
                                     dataType={get(dataTypes, getParentPathString(editingPath))}
                                     editingIndex={editingIndex}
                                     index={-1}
@@ -441,10 +456,11 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                                     onConstraintsSave={handleConstraintsSave}
                                     onValidate={dataTypeNameValidation}
                                     onOutsideClick={handleOutsideClick}
+                                    getCustomTypeDefinition={getCustomTypeDefinition}
                                   />
                                   <section className="data-dictionary__types-list__children">
                                     {dataTypesView.map((item, index) => (
-                                      <DataTypeItemReloaded
+                                      <DataTypeItem
                                         dataType={item}
                                         editingIndex={editingIndex}
                                         index={index}
@@ -455,6 +471,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                                         onConstraintsSave={handleConstraintsSave}
                                         onValidate={dataTypeNameValidation}
                                         onOutsideClick={handleOutsideClick}
+                                        getCustomTypeDefinition={getCustomTypeDefinition}
                                       />
                                     ))}
                                   </section>
