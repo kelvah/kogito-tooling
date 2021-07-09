@@ -72,6 +72,10 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
     //   onEditingPhaseChange(false);
     // }
 
+    setDataTypes(dataDictionary);
+  }, [dataDictionary]);
+
+  useEffect(() => {
     // updating editing data type
     if (editingIndex !== undefined) {
       if (editingIndex === -1) {
@@ -80,8 +84,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
         setEditingDataType(get(dataDictionary, getChildPathString(editingPath, editingIndex)));
       }
     }
-    setDataTypes(dataDictionary);
-  }, [dataDictionary, dataTypesView, editingIndex, editingPath]);
+  }, [dataDictionary, editingIndex, editingPath]);
 
   const structureTypes = useMemo(
     () => dataTypes.filter((item) => item.type === "structure").map((item) => item.name),
@@ -91,8 +94,7 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
   useEffect(() => {
     const pathString = getPathsString(editingPath);
     setDataTypesView(pathString.length ? get(dataTypes, pathString, []) : dataTypes);
-    // TODO: fix editingPath in dependecy list
-  }, [editingPath.length, editingPath, dataTypes]);
+  }, [editingPath, dataTypes]);
 
   useEffect(() => {
     if (deleteStructure) {

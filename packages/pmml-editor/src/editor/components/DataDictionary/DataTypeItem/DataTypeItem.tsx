@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { BaseSyntheticEvent, useEffect, useMemo, useState } from "react";
+import { BaseSyntheticEvent, useEffect, useMemo, useRef, useState } from "react";
 import useOnclickOutside from "react-cool-onclickoutside";
 import { Button } from "@patternfly/react-core/dist/js/components/Button";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
@@ -70,6 +70,14 @@ const DataTypeItem = (props: DataTypeItemProps) => {
     },
     { eventTypes: ["click"], disabled: editingIndex !== index }
   );
+
+  const articleRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (editingIndex === index) {
+      articleRef.current?.focus();
+    }
+  }, [editingIndex]);
 
   const handleEditStatus = (event: BaseSyntheticEvent) => {
     event.preventDefault();
@@ -139,14 +147,13 @@ const DataTypeItem = (props: DataTypeItemProps) => {
       return getCustomTypeDefinition(dataType.customType);
     }
   }, [dataType, getCustomTypeDefinition]);
-  console.log("custom type definition");
-  console.log(customTypeDefinition);
 
   return (
     <article
       id={`data-type-item-n${index}`}
       className={`editable-item ${editingIndex === index ? "editable-item--editing" : ""} data-type-item-n${index}`}
       tabIndex={0}
+      ref={articleRef}
       onKeyDown={(event) => {
         if (event.key === "Enter") {
           handleEditStatus(event);
