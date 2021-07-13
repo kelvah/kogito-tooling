@@ -17,6 +17,7 @@ import { Builder } from "../../../paths";
 import { ValidationIndicatorTooltip } from "../../EditorCore/atoms";
 import DataDictionaryContainer, { DDDataField } from "../DataDictionaryContainer/DataDictionaryContainer";
 import { get, set } from "lodash";
+import { demoDictionary } from "../demoDictionary";
 
 const DataDictionaryHandler = () => {
   const [isDataDictionaryOpen, setIsDataDictionaryOpen] = useState(false);
@@ -32,30 +33,10 @@ const DataDictionaryHandler = () => {
   //   setIsDataDictionaryOpen(!isDataDictionaryOpen);
   // };
 
-  // manually pushing some structured content for demo purposes
+  // manually pushing some structured types for demo purposes
   useEffect(() => {
-    if (dictionary.length) {
-      setDictionary((prev) => [
-        ...prev,
-        {
-          name: "Person",
-          type: "structure",
-          optype: "categorical",
-          children: [
-            { name: "Name", type: "string", optype: "categorical" },
-            { name: "Age", type: "integer", optype: "categorical" },
-            {
-              name: "Address",
-              type: "structure",
-              optype: "categorical",
-              children: [
-                { name: "Street", type: "string", optype: "categorical" },
-                { name: "Zip code", type: "integer", optype: "categorical" },
-              ],
-            },
-          ],
-        },
-      ]);
+    if (dictionary.length === 0) {
+      setDictionary((prev) => [...prev, ...demoDictionary]);
     }
   }, []);
 
