@@ -36,7 +36,7 @@ const DataTypesSort = ({ dataTypes, onReorder }: DataTypesSortProps) => {
     setState(dataTypes);
   }, [dataTypes]);
 
-  return <SortableList items={state} onSortEnd={onSortEnd} lockAxis="y" helperClass={getHelperClass()} />;
+  return <SortableList items={state} onSortEnd={onSortEnd} lockAxis="y" helperClass={getHelperClass()} distance={20} />;
 };
 
 export default DataTypesSort;

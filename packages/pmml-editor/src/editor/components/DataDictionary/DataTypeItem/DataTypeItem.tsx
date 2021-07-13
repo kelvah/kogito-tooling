@@ -44,6 +44,7 @@ interface DataTypeItemProps {
   onValidate: (dataTypeName: string) => boolean;
   onOutsideClick: () => void;
   getCustomTypeDefinition: (name: string) => DDDataField | undefined;
+  isReadonly?: boolean;
 }
 
 const DataTypeItem = (props: DataTypeItemProps) => {
@@ -58,6 +59,7 @@ const DataTypeItem = (props: DataTypeItemProps) => {
     onValidate,
     onOutsideClick,
     getCustomTypeDefinition,
+    isReadonly = false,
   } = props;
   const [name, setName] = useState(dataType.name);
   const [typeSelection, setTypeSelection] = useState<DDDataField["type"]>(dataType.type);
@@ -80,6 +82,7 @@ const DataTypeItem = (props: DataTypeItemProps) => {
   }, [editingIndex]);
 
   const handleEditStatus = (event: BaseSyntheticEvent) => {
+    if (isReadonly) return;
     event.preventDefault();
     event.stopPropagation();
     onEdit?.(index, dataType.type === "structure" ? index : undefined);
@@ -151,7 +154,9 @@ const DataTypeItem = (props: DataTypeItemProps) => {
   return (
     <article
       id={`data-type-item-n${index}`}
-      className={`editable-item ${editingIndex === index ? "editable-item--editing" : ""} data-type-item-n${index}`}
+      className={`editable-item ${editingIndex === index ? "editable-item--editing" : ""} data-type-item-n${index} ${
+        isReadonly ? "is-readonly" : ""
+      }`}
       tabIndex={0}
       ref={articleRef}
       onKeyDown={(event) => {
@@ -195,20 +200,22 @@ const DataTypeItem = (props: DataTypeItemProps) => {
                 </>
               )}
             </SplitItem>
-            <SplitItem>
-              <Button
-                variant="plain"
-                className="editable-item__delete"
-                onClick={(event) => handleDelete(event, "mouse")}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    handleDelete(event, "keyboard");
-                  }
-                }}
-              >
-                <TrashIcon />
-              </Button>
-            </SplitItem>
+            {!isReadonly && (
+              <SplitItem>
+                <Button
+                  variant="plain"
+                  className="editable-item__delete"
+                  onClick={(event) => handleDelete(event, "mouse")}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      handleDelete(event, "keyboard");
+                    }
+                  }}
+                >
+                  <TrashIcon />
+                </Button>
+              </SplitItem>
+            )}
           </Split>
         </section>
       )}
@@ -252,22 +259,24 @@ const DataTypeItem = (props: DataTypeItemProps) => {
                 </>
               )}
             </SplitItem>
-            <SplitItem>
-              <Button
-                variant="plain"
-                className="editable-item__delete"
-                onClick={(event) => {
-                  handleDelete(event, "mouse");
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    handleDelete(event, "keyboard");
-                  }
-                }}
-              >
-                <TrashIcon />
-              </Button>
-            </SplitItem>
+            {!isReadonly && (
+              <SplitItem>
+                <Button
+                  variant="plain"
+                  className="editable-item__delete"
+                  onClick={(event) => {
+                    handleDelete(event, "mouse");
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      handleDelete(event, "keyboard");
+                    }
+                  }}
+                >
+                  <TrashIcon />
+                </Button>
+              </SplitItem>
+            )}
           </Split>
         </section>
       )}

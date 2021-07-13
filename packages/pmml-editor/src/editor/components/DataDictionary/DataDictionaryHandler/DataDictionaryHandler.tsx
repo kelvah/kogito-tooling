@@ -142,14 +142,30 @@ const DataDictionaryHandler = () => {
     }
   };
 
-  const reorderFields = (oldIndex: number, newIndex: number) => {
-    dispatch({
-      type: Actions.ReorderDataDictionaryFields,
-      payload: {
-        oldIndex,
-        newIndex,
-      },
-    });
+  const reorderFields = (oldIndex: number, newIndex: number, pathString?: string) => {
+    // dispatch({
+    //   type: Actions.ReorderDataDictionaryFields,
+    //   payload: {
+    //     oldIndex,
+    //     newIndex,
+    //   },
+    // });
+    if (pathString) {
+      setDictionary((previousDictionary) => {
+        const updatedDataType: DDDataField = get(previousDictionary, pathString);
+        if (updatedDataType.children) {
+          const [removed] = updatedDataType.children.splice(oldIndex, 1);
+          updatedDataType.children.splice(newIndex, 0, removed);
+        }
+        return [...previousDictionary];
+      });
+    } else {
+      setDictionary((previousDictionary) => {
+        const [removed] = previousDictionary.splice(oldIndex, 1);
+        previousDictionary.splice(newIndex, 0, removed);
+        return [...previousDictionary];
+      });
+    }
   };
 
   const updateField = (path: string, updatedField: DDDataField) => {

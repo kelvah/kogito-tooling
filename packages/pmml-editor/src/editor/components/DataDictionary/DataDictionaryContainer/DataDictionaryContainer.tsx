@@ -45,7 +45,7 @@ interface DataDictionaryContainerProps {
   onAdd: (name: string, type: DDDataField["type"], optype: DDDataField["optype"], pathString?: string) => void;
   onEdit: (pathString: string, field: DDDataField) => void;
   onDelete: (index: number, pathString?: string) => void;
-  onReorder: (oldIndex: number, newIndex: number) => void;
+  onReorder: (oldIndex: number, newIndex: number, pathString?: string) => void;
   onBatchAdd: (fields: string[], pathString?: string) => void;
   onEditingPhaseChange: (status: boolean) => void;
 }
@@ -252,7 +252,12 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
 
   const toggleSorting = () => {
     setEditingIndex(undefined);
+    setEditingDataType(undefined);
     setSorting(!sorting);
+  };
+
+  const handleReorder = (oldIndex: number, newIndex: number) => {
+    onReorder(oldIndex, newIndex, editingPath.length ? getParentPathString(editingPath) : undefined);
   };
 
   const dataTypeNameValidation = (dataTypeName: string) => {
@@ -339,7 +344,6 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                 onClick={toggleSorting}
                 icon={<SortIcon />}
                 iconPosition="left"
-                isDisabled={editingIndex !== undefined}
               >
                 {sorting ? "End Ordering" : "Order"}
               </Button>
@@ -401,57 +405,60 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                       key={editingPath.length}
                     >
                       <>
-                        {!sorting && (
-                          <>
-                            {editingPath.length === 0 && (
+                        {/*    {validations.current && validations.current.length > 0 && (*/}
+                        {/*      <section className="data-dictionary__validation-alert">*/}
+                        {/*        <Alert*/}
+                        {/*          variant="warning"*/}
+                        {/*          isInline={true}*/}
+                        {/*          title="Some items are invalid and need attention."*/}
+                        {/*        />*/}
+                        {/*      </section>*/}
+                        {/*    )}*/}
+                        <section className="data-dictionary__types-list-wrapper">
+                          <section
+                            className={`data-dictionary__types-list ${
+                              editingPath.length > 0 ? "data-dictionary__types-list--with-breadcrumb" : ""
+                            }`}
+                          >
+                            {editingPath.length > 0 && (
                               <>
-                                {validations.current && validations.current.length > 0 && (
-                                  <section className="data-dictionary__validation-alert">
-                                    <Alert
-                                      variant="warning"
-                                      isInline={true}
-                                      title="Some items are invalid and need attention."
-                                    />
-                                  </section>
-                                )}
-                                <section className="data-dictionary__types-list-wrapper">
-                                  <section className="data-dictionary__types-list">
-                                    {dataTypesView.map((item, index) => (
-                                      <DataTypeItem
-                                        dataType={item}
-                                        editingIndex={editingIndex}
-                                        index={index}
-                                        key={index}
-                                        onSave={handleSave}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                        onConstraintsSave={handleConstraintsSave}
-                                        onValidate={dataTypeNameValidation}
-                                        onOutsideClick={handleOutsideClick}
-                                        getCustomTypeDefinition={getCustomTypeDefinition}
-                                      />
-                                    ))}
-                                  </section>
-                                </section>
+                                <DataDictionaryBreadcrumb
+                                  dataDictionary={dataTypes}
+                                  paths={editingPath}
+                                  onNavigate={(path) => {
+                                    setSorting(false);
+                                    setEditingIndex(undefined);
+                                    setEditingDataType(undefined);
+                                    setEditingPath(path);
+                                  }}
+                                />
+                                <DataTypeItem
+                                  dataType={get(dataTypes, getParentPathString(editingPath))}
+                                  editingIndex={editingIndex}
+                                  index={-1}
+                                  key={-1}
+                                  onSave={handleSave}
+                                  onEdit={handleEdit}
+                                  onDelete={handleDelete}
+                                  onConstraintsSave={handleConstraintsSave}
+                                  onValidate={dataTypeNameValidation}
+                                  onOutsideClick={handleOutsideClick}
+                                  getCustomTypeDefinition={getCustomTypeDefinition}
+                                  isReadonly={true}
+                                />
                               </>
                             )}
-                            {editingPath.length > 0 && (
-                              <section className="data-dictionary__types-list-wrapper">
-                                <section className="data-dictionary__types-list data-dictionary__types-list--with-breadcrumb">
-                                  <DataDictionaryBreadcrumb
-                                    dataDictionary={dataTypes}
-                                    paths={editingPath}
-                                    onNavigate={(path) => {
-                                      setEditingIndex(undefined);
-                                      setEditingDataType(undefined);
-                                      setEditingPath(path);
-                                    }}
-                                  />
+                            <section
+                              className={`${editingPath.length > 0 ? "data-dictionary__types-list__children" : ""}`}
+                            >
+                              {sorting && <DataTypesSort dataTypes={dataTypesView} onReorder={handleReorder} />}
+                              {!sorting &&
+                                dataTypesView.map((item, index) => (
                                   <DataTypeItem
-                                    dataType={get(dataTypes, getParentPathString(editingPath))}
+                                    dataType={item}
                                     editingIndex={editingIndex}
-                                    index={-1}
-                                    key={-1}
+                                    index={index}
+                                    key={index}
                                     onSave={handleSave}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
@@ -460,33 +467,10 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                                     onOutsideClick={handleOutsideClick}
                                     getCustomTypeDefinition={getCustomTypeDefinition}
                                   />
-                                  <section className="data-dictionary__types-list__children">
-                                    {dataTypesView.map((item, index) => (
-                                      <DataTypeItem
-                                        dataType={item}
-                                        editingIndex={editingIndex}
-                                        index={index}
-                                        key={index}
-                                        onSave={handleSave}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                        onConstraintsSave={handleConstraintsSave}
-                                        onValidate={dataTypeNameValidation}
-                                        onOutsideClick={handleOutsideClick}
-                                        getCustomTypeDefinition={getCustomTypeDefinition}
-                                      />
-                                    ))}
-                                  </section>
-                                </section>
-                              </section>
-                            )}
-                          </>
-                        )}
-                        {sorting && (
-                          <section className="data-dictionary__types-list">
-                            <DataTypesSort dataTypes={dataTypes} onReorder={onReorder} />
+                                ))}
+                            </section>
                           </section>
-                        )}
+                        </section>
                       </>
                     </CSSTransition>
                   </SwitchTransition>
