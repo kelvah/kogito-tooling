@@ -1,5 +1,9 @@
 import { Closure, DataDictionary, DataField, FieldName, Interval } from "@kogito-tooling/pmml-editor-marshaller";
-import { ConstraintType, DDDataField } from "./DataDictionaryContainer/DataDictionaryContainer";
+import {
+  ConstraintType,
+  DDDataField,
+  DDDataFieldSearchResult,
+} from "./DataDictionaryContainer/DataDictionaryContainer";
 
 export const convertPMML2DD = (PMMLDataDictionary: DataDictionary | undefined): DDDataField[] => {
   if (PMMLDataDictionary === undefined) {
@@ -149,4 +153,35 @@ export const getChildPathString = (path: Array<number>, childIndex: number): str
 
 export const isStructureOrCustomType = (type: DDDataField["type"]) => {
   return type === "structure" || type === "custom";
+};
+
+export const searchDataFields = (dictionary: DDDataField[], searchString: string): DDDataFieldSearchResult[] => {
+  const results: DDDataFieldSearchResult[] = [];
+
+  const searchFields = (
+    fields: DDDataField[],
+    searchString: string,
+    results: DDDataFieldSearchResult[],
+    path: number[],
+    pathStrings: string[]
+  ) => {
+    for (let i = 0; i < fields.length; i++) {
+      if (fields[i].name.toLowerCase().includes(searchString.toLowerCase())) {
+        const result = {
+          ...fields[i],
+          searchPath: [...path],
+          searchPathStrings: [...pathStrings],
+          searchOriginalIndex: i,
+        };
+        results.push(result);
+      }
+      if (fields[i].type === "structure" && fields[i]?.children && fields[i].children!.length > 0) {
+        searchFields(fields[i].children!, searchString, results, [...path, i], [...pathStrings, fields[i].name]);
+      }
+    }
+  };
+
+  searchFields(dictionary, searchString, results, [], []);
+
+  return results;
 };

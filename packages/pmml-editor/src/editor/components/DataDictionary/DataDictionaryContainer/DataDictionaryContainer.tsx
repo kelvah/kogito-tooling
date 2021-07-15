@@ -16,7 +16,7 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@patternfly/react-core/dist/js/components/Button";
+import { Button, ButtonVariant } from "@patternfly/react-core/dist/js/components/Button";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/js/layouts/Flex";
 import { Bullseye } from "@patternfly/react-core/dist/js/layouts/Bullseye";
 import { Alert } from "@patternfly/react-core/dist/js/components/Alert";
@@ -35,10 +35,13 @@ import { useValidationRegistry } from "../../../validation";
 import { Builder } from "../../../paths";
 import "./DataDictionaryContainer.scss";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
-import { getChildPathString, getParentPathString, getPathsString } from "../dataDictionaryUtils";
+import { getChildPathString, getParentPathString, getPathsString, searchDataFields } from "../dataDictionaryUtils";
 import DataDictionaryBreadcrumb from "../DataDictionaryBreadcrumb/DataDictionaryBreadcrumb";
 import { Interaction } from "../../../types";
 import DataTypeItem from "../DataTypeItem/DataTypeItem";
+import { InputGroup } from "@patternfly/react-core/dist/js/components/InputGroup";
+import { TextInput } from "@patternfly/react-core/dist/js/components/TextInput";
+import { SearchIcon } from "@patternfly/react-icons/dist/js/icons/search-icon";
 
 interface DataDictionaryContainerProps {
   dataDictionary: DDDataField[];
@@ -55,12 +58,15 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
   const [dataTypes, setDataTypes] = useState<DDDataField[]>(dataDictionary);
   const [dataTypesView, setDataTypesView] = useState(dataDictionary);
   const [editingIndex, setEditingIndex] = useState<number | undefined>();
-  const [editingPath, setEditingPath] = useState<Array<number>>([]);
+  const [editingPath, setEditingPath] = useState<number[]>([]);
   const [viewSection, setViewSection] = useState<dataDictionarySection>("main");
   const [editingDataType, setEditingDataType] = useState<DDDataField>();
   const [sorting, setSorting] = useState(false);
   const [deleteStructure, setDeleteStructure] = useState<{ index: number; path: string | undefined } | undefined>();
   const [dataTypeFocusIndex, setDataTypeFocusIndex] = useState<number | undefined>(undefined);
+  const [searchString, setSearchString] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<DDDataFieldSearchResult[]>([]);
+  const [searchBasePath, setSearchBasePath] = useState<number[]>([]);
 
   useEffect(() => {
     // undoing a recently created data field force to exit the editing mode for that field
@@ -75,16 +81,21 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
     setDataTypes(dataDictionary);
   }, [dataDictionary]);
 
+  const combinedEditingPath = useMemo(
+    () => (searchBasePath.length > 0 ? [...searchBasePath, ...editingPath] : editingPath),
+    [searchBasePath, editingPath]
+  );
+
   useEffect(() => {
     // updating editing data type
     if (editingIndex !== undefined) {
       if (editingIndex === -1) {
-        setEditingDataType(get(dataDictionary, getParentPathString(editingPath)));
+        setEditingDataType(get(dataDictionary, getParentPathString(combinedEditingPath)));
       } else {
-        setEditingDataType(get(dataDictionary, getChildPathString(editingPath, editingIndex)));
+        setEditingDataType(get(dataDictionary, getChildPathString(combinedEditingPath, editingIndex)));
       }
     }
-  }, [dataDictionary, editingIndex, editingPath]);
+  }, [dataDictionary, editingIndex, combinedEditingPath]);
 
   const structureTypes = useMemo(
     () => dataTypes.filter((item) => item.type === "structure").map((item) => item.name),
@@ -92,9 +103,9 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
   );
 
   useEffect(() => {
-    const pathString = getPathsString(editingPath);
+    const pathString = getPathsString(combinedEditingPath);
     setDataTypesView(pathString.length ? get(dataTypes, pathString, []) : dataTypes);
-  }, [editingPath, dataTypes]);
+  }, [combinedEditingPath, dataTypes]);
 
   useEffect(() => {
     if (deleteStructure) {
@@ -181,34 +192,19 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
     }
   };
 
-  const handleEdit = (index: number, path?: number) => {
-    const updatedPath = [...editingPath];
+  const handleEdit = (index: number, path?: number, searchPath?: number[]) => {
     if (path !== undefined && index !== -1) {
+      const updatedPath = [...editingPath];
       updatedPath.push(path);
       setEditingPath(updatedPath);
       setEditingIndex(-1);
     } else {
       setEditingIndex(index);
     }
+    if (searchPath) {
+      setSearchBasePath(searchPath);
+    }
 
-    // const pathString = getPathsString(updatedPath);
-    // if (updatedPath.length) {
-    //   setDataTypesView(get(dataTypes, pathString, []));
-    // }
-    // setEditingPath(updatedPath);
-
-    // if (index === -1) {
-    //   setEditingIndex(-1);
-    // } else {
-    //   if (dataTypes[index].type === "structure") {
-    //     setStructureIndex(index);
-    //     setEditingIndex(-1);
-    //   } else {
-    //     setEditingIndex(index);
-    //   }
-    // }
-
-    // setEditingDataType(dataTypes[index]);
     onEditingPhaseChange(true);
   };
 
@@ -239,7 +235,9 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
       }
       if (!isEqual(payload, existingPartial)) {
         onEdit(
-          editingIndex === -1 ? getParentPathString(editingPath) : getChildPathString(editingPath, editingIndex),
+          editingIndex === -1
+            ? getParentPathString(combinedEditingPath)
+            : getChildPathString(combinedEditingPath, editingIndex),
           Object.assign(dataType, payload)
         );
       }
@@ -310,6 +308,29 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
     }
   };
 
+  const searchFieldRef = useRef<HTMLInputElement>(null);
+  const onSearchSubmit = (): void => {
+    if (searchFieldRef && searchFieldRef.current) {
+      setSearchString(searchFieldRef.current.value);
+    }
+  };
+  const onSearchEnter = (event: React.KeyboardEvent): void => {
+    if (searchFieldRef && searchFieldRef.current && event.key === "Enter") {
+      setSearchString(searchFieldRef.current.value);
+    }
+  };
+
+  useEffect(() => {
+    if (searchString.length > 0) {
+      setSearchResults(searchDataFields(dataDictionary, searchString));
+    } else {
+      setSearchResults([]);
+      setSearchBasePath([]);
+      setEditingPath([]);
+      setEditingDataType(undefined);
+    }
+  }, [searchString]);
+
   return (
     <div className="data-dictionary">
       <>
@@ -344,9 +365,33 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                 onClick={toggleSorting}
                 icon={<SortIcon />}
                 iconPosition="left"
+                isDisabled={searchString.length > 0}
               >
                 {sorting ? "End Ordering" : "Order"}
               </Button>
+            </FlexItem>
+            <FlexItem>
+              <InputGroup>
+                <TextInput
+                  name="data-types-search-input"
+                  id="data-types-search-input"
+                  ref={searchFieldRef}
+                  type="search"
+                  aria-label="search data types"
+                  onKeyDown={onSearchEnter}
+                  placeholder="Search Data Types"
+                  data-ouia-component-id="data-types-search-input"
+                />
+                <Button
+                  id="audit-search"
+                  variant={ButtonVariant.control}
+                  aria-label="search button for search input"
+                  onClick={onSearchSubmit}
+                  ouiaId="search-button"
+                >
+                  <SearchIcon />
+                </Button>
+              </InputGroup>
             </FlexItem>
           </Flex>
           {dataTypes.length === 0 && (
@@ -417,57 +462,87 @@ const DataDictionaryContainer = (props: DataDictionaryContainerProps) => {
                         <section className="data-dictionary__types-list-wrapper">
                           <section
                             className={`data-dictionary__types-list ${
-                              editingPath.length > 0 ? "data-dictionary__types-list--with-breadcrumb" : ""
+                              editingPath.length > 0 || searchString.length > 0
+                                ? "data-dictionary__types-list--with-breadcrumb"
+                                : ""
                             }`}
                           >
+                            {(editingPath.length > 0 || searchString.length > 0) && (
+                              <DataDictionaryBreadcrumb
+                                dataDictionary={dataTypes}
+                                paths={editingPath}
+                                onNavigate={(path) => {
+                                  setSorting(false);
+                                  setEditingIndex(undefined);
+                                  setEditingDataType(undefined);
+                                  setEditingPath(path);
+                                }}
+                                searchString={searchString}
+                                searchBasePath={searchBasePath}
+                              />
+                            )}
                             {editingPath.length > 0 && (
-                              <>
-                                <DataDictionaryBreadcrumb
-                                  dataDictionary={dataTypes}
-                                  paths={editingPath}
-                                  onNavigate={(path) => {
-                                    setSorting(false);
-                                    setEditingIndex(undefined);
-                                    setEditingDataType(undefined);
-                                    setEditingPath(path);
-                                  }}
-                                />
-                                <DataTypeItem
-                                  dataType={get(dataTypes, getParentPathString(editingPath))}
-                                  editingIndex={editingIndex}
-                                  index={-1}
-                                  key={-1}
-                                  onSave={handleSave}
-                                  onEdit={handleEdit}
-                                  onDelete={handleDelete}
-                                  onConstraintsSave={handleConstraintsSave}
-                                  onValidate={dataTypeNameValidation}
-                                  onOutsideClick={handleOutsideClick}
-                                  getCustomTypeDefinition={getCustomTypeDefinition}
-                                  isReadonly={true}
-                                />
-                              </>
+                              <DataTypeItem
+                                dataType={get(dataTypes, getParentPathString(combinedEditingPath))}
+                                editingIndex={editingIndex}
+                                index={-1}
+                                key={-1}
+                                onSave={handleSave}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                                onConstraintsSave={handleConstraintsSave}
+                                onValidate={dataTypeNameValidation}
+                                onOutsideClick={handleOutsideClick}
+                                getCustomTypeDefinition={getCustomTypeDefinition}
+                                isReadonly={true}
+                              />
                             )}
                             <section
                               className={`${editingPath.length > 0 ? "data-dictionary__types-list__children" : ""}`}
                             >
                               {sorting && <DataTypesSort dataTypes={dataTypesView} onReorder={handleReorder} />}
-                              {!sorting &&
-                                dataTypesView.map((item, index) => (
-                                  <DataTypeItem
-                                    dataType={item}
-                                    editingIndex={editingIndex}
-                                    index={index}
-                                    key={index}
-                                    onSave={handleSave}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                    onConstraintsSave={handleConstraintsSave}
-                                    onValidate={dataTypeNameValidation}
-                                    onOutsideClick={handleOutsideClick}
-                                    getCustomTypeDefinition={getCustomTypeDefinition}
-                                  />
-                                ))}
+                              {!sorting && (
+                                <>
+                                  {searchString.length > 0 && editingPath.length === 0 && (
+                                    <>
+                                      {searchResults.map((item, index) => (
+                                        <DataTypeItem
+                                          dataType={item}
+                                          editingIndex={editingIndex}
+                                          index={index}
+                                          key={index}
+                                          onSave={handleSave}
+                                          onEdit={handleEdit}
+                                          onDelete={handleDelete}
+                                          onConstraintsSave={handleConstraintsSave}
+                                          onValidate={dataTypeNameValidation}
+                                          onOutsideClick={handleOutsideClick}
+                                          getCustomTypeDefinition={getCustomTypeDefinition}
+                                          searchPath={item.searchPath}
+                                          searchPathStrings={item.searchPathStrings}
+                                          searchOriginalIndex={item.searchOriginalIndex}
+                                        />
+                                      ))}
+                                    </>
+                                  )}
+                                  {!(searchString.length > 0 && editingPath.length === 0) &&
+                                    dataTypesView.map((item, index) => (
+                                      <DataTypeItem
+                                        dataType={item}
+                                        editingIndex={editingIndex}
+                                        index={index}
+                                        key={index}
+                                        onSave={handleSave}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                        onConstraintsSave={handleConstraintsSave}
+                                        onValidate={dataTypeNameValidation}
+                                        onOutsideClick={handleOutsideClick}
+                                        getCustomTypeDefinition={getCustomTypeDefinition}
+                                      />
+                                    ))}
+                                </>
+                              )}
                             </section>
                           </section>
                         </section>
@@ -526,4 +601,10 @@ export enum ConstraintType {
   RANGE = "Range",
   ENUMERATION = "Enumeration",
   NONE = "",
+}
+
+export interface DDDataFieldSearchResult extends DDDataField {
+  searchPath: number[];
+  searchPathStrings?: string[];
+  searchOriginalIndex: number;
 }

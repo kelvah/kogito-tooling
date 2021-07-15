@@ -25,25 +25,34 @@ interface DataDictionaryBreadcrumbProps {
   dataDictionary: DDDataField[];
   paths: Array<number>;
   onNavigate: (path: Array<number>) => void;
+  searchString: string;
+  searchBasePath: number[];
 }
 
 const DataDictionaryBreadcrumb = (props: DataDictionaryBreadcrumbProps) => {
-  const { paths, onNavigate, dataDictionary } = props;
+  const { paths, onNavigate, dataDictionary, searchString, searchBasePath } = props;
+
   return (
     <Breadcrumb className="data-dictionary__types-list__breadcrumb">
       <BreadcrumbItem component={"span"} key="data-types-root">
-        <Button
-          variant="link"
-          isInline={true}
-          onClick={() => {
-            onNavigate([]);
-          }}
-        >
-          Data Types List
-        </Button>
+        {paths.length === 0 && <strong>Search Results</strong>}
+        {paths.length > 0 && (
+          <Button
+            variant="link"
+            isInline={true}
+            onClick={() => {
+              onNavigate([]);
+            }}
+          >
+            {searchString.length > 0 ? "Search Results" : "Data Types List"}
+          </Button>
+        )}
       </BreadcrumbItem>
       {paths.map((item, index) => {
-        const currentPath = [...paths].splice(0, index + 1);
+        let currentPath = [...paths].splice(0, index + 1);
+        if (searchBasePath.length > 0) {
+          currentPath = [...searchBasePath, ...currentPath];
+        }
         const pathString = getParentPathString(currentPath);
         const dataType = get(dataDictionary, pathString);
         return (
