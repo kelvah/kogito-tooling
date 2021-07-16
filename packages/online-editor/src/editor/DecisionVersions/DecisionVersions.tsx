@@ -23,6 +23,9 @@ import {
   EmptyStateIcon,
   Label,
   Skeleton,
+  Text,
+  TextContent,
+  TextVariants,
   Title,
   Tooltip
 } from "@patternfly/react-core";
@@ -45,11 +48,11 @@ import { RemoteData } from "../ModelTester/ModelTester";
 import DeploymentStatusLabel from "../DeploymentStatusLabel/DeploymentStatusLabel";
 import DecisionStatusMessage from "../DecisionStatusMessage/DecisionStatusMessage";
 import FormattedDate from "../FormattedDate/FormattedDate";
-import DecisionDeleteConfirmation from "../DecisionDeleteConfirmation/DecisionDeleteConfirmation";
+import DeleteConfirmationDialog from "../DeleteConfirmationDialog/DeleteConfirmationDialog";
 
 interface DecisionVersionsProps {
   data: RemoteData<AxiosError, Decision[]>;
-  onDelete: (versionNumber: number) => Promise<any>;
+  onDelete: (versionNumber: number) => void;
 }
 
 const DecisionVersions = (props: DecisionVersionsProps) => {
@@ -73,6 +76,11 @@ const DecisionVersions = (props: DecisionVersionsProps) => {
     },
     [data.status]
   );
+
+  const handleDeleteConfirmation = () => {
+    onDelete(deleteVersionConfirmation);
+    setDeleteVersionConfirmation(-1);
+  };
 
   const handleDeleteCancel = () => {
     setDeleteVersionConfirmation(-1);
@@ -116,11 +124,20 @@ const DecisionVersions = (props: DecisionVersionsProps) => {
         <TableHeader />
         <TableBody />
       </Table>
-      <DecisionDeleteConfirmation
-        decisionVersion={deleteVersionConfirmation}
-        onDelete={onDelete}
+      <DeleteConfirmationDialog
+        onConfirm={handleDeleteConfirmation}
         onClose={handleDeleteCancel}
-      />
+        showModal={deleteVersionConfirmation > -1}
+        title="Permanently delete version?"
+        appendToSelector={"#deploy-tab-content"}
+      >
+        <TextContent>
+          <Text component={TextVariants.p}>
+            The decision version <strong>{deleteVersionConfirmation}</strong> will be lost forever and it will not be
+            possible to recover it.
+          </Text>
+        </TextContent>
+      </DeleteConfirmationDialog>
     </>
   );
 };

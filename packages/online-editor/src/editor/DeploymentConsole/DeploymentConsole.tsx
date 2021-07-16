@@ -168,7 +168,7 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
         url: `/decisions/${modelName}/versions/${versionNumber}`,
         method: "delete"
       };
-      return axiosClient(requestConfig)
+      axiosClient(requestConfig)
         .then(() => {
           loadDecisionVersions();
         })

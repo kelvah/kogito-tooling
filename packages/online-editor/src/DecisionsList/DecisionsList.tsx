@@ -16,7 +16,7 @@
 
 import * as React from "react";
 import { Table, TableHeader, TableBody, IRow } from "@patternfly/react-table";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Decision } from "../editor/DeploymentConsole/useDecisionStatus";
 import FormattedDate from "../editor/FormattedDate/FormattedDate";
 import {
@@ -27,11 +27,12 @@ import {
   EmptyStateBody,
   EmptyStateIcon,
   Skeleton,
-  Title,
+  Title
 } from "@patternfly/react-core";
 import DeploymentStatusLabel from "../editor/DeploymentStatusLabel/DeploymentStatusLabel";
 import useAxiosRequest from "../common/useAxiosRequest";
 import { HistoryIcon, WarningTriangleIcon } from "@patternfly/react-icons";
+import DecisionDeletion from "../editor/DecisionDeletion/DecisionDeletion";
 
 interface DecisionsListProps {
   onOpenDecision: (fileName: string, fileExtension: string, fileUrl: string) => void;
@@ -39,11 +40,11 @@ interface DecisionsListProps {
 
 const DecisionsList = ({ onOpenDecision }: DecisionsListProps) => {
   const columns = ["Name", "Version", "Description", "Status", "Published at", "Endpoint"];
-  const [rows, setRows] = useState<IRow[]>(skeletonRows(8));
+  const [rows, setRows] = useState<IRow[]>(skeletonRows(5));
 
   const [loadDecisions, decisions] = useAxiosRequest<DecisionsResponse>({
     url: `/decisions`,
-    method: "get",
+    method: "get"
   });
 
   useEffect(() => {
@@ -60,7 +61,7 @@ const DecisionsList = ({ onOpenDecision }: DecisionsListProps) => {
         }
         break;
       case "LOADING":
-        setRows(skeletonRows(8));
+        setRows(skeletonRows(5));
         break;
       case "FAILURE":
         setRows(loadingError(columns.length));
@@ -73,7 +74,7 @@ const DecisionsList = ({ onOpenDecision }: DecisionsListProps) => {
   };
 
   const prepareRows = (rowsData: Decision[]) => {
-    return rowsData.map((decision) => ({
+    return rowsData.map(decision => ({
       cells: [
         {
           title: (
@@ -87,7 +88,7 @@ const DecisionsList = ({ onOpenDecision }: DecisionsListProps) => {
                 {decision.name}
               </Button>
             </>
-          ),
+          )
         },
         decision.version,
         decision.description,
@@ -96,10 +97,10 @@ const DecisionsList = ({ onOpenDecision }: DecisionsListProps) => {
             <>
               <DeploymentStatusLabel status={decision.status} />
             </>
-          ),
+          )
         },
         {
-          title: <>{decision.published_at ? <FormattedDate date={decision.published_at} /> : <span>-</span>}</>,
+          title: <>{decision.published_at ? <FormattedDate date={decision.published_at} /> : <span>-</span>}</>
         },
         {
           title: (
@@ -109,21 +110,60 @@ const DecisionsList = ({ onOpenDecision }: DecisionsListProps) => {
                   {decision.current_endpoint ?? decision.version_endpoint}
                 </ClipboardCopy>
               ) : (
-                <span>{decision.status === "DELETED" ? "-" : "Not yet available"}</span>
+                <span>{decision.status === "BUILDING" ? "Not yet available" : "-"}</span>
               )}
             </>
-          ),
-        },
-      ],
+          )
+        }
+      ]
     }));
   };
 
+  const actions = () => {
+    return [
+      {
+        title: "Delete",
+        onClick: handleDeleteRequest
+      }
+    ];
+  };
+
+  const [deleteDecisionRequest, setDeleteDecisionRequest] = useState<string>();
+
+  const handleDeleteRequest = useCallback(
+    (event, rowId) => {
+      if (decisions.status === "SUCCESS") {
+        setDeleteDecisionRequest(decisions.data.items[rowId].name);
+      }
+    },
+    [decisions]
+  );
+
+  const onDeleteDecisionConfirmation = () => {
+    setRows(skeletonRows(5));
+  };
+
+  const onDeleteDecision = () => {
+    setDeleteDecisionRequest(undefined);
+    loadDecisions();
+  };
+
+  const onDeleteDecisionCancel = () => {
+    setDeleteDecisionRequest(undefined);
+  };
+
   return (
-    <section>
-      <Table aria-label="Simple Table" cells={columns} rows={rows} variant={"compact"}>
+    <section style={{ marginBottom: "var(--pf-global--spacer--xl)" }}>
+      <Table aria-label="Simple Table" cells={columns} rows={rows} variant={"compact"} actions={actions()}>
         <TableHeader />
         <TableBody />
       </Table>
+      <DecisionDeletion
+        decisionName={deleteDecisionRequest}
+        onDelete={onDeleteDecision}
+        onConfirm={onDeleteDecisionConfirmation}
+        onCancel={onDeleteDecisionCancel}
+      />
     </section>
   );
 };
@@ -136,30 +176,30 @@ const skeletonRows = (rowsCount: number) => {
     const cells = [];
     // name
     cells.push({
-      title: <Skeleton width={j % 2 ? "300px" : "200px"} />,
+      title: <Skeleton width={j % 2 ? "300px" : "200px"} />
     });
     //version
     cells.push({
-      title: <Skeleton width={"40px"} />,
+      title: <Skeleton width={"40px"} />
     });
     //description
     cells.push({
-      title: <Skeleton width={"100px"} />,
+      title: <Skeleton width={"100px"} />
     });
     //status
     cells.push({
-      title: <Skeleton width={"60px"} />,
+      title: <Skeleton width={"60px"} />
     });
     //creation date time
     cells.push({
-      title: <Skeleton width={"400px"} />,
+      title: <Skeleton width={"400px"} />
     });
     //endpoint
     cells.push({
-      title: <Skeleton width={"200px"} />,
+      title: <Skeleton width={"200px"} />
     });
     const skeletonRow: IRow = {
-      cells,
+      cells
     };
     skeletons.push(skeletonRow);
   }
@@ -183,10 +223,10 @@ const noDecisions = (colSpan: number) => {
                 <EmptyStateBody>It looks like there are no decisions. Go create a new one!</EmptyStateBody>
               </EmptyState>
             </Bullseye>
-          ),
-        },
-      ],
-    },
+          )
+        }
+      ]
+    }
   ];
 };
 
@@ -209,10 +249,10 @@ const loadingError = (colSpan: number) => {
                 </EmptyStateBody>
               </EmptyState>
             </Bullseye>
-          ),
-        },
-      ],
-    },
+          )
+        }
+      ]
+    }
   ];
 };
 
