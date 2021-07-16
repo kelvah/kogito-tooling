@@ -16,8 +16,11 @@
 
 // @ts-nocheck
 export const config = {
-  baseUrl: window.BAAAS_BASE_URL || process.env.BAAAS_BASE_URL,
-  kafkaOptions: (window.BAAAS_KAFKA_OPTIONS || process.env.BAAAS_KAFKA_OPTIONS) as string[],
+  baseUrl: window.BAAAS_BASE_URL ?? process.env.BAAAS_BASE_URL,
+  kafkaIntegration: {
+    enabled: window.BAAAS_KAFKA_INTEGRATION_ENABLED ?? process.env.BAAAS_KAFKA_INTEGRATION_ENABLED,
+    options: (window.BAAAS_KAFKA_OPTIONS ?? process.env.BAAAS_KAFKA_OPTIONS) as string[]
+  },
   keycloak: {
     configuration: {
       url: "https://keycloak-baaas-cp-demo.apps.kogito-cloud.automation.rhmw.io/auth",
