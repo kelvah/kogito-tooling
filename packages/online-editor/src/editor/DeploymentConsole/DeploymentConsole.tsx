@@ -56,7 +56,8 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
   const [description, setDescription] = useState("");
   const [kafkaSource, setKafkaSource] = useState<string>("");
   const [kafkaSink, setKafkaSink] = useState<string>("");
-  const kafkaOptions = config.kafkaOptions || [];
+  const kafkaOptions = config.kafkaIntegration.options || [];
+  const kafkaIntegrationEnabled = config.kafkaIntegration.enabled;
   const { decisionStatus, loadDecisionStatus } = useDecisionStatus(modelName);
   const { buildingDecision, loadBuildingDecision } = useBuildingDecision(modelName);
   const [decision, setDecision] = useState<Decision | undefined>();
@@ -260,78 +261,82 @@ const DeploymentConsole = ({ editor }: DeploymentConsoleProps) => {
                   />
                 </FormGroup>
               </SplitItem>
-              <SplitItem style={{ minWidth: "15em" }}>
-                <FormGroup
-                  label="Kafka source"
-                  fieldId="kafka-source"
-                  validated={deployFormValidation.messages.kafkaSource ? "error" : "default"}
-                  helperTextInvalid={deployFormValidation.messages.kafkaSource}
-                  labelIcon={
-                    <Tooltip content="Kafka source is mandatory if a Kafka sink endpoint has been provided.">
-                      <button
-                        aria-label="More information for Kafka source"
-                        onClick={e => e.preventDefault()}
-                        className="pf-c-form__group-label-help"
+              {kafkaIntegrationEnabled && (
+                <>
+                  <SplitItem style={{ minWidth: "15em" }}>
+                    <FormGroup
+                      label="Kafka source"
+                      fieldId="kafka-source"
+                      validated={deployFormValidation.messages.kafkaSource ? "error" : "default"}
+                      helperTextInvalid={deployFormValidation.messages.kafkaSource}
+                      labelIcon={
+                        <Tooltip content="Kafka source is mandatory if a Kafka sink endpoint has been provided.">
+                          <button
+                            aria-label="More information for Kafka source"
+                            onClick={e => e.preventDefault()}
+                            className="pf-c-form__group-label-help"
+                          >
+                            <HelpIcon
+                              noVerticalAlign={true}
+                              color={"var(--pf-global--info-color--100)"}
+                              style={{ verticalAlign: "unset" }}
+                            />
+                          </button>
+                        </Tooltip>
+                      }
+                    >
+                      <FormSelect
+                        id="kafka-source"
+                        value={kafkaSource}
+                        onChange={onKafkaSourceChange}
+                        aria-label="Kafka source"
+                        validated={deployFormValidation.messages.kafkaSource ? "error" : "default"}
                       >
-                        <HelpIcon
-                          noVerticalAlign={true}
-                          color={"var(--pf-global--info-color--100)"}
-                          style={{ verticalAlign: "unset" }}
-                        />
-                      </button>
-                    </Tooltip>
-                  }
-                >
-                  <FormSelect
-                    id="kafka-source"
-                    value={kafkaSource}
-                    onChange={onKafkaSourceChange}
-                    aria-label="Kafka source"
-                    validated={deployFormValidation.messages.kafkaSource ? "error" : "default"}
-                  >
-                    <FormSelectOption key="none" value="" label="" />
-                    {kafkaOptions.map((option, index) => (
-                      <FormSelectOption key={index} value={option} label={option} />
-                    ))}
-                  </FormSelect>
-                </FormGroup>
-              </SplitItem>
-              <SplitItem style={{ minWidth: "15em" }}>
-                <FormGroup
-                  label="Kafka sink"
-                  fieldId="kafka-sink"
-                  validated={deployFormValidation.messages.kafkaSink ? "error" : "default"}
-                  helperTextInvalid={deployFormValidation.messages.kafkaSink}
-                  labelIcon={
-                    <Tooltip content="Kafka sink is mandatory if a Kafka source endpoint has been provided.">
-                      <button
-                        aria-label="More information for Kafka sink"
-                        onClick={e => e.preventDefault()}
-                        className="pf-c-form__group-label-help"
+                        <FormSelectOption key="none" value="" label="" />
+                        {kafkaOptions.map((option, index) => (
+                          <FormSelectOption key={index} value={option} label={option} />
+                        ))}
+                      </FormSelect>
+                    </FormGroup>
+                  </SplitItem>
+                  <SplitItem style={{ minWidth: "15em" }}>
+                    <FormGroup
+                      label="Kafka sink"
+                      fieldId="kafka-sink"
+                      validated={deployFormValidation.messages.kafkaSink ? "error" : "default"}
+                      helperTextInvalid={deployFormValidation.messages.kafkaSink}
+                      labelIcon={
+                        <Tooltip content="Kafka sink is mandatory if a Kafka source endpoint has been provided.">
+                          <button
+                            aria-label="More information for Kafka sink"
+                            onClick={e => e.preventDefault()}
+                            className="pf-c-form__group-label-help"
+                          >
+                            <HelpIcon
+                              noVerticalAlign={true}
+                              color={"var(--pf-global--info-color--100)"}
+                              style={{ verticalAlign: "unset" }}
+                            />
+                          </button>
+                        </Tooltip>
+                      }
+                    >
+                      <FormSelect
+                        id="kafka-sink"
+                        value={kafkaSink}
+                        onChange={onKafkaSinkChange}
+                        aria-label="Kafka sink"
+                        validated={deployFormValidation.messages.kafkaSink ? "error" : "default"}
                       >
-                        <HelpIcon
-                          noVerticalAlign={true}
-                          color={"var(--pf-global--info-color--100)"}
-                          style={{ verticalAlign: "unset" }}
-                        />
-                      </button>
-                    </Tooltip>
-                  }
-                >
-                  <FormSelect
-                    id="kafka-sink"
-                    value={kafkaSink}
-                    onChange={onKafkaSinkChange}
-                    aria-label="Kafka sink"
-                    validated={deployFormValidation.messages.kafkaSink ? "error" : "default"}
-                  >
-                    <FormSelectOption key="none" value="" label="" />
-                    {kafkaOptions.map((option, index) => (
-                      <FormSelectOption key={index} value={option} label={option} />
-                    ))}
-                  </FormSelect>
-                </FormGroup>
-              </SplitItem>
+                        <FormSelectOption key="none" value="" label="" />
+                        {kafkaOptions.map((option, index) => (
+                          <FormSelectOption key={index} value={option} label={option} />
+                        ))}
+                      </FormSelect>
+                    </FormGroup>
+                  </SplitItem>
+                </>
+              )}
               <SplitItem style={{ paddingTop: 32 }}>
                 <Button
                   variant="primary"
